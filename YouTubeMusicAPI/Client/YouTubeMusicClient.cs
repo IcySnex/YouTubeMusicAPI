@@ -10,15 +10,15 @@ namespace YouTubeMusicAPI.Client;
 /// <summary>
 /// Client for searching on YouTube Music
 /// </summary>
-public class SearchClient
+public class YouTubeMusicClient
 {
     readonly ILogger? logger;
-    readonly BaseClient baseClient;
+    readonly YouTubeMusicBase baseClient;
 
     /// <summary>
     /// Creates a new search client
     /// </summary>
-    public SearchClient()
+    public YouTubeMusicClient()
     {
         this.baseClient = new();
 
@@ -29,7 +29,7 @@ public class SearchClient
     /// Creates a new search client with extendended logging functions
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
-    public SearchClient(
+    public YouTubeMusicClient(
         ILogger logger)
     {
         this.logger = logger;

@@ -12,7 +12,7 @@ namespace YouTubeMusicAPI.Tests;
 public class SearchShelves
 {
     ILogger logger;
-    SearchClient client;
+    YouTubeMusicClient client;
 
     [SetUp]
     public void Setup()

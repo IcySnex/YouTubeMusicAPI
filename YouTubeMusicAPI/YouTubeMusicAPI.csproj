@@ -5,7 +5,41 @@
 		<LangVersion>12</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+
+		<Version>1.0.1</Version>
+		<AssemblyVersion>1.0.1</AssemblyVersion>
+		<FileVersion>1.0.1</FileVersion>
+
+		<Title>YouTube Music API</Title>
+		<Authors>IcySnex</Authors>
+		<Company />
+		<Description>YouTube Music Web API Wrapper for C#</Description>
+		<PackageProjectUrl>https://github.com/IcySnex/YouTubeMusicAPI</PackageProjectUrl>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<RepositoryUrl>https://github.com/IcySnex/YouTubeMusicAPI/tree/main</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>youtube;youtubemusic;music</PackageTags>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
+	
+	<ItemGroup>
+	  <None Include="..\icon.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	  <None Include="..\LICENSE">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	  <None Include="..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 	
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />

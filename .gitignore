@@ -1,0 +1,12 @@
+.vs/
+packages/
+
+*.suo
+*.user
+_ReSharper.*
+
+YouTubeMusicAPI/bin/
+YouTubeMusicAPI/obj/
+
+YouTubeMusicAPI.Tests/bin/
+YouTubeMusicAPI.Tests/obj/

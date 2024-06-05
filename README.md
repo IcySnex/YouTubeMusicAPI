@@ -1,4 +1,4 @@
-# YouTubeMusicAPI
+# <img src="https://github.com/IcySnex/YouTubeMusicAPI/blob/main/icon.png" alt="YouTube Music Icon" width="40" height="40"> YouTubeMusicAPI
 
 YouTubeMusicAPI is a simple and efficient wrapper for the internal YouTube Music Web API for dotnet & C# developers.
 This library allows you to easily search for songs, videos, albums, community playlists, artists, podcasts, podcast episodes & profiles on YouTube Music.

@@ -44,8 +44,8 @@ public class SearchClient
     /// </summary>
     /// <typeparam name="IShelfItem">The requested shelf type</typeparam>
     /// <returns>The shelf kind</returns>
-    ShelfKind GetShelfKind<IShelfItem>() =>
-        typeof(IShelfItem) switch
+    ShelfKind GetShelfKind<T>() where T : IShelfItem =>
+        typeof(T) switch
         {
             Type type when type == typeof(Song) => ShelfKind.Songs,
             Type type when type == typeof(Video) => ShelfKind.Videos,
@@ -55,7 +55,6 @@ public class SearchClient
             Type type when type == typeof(Podcast) => ShelfKind.Podcasts,
             Type type when type == typeof(Episode) => ShelfKind.Episodes,
             Type type when type == typeof(Profile) => ShelfKind.Profiles,
-            Type type when type == typeof(ShelfItem) => ShelfKind.Unknown,
             _ => ShelfKind.Unknown
         };
 
@@ -195,13 +194,13 @@ public class SearchClient
     /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
     /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
-    public async Task<IEnumerable<IShelfItem>> SearchAsync<IShelfItem>(
+    public async Task<IEnumerable<T>> SearchAsync<T>(
         string query,
         string hostLanguage = "en",
         string geographicalLocation = "US",
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) where T : IShelfItem
     {
-        ShelfKind kind = GetShelfKind<IShelfItem>();
+        ShelfKind kind = GetShelfKind<T>();
 
         // Send request
         IEnumerable<Shelf> searchResults = await SearchAsync(query, kind, hostLanguage, geographicalLocation, cancellationToken);
@@ -209,7 +208,7 @@ public class SearchClient
         if (kind == ShelfKind.Unknown)
         {
             logger?.LogInformation($"[SearchClient-SearchSongsAsync] Concatenating shelf items.");
-            IEnumerable<IShelfItem> allShelfItems = (IEnumerable<IShelfItem>)searchResults.SelectMany(shelf => shelf.Items);
+            IEnumerable<T> allShelfItems = searchResults.SelectMany(shelf => shelf.Items).Cast<T>();
 
             return allShelfItems;
         }
@@ -224,7 +223,7 @@ public class SearchClient
         }
 
         logger?.LogInformation($"[SearchClient-SearchSongsAsync] Casting shelf items.");
-        IEnumerable<IShelfItem> singleShelfItems = songsResults.Items.Cast<IShelfItem>();
+        IEnumerable<T> singleShelfItems = songsResults.Items.Cast<T>();
 
         return singleShelfItems;
     }

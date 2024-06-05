@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Client;
 /// <summary>
 /// Client for all low level YouTube Music API calls
 /// </summary>
-public class BaseClient
+public class YouTubeMusicBase
 {
     /// <summary>
     /// Creates a new YouTube Music request payload
@@ -42,7 +42,7 @@ public class BaseClient
     /// <summary>
     /// Creates a new base client
     /// </summary>
-    public BaseClient()
+    public YouTubeMusicBase()
     {
     }
 
@@ -50,7 +50,7 @@ public class BaseClient
     /// Creates a new base client with extendended logging functions
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
-    public BaseClient(
+    public YouTubeMusicBase(
         ILogger logger)
     {
         this.logger = logger;

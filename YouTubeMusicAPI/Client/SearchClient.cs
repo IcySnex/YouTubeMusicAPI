@@ -161,7 +161,7 @@ public class SearchClient
         string apiPath = "search";
 
         // Prepare request
-        if (string.IsNullOrWhiteSpace(query) )
+        if (string.IsNullOrWhiteSpace(query))
         {
             logger?.LogError($"[SearchClient-SearchAsync] Search failed. Query parameter is null or whitespace.");
             throw new ArgumentNullException(nameof(query), "Search failed. Query parameter is null or whitespace.");

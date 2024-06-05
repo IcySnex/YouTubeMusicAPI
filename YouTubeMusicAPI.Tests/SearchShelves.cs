@@ -9,7 +9,7 @@ namespace YouTubeMusicAPI.Tests;
 /// <summary>
 /// Search for shelves
 /// </summary>
-public class SearchShelves
+internal class SearchShelves
 {
     ILogger logger;
     YouTubeMusicClient client;

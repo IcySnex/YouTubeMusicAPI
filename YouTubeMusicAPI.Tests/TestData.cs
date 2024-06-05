@@ -3,7 +3,7 @@
 /// <summary>
 /// Contains test data for tests
 /// </summary>
-public abstract class TestData
+internal abstract class TestData
 {
     /// <summary>
     /// Test query for search requests

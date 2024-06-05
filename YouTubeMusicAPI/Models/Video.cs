@@ -16,7 +16,7 @@ namespace YouTubeMusicAPI.Models;
 public class Video(
     string name,
     string id,
-    ShelfItem artist, 
+    ShelfItem artist,
     TimeSpan duration,
     string viewsInfo,
     Radio radio,

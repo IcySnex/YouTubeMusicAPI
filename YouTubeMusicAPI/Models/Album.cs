@@ -35,37 +35,37 @@ public class Album(
     /// <summary>
     /// The name of this album
     /// </summary>
-    public string Name { get;} = name;
+    public string Name { get; } = name;
 
     /// <summary>
     /// The id of this album
     /// </summary>
-    public string Id { get;} = id;
+    public string Id { get; } = id;
 
     /// <summary>
     /// The artists of this album
     /// </summary>
-    public ShelfItem[] Artists { get;} = artists;
+    public ShelfItem[] Artists { get; } = artists;
 
     /// <summary>
     /// The year of this album
     /// </summary>
-    public int Year { get;} = year;
+    public int Year { get; } = year;
 
     /// <summary>
     /// Weither this album is a single or not
     /// </summary>
-    public bool IsSingle { get;} = isSingle;
+    public bool IsSingle { get; } = isSingle;
 
     /// <summary>
     /// The radio channel of this album
     /// </summary>
-    public Radio Radio { get;} = radio;
+    public Radio Radio { get; } = radio;
 
     /// <summary>
     /// The thumbnails of this album
     /// </summary>
-    public Thumbnail[] Thumbnails { get;} = thumbnails;
+    public Thumbnail[] Thumbnails { get; } = thumbnails;
 
 
     /// <summary>

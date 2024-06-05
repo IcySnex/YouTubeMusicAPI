@@ -43,7 +43,7 @@ internal class Sample
 
         IEnumerable<Song> searchResults = await client.SearchAsync<Song>(query);
         foreach (Song song in searchResults)
-            Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Id}");
+            Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album.Name}");
     }
 
     public static async Task SearchSongsShelfAsync(
@@ -59,7 +59,7 @@ internal class Sample
             foreach (IShelfItem item in shelf.Items)
             {
                 Song song = (Song)item;
-                Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album}");
+                Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album.Name}");
             }
         }
     }

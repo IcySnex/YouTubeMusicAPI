@@ -11,12 +11,17 @@ internal abstract class TestData
     public const string Query = "Pashanim";
 
     /// <summary>
-    /// Test host language for search requests
+    /// Test song id for song info
+    /// </summary>
+    public const string SongId = "zAQo_IROFRw";
+
+    /// <summary>
+    /// Test host language for requests
     /// </summary>
     public const string HostLanguage = "en";
 
     /// <summary>
-    /// Test geographical location for search requests
+    /// Test geographical location for requests
     /// </summary>
     public const string GeographicalLocation = "US";
 }

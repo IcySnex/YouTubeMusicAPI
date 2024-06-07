@@ -62,7 +62,7 @@ public class YouTubeMusicBase
     /// <summary>
     /// Sends a new request to the YouTube Music API with a payload
     /// </summary>
-    /// <param name="apiPath">The specific API path for the request</param>
+    /// <param name="apiEndpoint">The specific API endpoint for the request</param>
     /// <param name="payloadItems">The items to add to the request payload</param>
     /// <param name="hostLanguage">The language for the payload</param>
     /// <param name="geographicalLocation">The region for the payload</param>
@@ -73,13 +73,13 @@ public class YouTubeMusicBase
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
     /// <returns>The json object containing the response data</returns>
     public async Task<JObject> SendRequestAsync(
-        string apiPath,
+        string apiEndpoint,
         (string key, object? value)[] payloadItems,
         string hostLanguage = "en",
         string geographicalLocation = "US",
         CancellationToken cancellationToken = default)
     {
-        string url = $"https://music.youtube.com/youtubei/v1/{apiPath}";
+        string url = Endpoints.BaseUrl + apiEndpoint;
 
         // Create payload
         logger?.LogInformation($"[RequestHelper-SendRequestAsync] Creating payload.");

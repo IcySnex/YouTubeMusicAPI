@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Runtime.CompilerServices;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Shelf;
@@ -22,7 +24,7 @@ public class YouTubeMusicClient
     {
         this.baseClient = new();
 
-        logger?.LogInformation($"[SearchClient-.ctor] SearchClient has been initialized.");
+        logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient has been initialized.");
     }
 
     /// <summary>
@@ -35,14 +37,14 @@ public class YouTubeMusicClient
         this.logger = logger;
         this.baseClient = new(logger);
 
-        logger?.LogInformation($"[SearchClient-.ctor] SearchClient with extendended logging functions has been initialized.");
+        logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient with extendended logging functions has been initialized.");
     }
 
 
     /// <summary>
     /// Gets the shelf kind based on the type of the shelf item
     /// </summary>
-    /// <typeparam name="IShelfItem">The requested shelf type</typeparam>
+    /// <typeparam name="T">The requested shelf type</typeparam>
     /// <returns>The shelf kind</returns>
     ShelfKind GetShelfKind<T>() where T : IShelfItem =>
         typeof(T) switch
@@ -60,18 +62,18 @@ public class YouTubeMusicClient
 
 
     /// <summary>
-    /// Parses a request response into shelf results
+    /// Parses a search request response into shelf results
     /// </summary>
     /// <param name="requestResponse">The request response to parse</param>
     /// <returns>An array of shelves containing all items</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
-    public IEnumerable<Shelf> Parse(
+    IEnumerable<Shelf> ParseSearchResponse(
         JObject requestResponse)
     {
         List<Shelf> results = [];
 
         // Get shelves
-        logger?.LogInformation($"[SearchClient-Parse] Getting shelves.");
+        logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Getting shelves.");
         IEnumerable<JProperty> shelvesData = requestResponse
             .DescendantsAndSelf()
             .OfType<JProperty>()
@@ -79,14 +81,14 @@ public class YouTubeMusicClient
 
         if (shelvesData is null || !shelvesData.Any())
         {
-            logger?.LogError($"[SearchClient-Parse] Parsing search failed. Request response does not contain any shelves.");
+            logger?.LogError($"[YouTubeMusicClient-ParseSearchResponse] Parsing search failed. Request response does not contain any shelves.");
             throw new ArgumentNullException(nameof(shelvesData), "Parsing search failed. Request response does not contain any shelves.");
         }
 
         foreach (JProperty shelfData in shelvesData)
         {
             // Parse shelf data
-            logger?.LogInformation($"[SearchClient-Parse] Parsing shelf data: {shelfData.Path}.");
+            logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Parsing shelf data: {shelfData.Path}.");
             JToken? shelfDataObject = shelfData.First;
 
             if (shelfDataObject is null)
@@ -105,7 +107,7 @@ public class YouTubeMusicClient
             foreach (JToken shelfItem in shelfItems)
             {
                 // Parse shelf item
-                logger?.LogInformation($"[SearchClient-Parse] Parsing shelf item: {shelfItem.Path}.");
+                logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Parsing shelf item: {shelfItem.Path}.");
                 JToken? itemObject = shelfItem.First?.First;
 
                 if (itemObject is null)
@@ -136,6 +138,119 @@ public class YouTubeMusicClient
         return results;
     }
 
+    /// <summary>
+    /// Parses a song info request response into shelf results
+    /// </summary>
+    /// <param name="requestResponse">The request response to parse</param>
+    /// <returns>The song info</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    SongInfo ParseSongInfoResponse(
+        JObject requestResponse)
+    {
+        static ShelfItem[] GetArtists(
+            JToken jsonToken)
+        {
+            // Parse artist names from json token
+            string? artistNames = jsonToken.SelectToken("videoDetails.author")?.ToString();
+            string? primaryArtistId = jsonToken.SelectToken("videoDetails.channelId")?.ToString();
+
+            if (artistNames is null || primaryArtistId is null)
+                throw new ArgumentNullException(null, "Failed song info response. One or more values of item is null.");
+
+            // Add artists to result
+            IEnumerable<string> artists = artistNames.Split(',', '&').Where(artistName => !string.IsNullOrWhiteSpace(artistName)).Select(artistName => artistName.Trim());
+
+            List<ShelfItem> result = [];
+            result.Add(new(artists.First(), primaryArtistId, ShelfKind.Artists));
+            foreach (string artist in artists.Skip(1))
+            {
+                result.Add(new(artist, null, ShelfKind.Artists));
+            }
+
+            // Return result
+            return [.. result];
+        }
+
+        static Thumbnail[] GetThumbnails(
+            JToken jsonToken)
+        {
+            // Parse thumbnails container from json token
+            JToken? thumbnails = jsonToken.SelectToken("videoDetails.thumbnail.thumbnails");
+            if (thumbnails is null)
+                return [];
+
+            List<Thumbnail> result = [];
+            foreach (JToken thumbnail in thumbnails)
+            {
+                // Parse info from thumbnails container
+                string? url = thumbnail.SelectToken("url")?.ToString();
+                string? width = thumbnail.SelectToken("width")?.ToString();
+                string? height = thumbnail.SelectToken("height")?.ToString();
+
+                if (url is null)
+                    continue;
+
+                result.Add(new(url, width is null ? 0 : int.Parse(width), height is null ? 0 : int.Parse(height)));
+            }
+
+            // Return result
+            return [.. result];
+        }
+
+
+        logger?.LogInformation($"[YouTubeMusicClient-ParseSongInfoResponse] Getting song info.");
+
+        // Parse info from json token
+        ShelfItem[] artists = GetArtists(requestResponse);
+        Thumbnail[] thumbnails = GetThumbnails(requestResponse);
+
+        string? name = requestResponse.SelectToken("videoDetails.title")?.ToString();
+        string? id = requestResponse.SelectToken("videoDetails.videoId")?.ToString();
+        string? duration = requestResponse.SelectToken("videoDetails.lengthSeconds")?.ToString();
+        string? isOwnerViewing = requestResponse.SelectToken("videoDetails.isOwnerViewing")?.ToString();
+        string? isCrawlable = requestResponse.SelectToken("videoDetails.isCrawlable")?.ToString();
+        string? allowRatings = requestResponse.SelectToken("videoDetails.allowRatings")?.ToString();
+        string? viewCount = requestResponse.SelectToken("videoDetails.viewCount")?.ToString();
+        string? isPrivate = requestResponse.SelectToken("videoDetails.isPrivate")?.ToString();
+        string? isUnpluggedCorpus = requestResponse.SelectToken("videoDetails.isUnpluggedCorpus")?.ToString();
+        string? isLiveContent = requestResponse.SelectToken("videoDetails.isLiveContent")?.ToString();
+
+        string? description = requestResponse.SelectToken("microformat.microformatDataRenderer.description")?.ToString();
+        string? unlisted = requestResponse.SelectToken("microformat.microformatDataRenderer.unlisted")?.ToString();
+        string? familySafe = requestResponse.SelectToken("microformat.microformatDataRenderer.familySafe")?.ToString();
+        string? publishDate = requestResponse.SelectToken("microformat.microformatDataRenderer.publishDate")?.ToString();
+        string? uploadDate = requestResponse.SelectToken("microformat.microformatDataRenderer.uploadDate")?.ToString();
+        JToken[]? tags = requestResponse.SelectToken("microformat.microformatDataRenderer.tags")?.ToArray();
+        JToken[]? availableCountries = requestResponse.SelectToken("microformat.microformatDataRenderer.availableCountries")?.ToArray();
+
+        if (name is null || id is null || duration is null || isOwnerViewing is null || isCrawlable is null || allowRatings is null || viewCount is null || isPrivate is null || isUnpluggedCorpus is null || isLiveContent is null || description is null || unlisted is null || familySafe is null || publishDate is null || uploadDate is null)
+        {
+            logger?.LogError($"[YouTubeMusicClient-ParseSongInfoResponse] Failed song info response. One or more values of item is null.");
+            throw new ArgumentNullException(null, "Failed song info response. One or more values of item is null.");
+        }
+
+        return new(
+            name,
+            id,
+            description,
+            artists,
+            TimeSpan.FromSeconds(int.Parse(duration)),
+            bool.Parse(isOwnerViewing),
+            bool.Parse(isCrawlable),
+            bool.Parse(allowRatings),
+            bool.Parse(isPrivate),
+            bool.Parse(unlisted),
+            bool.Parse(isUnpluggedCorpus),
+            bool.Parse(isLiveContent),
+            bool.Parse(familySafe),
+            int.Parse(viewCount),
+            DateTime.Parse(publishDate),
+            DateTime.Parse(uploadDate),
+            thumbnails,
+            tags is null ? [] : tags.Select(tag => tag.ToString()).ToArray(),
+            availableCountries is null ? [] : availableCountries.Select(country => country.ToString()).ToArray());
+    }
+
 
     /// <summary>
     /// Searches for a query on YouTube Music
@@ -158,12 +273,10 @@ public class YouTubeMusicClient
         string geographicalLocation = "US",
         CancellationToken cancellationToken = default)
     {
-        string apiPath = "search";
-
         // Prepare request
         if (string.IsNullOrWhiteSpace(query))
         {
-            logger?.LogError($"[SearchClient-SearchAsync] Search failed. Query parameter is null or whitespace.");
+            logger?.LogError($"[YouTubeMusicClient-SearchAsync] Search failed. Query parameter is null or whitespace.");
             throw new ArgumentNullException(nameof(query), "Search failed. Query parameter is null or whitespace.");
         }
 
@@ -174,10 +287,10 @@ public class YouTubeMusicClient
         ];
 
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(apiPath, payload, hostLanguage, geographicalLocation, cancellationToken);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Search, payload, hostLanguage, geographicalLocation, cancellationToken);
 
         // Parse request response
-        IEnumerable<Shelf> searchResults = Parse(requestResponse);
+        IEnumerable<Shelf> searchResults = ParseSearchResponse(requestResponse);
         return searchResults;
     }
 
@@ -207,7 +320,7 @@ public class YouTubeMusicClient
 
         if (kind == ShelfKind.Unknown)
         {
-            logger?.LogInformation($"[SearchClient-SearchSongsAsync] Concatenating shelf items.");
+            logger?.LogInformation($"[YouTubeMusicClient-SearchSongsAsync] Concatenating shelf items.");
             IEnumerable<T> allShelfItems = searchResults.SelectMany(shelf => shelf.Items).Cast<T>();
 
             return allShelfItems;
@@ -218,13 +331,53 @@ public class YouTubeMusicClient
 
         if (songsResults is null)
         {
-            logger?.LogError($"[SearchClient-SearchSongsAsync] Search failed. Search results do not cotain requested filtered shelf.");
+            logger?.LogError($"[YouTubeMusicClient-SearchSongsAsync] Search failed. Search results do not cotain requested filtered shelf.");
             throw new ArgumentNullException(nameof(songsResults), "Search failed. Search results do not cotain requested filtered shelf.");
         }
 
-        logger?.LogInformation($"[SearchClient-SearchSongsAsync] Casting shelf items.");
+        logger?.LogInformation($"[YouTubeMusicClient-SearchSongsAsync] Casting shelf items.");
         IEnumerable<T> singleShelfItems = songsResults.Items.Cast<T>();
 
         return singleShelfItems;
+    }
+
+
+    /// <summary>
+    /// Gets the information about a song on YouTube Music
+    /// </summary>
+    /// <param name="id">The id of the song</param>
+    /// <param name="hostLanguage">The language for the payload</param>
+    /// <param name="geographicalLocation">The region for the payload</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The song info</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<SongInfo> GetSongInfoAsync(
+        string id,
+        string hostLanguage = "en",
+        string geographicalLocation = "US",
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetSongInfoAsync] Getting info failed. Id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(id), "Getting info failed. Id parameter is null or whitespace.");
+        }
+
+        (string key, object? value)[] payload =
+        [
+            ("video_id", id)
+        ];
+
+        // Send request
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.SongInfo, payload, hostLanguage, geographicalLocation, cancellationToken);
+
+        // Parse request response
+        SongInfo info = ParseSongInfoResponse(requestResponse);
+        return info;
     }
 }

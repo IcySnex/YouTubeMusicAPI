@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Globalization;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Shelf;
 using YouTubeMusicAPI.Types;
@@ -10,6 +11,28 @@ namespace YouTubeMusicAPI.Internal;
 /// </summary>
 internal static class ShelfItemParser
 {
+    /// <summary>
+    /// Parses a string into a TimeSpan
+    /// </summary>
+    /// <param name="value">The string to parse</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException">value has an invalid format</exception>
+    static TimeSpan ParseTimeSapn(
+        string value)
+    {
+        if (TimeSpan.TryParseExact(value, @"m\:ss", null, out TimeSpan timeSpan))
+            return timeSpan;
+        if (TimeSpan.TryParseExact(value, @"mm\:ss", null, out timeSpan))
+            return timeSpan;
+        if (TimeSpan.TryParseExact(value, @"h\:mm\:ss", null, out timeSpan))
+            return timeSpan;
+        if (TimeSpan.TryParseExact(value, @"hh\:mm\:ss", null, out timeSpan))
+            return timeSpan;
+
+        throw new ArgumentException("value has an invalid format");
+    }
+
+
     /// <summary>
     /// Parses thumbnails data from the json token
     /// </summary>
@@ -132,7 +155,7 @@ internal static class ShelfItemParser
             id,
             artists,
             new(album, albumId, ShelfKind.Albums),
-            TimeSpan.Parse(duration),
+            ParseTimeSapn(duration),
             isExplicit == "Explicit",
             plays,
             new(radioPlaylistId, radioVideoId),
@@ -175,7 +198,7 @@ internal static class ShelfItemParser
             name,
             id,
             new(channel, channelId, ShelfKind.Artists),
-            TimeSpan.Parse(duration),
+            ParseTimeSapn(duration),
             views,
             new(radioPlaylistId, radioVideoId),
             thumbnails);

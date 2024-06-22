@@ -10,10 +10,22 @@ internal abstract class TestData
     /// </summary>
     public const string Query = "Pashanim";
 
+
     /// <summary>
-    /// Test song id for song info
+    /// Test song id
     /// </summary>
     public const string SongId = "zAQo_IROFRw";
+    
+    /// <summary>
+    /// Test album id
+    /// </summary>
+    public const string AlbumId = "OLAK5uy_muEnh0WPCqRdkgV3Qg24ttvmZTP1_RBTo";
+    
+    /// <summary>
+    /// Test playlist id
+    /// </summary>
+    public const string PlaylistId = "PLuvXOFt0CoEbwWSQj5LmzPhIVKS0SvJ-1";
+
 
     /// <summary>
     /// Test host language for requests

@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Models;
+using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Shelf;
 using YouTubeMusicAPI.Types;
 
@@ -343,6 +343,48 @@ public class YouTubeMusicClient
 
 
     /// <summary>
+    /// Gets the browse id for an album or community playlist used for getting information
+    /// </summary>
+    /// <param name="id">The id of the album or community playlist</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The browse if of the album or community playlist</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<string> GetBrowseIdAsync(
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetBrowseIdAsync] Getting browse id failed. Id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(id), "Getting browse id failed. Id parameter is null or whitespace.");
+        }
+
+        (string key, string? value)[] parameters =
+        [
+            ("list", id)
+        ];
+
+        // Send request
+        string requestResponse = await baseClient.GetWebContentAsync(Endpoints.Playlist, parameters, cancellationToken);
+
+        // Parse request response
+        Match match = Regex.Match(Regex.Unescape(requestResponse), "\"MPRE.+?\"");
+        if (!match.Success)
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetBrowseIdAsync] Getting browse id failed. Found no match.");
+            throw new Exception("Getting browse id failed. Found no match.");
+        }
+
+        return match.Value.Trim('"');
+    }
+
+
+    /// <summary>
     /// Gets the information about a song on YouTube Music
     /// </summary>
     /// <param name="id">The id of the song</param>
@@ -374,7 +416,7 @@ public class YouTubeMusicClient
         ];
 
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.SongInfo, payload, hostLanguage, geographicalLocation, cancellationToken);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, hostLanguage, geographicalLocation, cancellationToken);
 
         // Parse request response
         SongInfo info = ParseSongInfoResponse(requestResponse);

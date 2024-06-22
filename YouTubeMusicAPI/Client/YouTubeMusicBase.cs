@@ -1,5 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
 using YouTubeMusicAPI.Internal;
 
 namespace YouTubeMusicAPI.Client;
@@ -60,6 +68,69 @@ public class YouTubeMusicBase
 
 
     /// <summary>
+    /// Consents cookies for YouTube Music
+    /// </summary>
+    /// <param name="hostLanguage">The language for the parameters</param>
+    /// <param name="geographicalLocation">The region for the parameters</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    async Task ConsentCookiesAsync(
+        string hostLanguage = "en",
+        string geographicalLocation = "US",
+        CancellationToken cancellationToken = default)
+    {
+        string url = Endpoints.Cookies + Endpoints.Save;
+
+        // Create parameters
+        logger?.LogInformation($"[YouTubeMusicBase-GenerateCookiesAsync] Creating parameters.");
+        NameValueCollection parameters = HttpUtility.ParseQueryString(string.Empty);
+        parameters.Set("hl", hostLanguage);
+        parameters.Set("gl", geographicalLocation);
+        parameters.Set("pc", "ytm");
+        parameters.Set("continue", "https://music.youtube.com/?cbrd=1");
+        parameters.Set("x", "6");
+        parameters.Set("bl", "boq_identityfrontenduiserver_20240617.06_p0");
+        parameters.Set("set_eom", "true");
+
+        // Send request
+        await requestHelper.PostAsync(url, null, parameters.ToString(), cancellationToken);
+    }
+
+
+    /// <summary>
+    /// Gets the web content of the given YouTube Music API endpoint with parameter queries
+    /// </summary>
+    /// <param name="apiEndpoint">The specific API endpoint for the request</param>
+    /// <param name="parameterItems">The items to add to the query parameters</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    /// <returns>The json object containing the response data</returns>
+    public async Task<string> GetWebContentAsync(
+        string apiEndpoint,
+        (string key, string? value)[] parameterItems,
+        CancellationToken cancellationToken = default)
+    {
+        string url = Endpoints.WebUrl + apiEndpoint;
+
+        // Cookies
+        if (requestHelper.Cookies.GetCookies(new(Endpoints.Cookies)).Count < 1)
+            await ConsentCookiesAsync();
+
+        // Create parameters
+        logger?.LogInformation($"[YouTubeMusicBase-GetWebContentAsync] Creating parameters.");
+        NameValueCollection parameters = HttpUtility.ParseQueryString(string.Empty);
+        foreach ((string key, string? value) in parameterItems)
+            if (value is not null)
+                parameters[key] = value;
+
+        // Send request
+        string response = await requestHelper.GetAndValidateAsync(url, parameters.ToString(), cancellationToken);
+
+        return response;
+    }
+
+    /// <summary>
     /// Sends a new request to the YouTube Music API with a payload
     /// </summary>
     /// <param name="apiEndpoint">The specific API endpoint for the request</param>
@@ -82,17 +153,17 @@ public class YouTubeMusicBase
         string url = Endpoints.BaseUrl + apiEndpoint;
 
         // Create payload
-        logger?.LogInformation($"[RequestHelper-SendRequestAsync] Creating payload.");
+        logger?.LogInformation($"[YouTubeMusicBase-SendRequestAsync] Creating payload.");
         Dictionary<string, object> payload = CreatePayload(hostLanguage, geographicalLocation);
         foreach ((string key, object? value) in payloadItems)
             if (value is not null)
                 payload[key] = value;
 
         // Send request
-        string response = await requestHelper.PostBodyAndValidateAsync(url, payload, cancellationToken);
+        string response = await requestHelper.PostAndValidateAsync(url, payload, null, cancellationToken);
 
         // Parsing response
-        logger?.LogInformation($"[RequestHelper-SendRequestAsync] Parsing response.");
+        logger?.LogInformation($"[YouTubeMusicBase-SendRequestAsync] Parsing response.");
         return JObject.Parse(response);
     }
 }

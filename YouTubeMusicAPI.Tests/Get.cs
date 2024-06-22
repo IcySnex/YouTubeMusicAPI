@@ -1,14 +1,16 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Text;
 using YouTubeMusicAPI.Client;
 using YouTubeMusicAPI.Models;
+using YouTubeMusicAPI.Models.Info;
 
 namespace YouTubeMusicAPI.Tests;
 
 /// <summary>
-/// Get info
+/// Get information
 /// </summary>
-internal class Info
+internal class Get
 {
     ILogger logger;
     YouTubeMusicClient client;
@@ -27,10 +29,31 @@ internal class Info
 
 
     /// <summary>
-    /// Get song info
+    /// Get browse id from album or community playlist
     /// </summary>
     [Test]
-    public void GetSong()
+    public void BrowseId()
+    {
+        string? albumBrowseId = null;
+        string? playlistBrowseId = null;
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            albumBrowseId = await client.GetBrowseIdAsync(TestData.AlbumId);
+            playlistBrowseId = await client.GetBrowseIdAsync(TestData.PlaylistId);
+        });
+        Assert.That(albumBrowseId, Is.Not.Null);
+        Assert.That(playlistBrowseId, Is.Not.Null);
+
+        // Output
+        logger.LogInformation("\nAlbum Browse Id: {albumBrowseId}\nPlaylist Browse Id: {playlistBrowseId}", albumBrowseId, playlistBrowseId);
+    }
+
+
+    /// <summary>
+    /// Get song information
+    /// </summary>
+    [Test]
+    public void Song()
     {
         SongInfo? song = null;
 

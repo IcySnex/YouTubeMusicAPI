@@ -24,7 +24,7 @@ internal class Get
         });
 
         logger = factory.CreateLogger<Search>();
-        client = new(logger);
+        client = new(logger, TestData.HostLanguage, TestData.GeographicalLocation);
     }
 
 
@@ -59,7 +59,7 @@ internal class Get
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            song = await client.GetSongInfoAsync(TestData.SongId, TestData.HostLanguage, TestData.GeographicalLocation);
+            song = await client.GetSongInfoAsync(TestData.SongId);
         });
         Assert.That(song, Is.Not.Null);
 

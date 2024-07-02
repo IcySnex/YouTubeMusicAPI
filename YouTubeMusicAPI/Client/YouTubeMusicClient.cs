@@ -17,11 +17,21 @@ public class YouTubeMusicClient
     readonly ILogger? logger;
     readonly YouTubeMusicBase baseClient;
 
+    readonly string hostLanguage;
+    readonly string geographicalLocation;
+
     /// <summary>
     /// Creates a new search client
     /// </summary>
-    public YouTubeMusicClient()
+    /// <param name="hostLanguage">The language for the payload</param>
+    /// <param name="geographicalLocation">The region for the payload</param>
+    public YouTubeMusicClient(
+        string hostLanguage = "en",
+        string geographicalLocation = "US")
     {
+        this.hostLanguage = hostLanguage;
+        this.geographicalLocation = geographicalLocation;
+
         this.baseClient = new();
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient has been initialized.");
@@ -31,9 +41,16 @@ public class YouTubeMusicClient
     /// Creates a new search client with extendended logging functions
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
+    /// <param name="hostLanguage">The language for the payload</param>
+    /// <param name="geographicalLocation">The region for the payload</param>
     public YouTubeMusicClient(
-        ILogger logger)
+        ILogger logger,
+        string hostLanguage = "en",
+        string geographicalLocation = "US")
     {
+        this.hostLanguage = hostLanguage;
+        this.geographicalLocation = geographicalLocation;
+
         this.logger = logger;
         this.baseClient = new(logger);
 
@@ -257,8 +274,6 @@ public class YouTubeMusicClient
     /// </summary>
     /// <param name="query">The query to search for</param>
     /// <param name="kind">The shelf kind of items to search for</param>
-    /// <param name="hostLanguage">The language for the payload</param>
-    /// <param name="geographicalLocation">The region for the payload</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>An array of shelves containing all search results</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
@@ -269,8 +284,6 @@ public class YouTubeMusicClient
     public async Task<IEnumerable<Shelf>> SearchAsync(
         string query,
         ShelfKind? kind = null,
-        string hostLanguage = "en",
-        string geographicalLocation = "US",
         CancellationToken cancellationToken = default)
     {
         // Prepare request
@@ -298,8 +311,6 @@ public class YouTubeMusicClient
     /// Searches for a specfic shelf for a query on YouTube Music
     /// </summary>
     /// <param name="query">The query to search for</param>
-    /// <param name="hostLanguage">The language for the payload</param>
-    /// <param name="geographicalLocation">The region for the payload</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>An array of the specific shelf items</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
@@ -309,14 +320,12 @@ public class YouTubeMusicClient
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
     public async Task<IEnumerable<T>> SearchAsync<T>(
         string query,
-        string hostLanguage = "en",
-        string geographicalLocation = "US",
         CancellationToken cancellationToken = default) where T : IShelfItem
     {
         ShelfKind kind = GetShelfKind<T>();
 
         // Send request
-        IEnumerable<Shelf> searchResults = await SearchAsync(query, kind, hostLanguage, geographicalLocation, cancellationToken);
+        IEnumerable<Shelf> searchResults = await SearchAsync(query, kind, cancellationToken);
 
         if (kind == ShelfKind.Unknown)
         {
@@ -388,8 +397,6 @@ public class YouTubeMusicClient
     /// Gets the information about a song on YouTube Music
     /// </summary>
     /// <param name="id">The id of the song</param>
-    /// <param name="hostLanguage">The language for the payload</param>
-    /// <param name="geographicalLocation">The region for the payload</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>The song info</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
@@ -399,8 +406,6 @@ public class YouTubeMusicClient
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
     public async Task<SongInfo> GetSongInfoAsync(
         string id,
-        string hostLanguage = "en",
-        string geographicalLocation = "US",
         CancellationToken cancellationToken = default)
     {
         // Prepare request

@@ -23,7 +23,7 @@ internal class SearchShelves
         });
 
         logger = factory.CreateLogger<Search>();
-        client = new(logger);
+        client = new(logger, TestData.HostLanguage, TestData.GeographicalLocation);
     }
 
 
@@ -38,7 +38,7 @@ internal class SearchShelves
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            searchResults = await client.SearchAsync(TestData.Query, kind, TestData.HostLanguage, TestData.GeographicalLocation);
+            searchResults = await client.SearchAsync(TestData.Query, kind);
         });
         Assert.That(searchResults, Is.Not.Null);
         Assert.That(searchResults, Is.Not.Empty);

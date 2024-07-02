@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Data;
-using System.Diagnostics;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace YouTubeMusicAPI.Internal;

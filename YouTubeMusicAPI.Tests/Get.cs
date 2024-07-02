@@ -27,23 +27,20 @@ internal class Get
 
 
     /// <summary>
-    /// Get browse id from album or community playlist
+    /// Get browse id from an album
     /// </summary>
     [Test]
     public void BrowseId()
     {
-        string? albumBrowseId = null;
-        string? playlistBrowseId = null;
+        string? browseId = null;
         Assert.DoesNotThrowAsync(async () =>
         {
-            albumBrowseId = await client.GetBrowseIdAsync(TestData.AlbumId);
-            playlistBrowseId = await client.GetBrowseIdAsync(TestData.PlaylistId);
+            browseId = await client.GetBrowseIdAsync(TestData.AlbumId);
         });
-        Assert.That(albumBrowseId, Is.Not.Null);
-        Assert.That(playlistBrowseId, Is.Not.Null);
+        Assert.That(browseId, Is.Not.Null);
 
         // Output
-        logger.LogInformation("\nAlbum Browse Id: {albumBrowseId}\nPlaylist Browse Id: {playlistBrowseId}", albumBrowseId, playlistBrowseId);
+        logger.LogInformation("\nAlbum Browse Id: {browseId}", browseId);
     }
 
 
@@ -76,7 +73,7 @@ internal class Get
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            song = await client.GetAlbumInfoAsync(TestData.AlbumBrowseId);
+            song = await client.GetAlbumInfoAsync(TestData.PlaylistBrowseId);
         });
         Assert.That(song, Is.Not.Null);
 

@@ -73,7 +73,7 @@ internal class Get
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            song = await client.GetAlbumInfoAsync(TestData.PlaylistBrowseId);
+            song = await client.GetAlbumInfoAsync(TestData.AlbumBrowseId);
         });
         Assert.That(song, Is.Not.Null);
 

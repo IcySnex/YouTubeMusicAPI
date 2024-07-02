@@ -240,11 +240,11 @@ public class YouTubeMusicClient
 
 
     /// <summary>
-    /// Gets the browse id for an album or community playlist used for getting information
+    /// Gets the browse id for an album used for getting information
     /// </summary>
-    /// <param name="id">The id of the album or community playlist</param>
+    /// <param name="id">The id of the album</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
-    /// <returns>The browse if of the album or community playlist</returns>
+    /// <returns>The browse id of the album</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
     /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
     /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>

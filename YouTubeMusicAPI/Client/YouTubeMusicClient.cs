@@ -155,118 +155,6 @@ public class YouTubeMusicClient
         return results;
     }
 
-    /// <summary>
-    /// Parses a song info request response into shelf results
-    /// </summary>
-    /// <param name="requestResponse">The request response to parse</param>
-    /// <returns>The song info</returns>
-    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
-    SongInfo ParseSongInfoResponse(
-        JObject requestResponse)
-    {
-        static ShelfItem[] GetArtists(
-            JToken jsonToken)
-        {
-            // Parse artist names from json token
-            string? artistNames = jsonToken.SelectToken("videoDetails.author")?.ToString();
-            string? primaryArtistId = jsonToken.SelectToken("videoDetails.channelId")?.ToString();
-
-            if (artistNames is null || primaryArtistId is null)
-                throw new ArgumentNullException(null, "Failed song info response. One or more values of item is null.");
-
-            // Add artists to result
-            IEnumerable<string> artists = artistNames.Split(',', '&').Where(artistName => !string.IsNullOrWhiteSpace(artistName)).Select(artistName => artistName.Trim());
-
-            List<ShelfItem> result = [];
-            result.Add(new(artists.First(), primaryArtistId, ShelfKind.Artists));
-            foreach (string artist in artists.Skip(1))
-            {
-                result.Add(new(artist, null, ShelfKind.Artists));
-            }
-
-            // Return result
-            return [.. result];
-        }
-
-        static Thumbnail[] GetThumbnails(
-            JToken jsonToken)
-        {
-            // Parse thumbnails container from json token
-            JToken? thumbnails = jsonToken.SelectToken("videoDetails.thumbnail.thumbnails");
-            if (thumbnails is null)
-                return [];
-
-            List<Thumbnail> result = [];
-            foreach (JToken thumbnail in thumbnails)
-            {
-                // Parse info from thumbnails container
-                string? url = thumbnail.SelectToken("url")?.ToString();
-                string? width = thumbnail.SelectToken("width")?.ToString();
-                string? height = thumbnail.SelectToken("height")?.ToString();
-
-                if (url is null)
-                    continue;
-
-                result.Add(new(url, width is null ? 0 : int.Parse(width), height is null ? 0 : int.Parse(height)));
-            }
-
-            // Return result
-            return [.. result];
-        }
-
-
-        logger?.LogInformation($"[YouTubeMusicClient-ParseSongInfoResponse] Getting song info.");
-
-        // Parse info from json token
-        ShelfItem[] artists = GetArtists(requestResponse);
-        Thumbnail[] thumbnails = GetThumbnails(requestResponse);
-
-        string? name = requestResponse.SelectToken("videoDetails.title")?.ToString();
-        string? id = requestResponse.SelectToken("videoDetails.videoId")?.ToString();
-        string? duration = requestResponse.SelectToken("videoDetails.lengthSeconds")?.ToString();
-        string? isOwnerViewing = requestResponse.SelectToken("videoDetails.isOwnerViewing")?.ToString();
-        string? isCrawlable = requestResponse.SelectToken("videoDetails.isCrawlable")?.ToString();
-        string? allowRatings = requestResponse.SelectToken("videoDetails.allowRatings")?.ToString();
-        string? viewCount = requestResponse.SelectToken("videoDetails.viewCount")?.ToString();
-        string? isPrivate = requestResponse.SelectToken("videoDetails.isPrivate")?.ToString();
-        string? isUnpluggedCorpus = requestResponse.SelectToken("videoDetails.isUnpluggedCorpus")?.ToString();
-        string? isLiveContent = requestResponse.SelectToken("videoDetails.isLiveContent")?.ToString();
-
-        string? description = requestResponse.SelectToken("microformat.microformatDataRenderer.description")?.ToString();
-        string? unlisted = requestResponse.SelectToken("microformat.microformatDataRenderer.unlisted")?.ToString();
-        string? familySafe = requestResponse.SelectToken("microformat.microformatDataRenderer.familySafe")?.ToString();
-        string? publishDate = requestResponse.SelectToken("microformat.microformatDataRenderer.publishDate")?.ToString();
-        string? uploadDate = requestResponse.SelectToken("microformat.microformatDataRenderer.uploadDate")?.ToString();
-        JToken[]? tags = requestResponse.SelectToken("microformat.microformatDataRenderer.tags")?.ToArray();
-        JToken[]? availableCountries = requestResponse.SelectToken("microformat.microformatDataRenderer.availableCountries")?.ToArray();
-
-        if (name is null || id is null || duration is null || isOwnerViewing is null || isCrawlable is null || allowRatings is null || viewCount is null || isPrivate is null || isUnpluggedCorpus is null || isLiveContent is null || description is null || unlisted is null || familySafe is null || publishDate is null || uploadDate is null)
-        {
-            logger?.LogError($"[YouTubeMusicClient-ParseSongInfoResponse] Failed song info response. One or more values of item is null.");
-            throw new ArgumentNullException(null, "Failed song info response. One or more values of item is null.");
-        }
-
-        return new(
-            name,
-            id,
-            description,
-            artists,
-            TimeSpan.FromSeconds(int.Parse(duration)),
-            bool.Parse(isOwnerViewing),
-            bool.Parse(isCrawlable),
-            bool.Parse(allowRatings),
-            bool.Parse(isPrivate),
-            bool.Parse(unlisted),
-            bool.Parse(isUnpluggedCorpus),
-            bool.Parse(isLiveContent),
-            bool.Parse(familySafe),
-            int.Parse(viewCount),
-            DateTime.Parse(publishDate),
-            DateTime.Parse(uploadDate),
-            thumbnails,
-            tags is null ? [] : tags.Select(tag => tag.ToString()).ToArray(),
-            availableCountries is null ? [] : availableCountries.Select(country => country.ToString()).ToArray());
-    }
 
 
     /// <summary>
@@ -424,7 +312,43 @@ public class YouTubeMusicClient
         JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, hostLanguage, geographicalLocation, cancellationToken);
 
         // Parse request response
-        SongInfo info = ParseSongInfoResponse(requestResponse);
+        SongInfo info = InfoParser.GetSong(requestResponse);
+        return info;
+    }
+
+
+    /// <summary>
+    /// Gets the information about an album on YouTube Music
+    /// </summary>
+    /// <param name="id">The id of the song</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The song info</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<AlbumInfo> GetAlbumInfoAsync(
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetAlbumInfoAsync] Getting info failed. Id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(id), "Getting info failed. Id parameter is null or whitespace.");
+        }
+
+        (string key, object? value)[] payload =
+        [
+            ("browseId", id)
+        ];
+
+        // Send request
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, hostLanguage, geographicalLocation, cancellationToken);
+
+        // Parse request response
+        AlbumInfo info = InfoParser.GetAlbum(requestResponse);
         return info;
     }
 }

@@ -1,10 +1,10 @@
 ﻿using YouTubeMusicAPI.Models.Shelf;
 using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models;
+namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
-/// Contains information about YouTube Music song
+/// Contains information about a YouTube Music song
 /// </summary>
 /// <param name="name">The name of the song</param>
 /// <param name="id">The id of the song</param>
@@ -80,37 +80,37 @@ public class SongInfo(
     /// Weither the song is crawlable or not
     /// </summary>
     public bool IsCrawlable { get; } = isCrawlable;
-    
+
     /// <summary>
     /// Weither ratings are allowed or not
     /// </summary>
     public bool IsRatingsAllowed { get; } = isRatingsAllowed;
-    
+
     /// <summary>
     /// Weither the song is private or not
     /// </summary>
     public bool IsPrivate { get; } = isPrivate;
-    
+
     /// <summary>
     /// Weither the song is unlisted or not
     /// </summary>
     public bool IsUnlisted { get; } = isUnlisted;
-    
+
     /// <summary>
     /// Weither the song is unplugged corups or not
     /// </summary>
     public bool IsUnpluggedCorpus { get; } = isUnpluggedCorpus;
-    
+
     /// <summary>
     /// Weither the song is live content or not
     /// </summary>
     public bool IsLiveContent { get; } = isLiveContent;
-    
+
     /// <summary>
     /// Weither the song is family friendly or not
     /// </summary>
     public bool IsFamiliyFriendly { get; } = isFamiliyFriendly;
-    
+
     /// <summary>
     /// The views count of the song
     /// </summary>
@@ -120,7 +120,7 @@ public class SongInfo(
     /// The date when the song was published
     /// </summary>
     public DateTime PublishedAt { get; } = publishedAt;
-    
+
     /// <summary>
     /// The date when the song was uploaded
     /// </summary>

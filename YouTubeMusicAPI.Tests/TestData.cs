@@ -25,6 +25,17 @@ internal abstract class TestData
     /// Test playlist id
     /// </summary>
     public const string PlaylistId = "PLuvXOFt0CoEbwWSQj5LmzPhIVKS0SvJ-1";
+    
+
+    /// <summary>
+    /// Test album browse id
+    /// </summary>
+    public const string AlbumBrowseId = "MPREb_6NKg8kkJLf7";
+    
+    /// <summary>
+    /// Test playlist browse id
+    /// </summary>
+    public const string PlaylistBrowseId = "MPREb_ZgERUPC81xU-1";
 
 
     /// <summary>

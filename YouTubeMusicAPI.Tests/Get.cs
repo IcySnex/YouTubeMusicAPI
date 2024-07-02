@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Text;
 using YouTubeMusicAPI.Client;
-using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 
 namespace YouTubeMusicAPI.Tests;
@@ -66,5 +64,24 @@ internal class Get
         // Output
         string readableResults = JsonConvert.SerializeObject(song, Formatting.Indented);
         logger.LogInformation("\nSong Info:\n{readableResults}", readableResults);
+    }
+
+    /// <summary>
+    /// Get song information
+    /// </summary>
+    [Test]
+    public void Album()
+    {
+        AlbumInfo? song = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            song = await client.GetAlbumInfoAsync(TestData.AlbumBrowseId);
+        });
+        Assert.That(song, Is.Not.Null);
+
+        // Output
+        string readableResults = JsonConvert.SerializeObject(song, Formatting.Indented);
+        logger.LogInformation("\nAlbum Info:\n{readableResults}", readableResults);
     }
 }

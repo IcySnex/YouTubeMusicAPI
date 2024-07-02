@@ -17,7 +17,7 @@ internal static class ShelfItemParser
     /// <param name="value">The string to parse</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException">value has an invalid format</exception>
-    static TimeSpan ParseTimeSapn(
+    static TimeSpan ParseTimeSpanExact(
         string value)
     {
         if (TimeSpan.TryParseExact(value, @"m\:ss", null, out TimeSpan timeSpan))
@@ -98,14 +98,16 @@ internal static class ShelfItemParser
             JToken jsonToken)
         {
             // Parse runs from json token
-            JToken[]? runs = (jsonToken.SelectToken("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs")?.ToObject<JToken[]>()) ?? throw new ArgumentNullException(null, "One or more values of item is null");
+            JToken[]? runs = jsonToken.SelectToken("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs")?.ToArray() ?? throw new ArgumentNullException(null, "One or more values of item is null");
 
             List<ShelfItem> result = [];
             for (int i = 0; i < (runs.Length - 3); i += 2)
             {
+                JToken run = runs[i];
+
                 // Parse info from runs
-                string? artist = jsonToken.SelectToken($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{i}].text")?.ToString();
-                string? artistId = jsonToken.SelectToken($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{i}].navigationEndpoint.browseEndpoint.browseId")?.ToString();
+                string? artist = run.SelectToken("text")?.ToString();
+                string? artistId = run.SelectToken($"navigationEndpoint.browseEndpoint.browseId")?.ToString();
 
                 if (artist is null)
                     throw new ArgumentNullException(null, "One or more values of item is null");
@@ -155,7 +157,7 @@ internal static class ShelfItemParser
             id,
             artists,
             new(album, albumId, ShelfKind.Albums),
-            ParseTimeSapn(duration),
+            ParseTimeSpanExact(duration),
             isExplicit == "Explicit",
             plays,
             new(radioPlaylistId, radioVideoId),
@@ -198,7 +200,7 @@ internal static class ShelfItemParser
             name,
             id,
             new(channel, channelId, ShelfKind.Artists),
-            ParseTimeSapn(duration),
+            ParseTimeSpanExact(duration),
             views,
             new(radioPlaylistId, radioVideoId),
             thumbnails);

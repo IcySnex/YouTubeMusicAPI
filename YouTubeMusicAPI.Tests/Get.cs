@@ -118,4 +118,23 @@ internal class Get
         string readableResults = JsonConvert.SerializeObject(communityPlaylist, Formatting.Indented);
         logger.LogInformation("\nPlaylist Info:\n{readableResults}", readableResults);
     }
+
+    /// <summary>
+    /// Get artist information
+    /// </summary>
+    [Test]
+    public void Artist()
+    {
+        ArtistInfo? artist = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
+        });
+        Assert.That(artist, Is.Not.Null);
+
+        // Output
+        string readableResults = JsonConvert.SerializeObject(artist, Formatting.Indented);
+        logger.LogInformation("\nArtist Info:\n{readableResults}", readableResults);
+    }
 }

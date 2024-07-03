@@ -13,6 +13,7 @@ namespace YouTubeMusicAPI.Models.Info;
 /// <param name="songCount">The count of songs in the album</param>
 /// <param name="releaseYear">The release year of the album</param>
 /// <param name="isSingle">Weither the album is a single or not</param>
+/// <param name="isEp">Weither the album is an EP or not</param>
 /// <param name="thumbnails">The thumbnails of the album</param>
 /// <param name="songs">The info of all songs in album</param>
 public class AlbumInfo(
@@ -24,6 +25,7 @@ public class AlbumInfo(
     int songCount,
     int releaseYear,
     bool isSingle,
+    bool isEp,
     Thumbnail[] thumbnails,
     AlbumSongInfo[] songs)
 {
@@ -66,6 +68,11 @@ public class AlbumInfo(
     /// Weither the album is a single or not
     /// </summary>
     public bool IsSingle { get; } = isSingle;
+    
+    /// <summary>
+    /// Weither the album is an EP or not
+    /// </summary>
+    public bool IsEp { get; } = isEp;
 
     /// <summary>
     /// The thumbnails of the album

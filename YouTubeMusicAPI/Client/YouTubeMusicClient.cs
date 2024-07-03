@@ -411,4 +411,39 @@ public class YouTubeMusicClient
         CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylist(requestResponse);
         return info;
     }
+
+    /// <summary>
+    /// Gets the information about a community playlist on YouTube Music
+    /// </summary>
+    /// <param name="browseId">The brwose id of the community playlist</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The community playlist info</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<ArtistInfo> GetArtistInfoAsync(
+        string browseId,
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (string.IsNullOrWhiteSpace(browseId))
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetArtistInfoAsync] Getting info failed. Browse id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(browseId), "Getting info failed. Browse id parameter is null or whitespace.");
+        }
+
+        (string key, object? value)[] payload =
+        [
+            ("browseId", browseId)
+        ];
+
+        // Send request
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, hostLanguage, geographicalLocation, cancellationToken);
+
+        // Parse request response
+        ArtistInfo info = InfoParser.GetArtist(requestResponse);
+        return info;
+    }
 }

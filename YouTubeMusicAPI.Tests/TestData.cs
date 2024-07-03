@@ -31,6 +31,11 @@ internal abstract class TestData
     /// Test album browse id
     /// </summary>
     public const string AlbumBrowseId = "MPREb_6NKg8kkJLf7";
+
+    /// <summary>
+    /// Test playlist browse id
+    /// </summary>
+    public const string PlaylistBrowseId = "VLPLUoI0V1lAvcLY47xdnLWGdf9zyUWKsulx";
     
 
     /// <summary>

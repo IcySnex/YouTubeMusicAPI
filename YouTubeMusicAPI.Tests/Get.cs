@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
+using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 
 namespace YouTubeMusicAPI.Tests;
@@ -30,17 +31,34 @@ internal class Get
     /// Get browse id from an album
     /// </summary>
     [Test]
-    public void BrowseId()
+    public void AlbumBrowseId()
     {
         string? browseId = null;
         Assert.DoesNotThrowAsync(async () =>
         {
-            browseId = await client.GetBrowseIdAsync(TestData.AlbumId);
+            browseId = await client.GetAlbumBrowseIdAsync(TestData.AlbumId);
         });
         Assert.That(browseId, Is.Not.Null);
 
         // Output
-        logger.LogInformation("\nAlbum Browse Id: {browseId}", browseId);
+        logger.LogInformation("\nAlbum Browse Id: {browseId} ", browseId);
+    }
+    
+    /// <summary>
+    /// Get browse id from a playlist
+    /// </summary>
+    [Test]
+    public void CommunityPlaylistBrowseId()
+    {
+        string? browseId = null;
+        Assert.DoesNotThrow(() =>
+        {
+            browseId = client.GetCommunityPlaylistBrowseId(TestData.PlaylistId);
+        });
+        Assert.That(browseId, Is.Not.Null);
+
+        // Output
+        logger.LogInformation("\nPlaylist Browse Id: {browseId} ", browseId);
     }
 
 
@@ -64,21 +82,40 @@ internal class Get
     }
 
     /// <summary>
-    /// Get song information
+    /// Get album information
     /// </summary>
     [Test]
     public void Album()
     {
-        AlbumInfo? song = null;
+        AlbumInfo? album = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            song = await client.GetAlbumInfoAsync(TestData.AlbumBrowseId);
+            album = await client.GetAlbumInfoAsync(TestData.AlbumBrowseId);
         });
-        Assert.That(song, Is.Not.Null);
+        Assert.That(album, Is.Not.Null);
 
         // Output
-        string readableResults = JsonConvert.SerializeObject(song, Formatting.Indented);
+        string readableResults = JsonConvert.SerializeObject(album, Formatting.Indented);
         logger.LogInformation("\nAlbum Info:\n{readableResults}", readableResults);
+    }
+
+    /// <summary>
+    /// Get community playlist information
+    /// </summary>
+    [Test]
+    public void CommunityPlaylist()
+    {
+        CommunityPlaylistInfo? communityPlaylist = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            communityPlaylist = await client.GetCommunityPlaylistInfoAsync(TestData.PlaylistBrowseId);
+        });
+        Assert.That(communityPlaylist, Is.Not.Null);
+
+        // Output
+        string readableResults = JsonConvert.SerializeObject(communityPlaylist, Formatting.Indented);
+        logger.LogInformation("\nPlaylist Info:\n{readableResults}", readableResults);
     }
 }

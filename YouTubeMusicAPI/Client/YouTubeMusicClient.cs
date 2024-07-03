@@ -250,16 +250,19 @@ public class YouTubeMusicClient
     /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
     /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
-    public async Task<string> GetBrowseIdAsync(
+    public async Task<string> GetAlbumBrowseIdAsync(
         string id,
         CancellationToken cancellationToken = default)
     {
         // Prepare request
         if (string.IsNullOrWhiteSpace(id))
         {
-            logger?.LogError($"[YouTubeMusicClient-GetBrowseIdAsync] Getting browse id failed. Id parameter is null or whitespace.");
-            throw new ArgumentNullException(nameof(id), "Getting browse id failed. Id parameter is null or whitespace.");
+            logger?.LogError($"[YouTubeMusicClient-GetAlbumBrowseIdAsync] Getting album browse id failed. Id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(id), "Getting album browse id failed. Id parameter is null or whitespace.");
         }
+
+        if (id.StartsWith("MPRE"))
+            return id;
 
         (string key, string? value)[] parameters =
         [
@@ -273,11 +276,33 @@ public class YouTubeMusicClient
         Match match = Regex.Match(Regex.Unescape(requestResponse), "\"MPRE.+?\"");
         if (!match.Success)
         {
-            logger?.LogError($"[YouTubeMusicClient-GetBrowseIdAsync] Getting browse id failed. Found no match.");
-            throw new Exception("Getting browse id failed. Found no match.");
+            logger?.LogError($"[YouTubeMusicClient-GetAlbumBrowseIdAsync] Getting album browse id failed. Found no match.");
+            throw new Exception("Getting album browse id failed. Found no match.");
         }
 
         return match.Value.Trim('"');
+    }
+
+
+    /// <summary>
+    /// Gets the browse id for an playlist used for getting information
+    /// </summary>
+    /// <param name="id">The id of the playlist</param>
+    /// <returns>The browse id of the playlist</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    public string GetCommunityPlaylistBrowseId(
+        string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetCommunityPlaylistBrowseId] Getting community playlist browse id failed. Id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(id), "Getting community playlist browse id failed. Id parameter is null or whitespace.");
+        }
+
+        if (id.StartsWith("VL"))
+            return id;
+
+        return $"Vl{id}";
     }
 
 
@@ -320,28 +345,28 @@ public class YouTubeMusicClient
     /// <summary>
     /// Gets the information about an album on YouTube Music
     /// </summary>
-    /// <param name="id">The id of the song</param>
+    /// <param name="browseId">The brwose id of the album</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
-    /// <returns>The song info</returns>
+    /// <returns>The album info</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
     /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
     /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
     /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
     public async Task<AlbumInfo> GetAlbumInfoAsync(
-        string id,
+        string browseId,
         CancellationToken cancellationToken = default)
     {
         // Prepare request
-        if (string.IsNullOrWhiteSpace(id))
+        if (string.IsNullOrWhiteSpace(browseId))
         {
-            logger?.LogError($"[YouTubeMusicClient-GetAlbumInfoAsync] Getting info failed. Id parameter is null or whitespace.");
-            throw new ArgumentNullException(nameof(id), "Getting info failed. Id parameter is null or whitespace.");
+            logger?.LogError($"[YouTubeMusicClient-GetAlbumInfoAsync] Getting info failed. Browse id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(browseId), "Getting info failed. Browse id parameter is null or whitespace.");
         }
 
         (string key, object? value)[] payload =
         [
-            ("browseId", id)
+            ("browseId", browseId)
         ];
 
         // Send request
@@ -349,6 +374,41 @@ public class YouTubeMusicClient
 
         // Parse request response
         AlbumInfo info = InfoParser.GetAlbum(requestResponse);
+        return info;
+    }
+
+    /// <summary>
+    /// Gets the information about a community playlist on YouTube Music
+    /// </summary>
+    /// <param name="browseId">The brwose id of the community playlist</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The community playlist info</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<CommunityPlaylistInfo> GetCommunityPlaylistInfoAsync(
+        string browseId,
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (string.IsNullOrWhiteSpace(browseId))
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetCommunityPlaylistInfoAsync] Getting info failed. Browse id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(browseId), "Getting info failed. Browse id parameter is null or whitespace.");
+        }
+
+        (string key, object? value)[] payload =
+        [
+            ("browseId", browseId)
+        ];
+
+        // Send request
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, hostLanguage, geographicalLocation, cancellationToken);
+
+        // Parse request response
+        CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylist(requestResponse);
         return info;
     }
 }

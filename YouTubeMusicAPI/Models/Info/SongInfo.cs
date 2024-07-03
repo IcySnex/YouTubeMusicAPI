@@ -1,5 +1,4 @@
 ﻿using YouTubeMusicAPI.Models.Shelf;
-using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Models.Info;
 
@@ -11,8 +10,6 @@ namespace YouTubeMusicAPI.Models.Info;
 /// <param name="description">The description of the song</param>
 /// <param name="artists">The artist of the song</param>
 /// <param name="duration">The duration of the song</param>
-/// <param name="isOwnerViewing">Whether the owner is viewing or not</param>
-/// <param name="isCrawlable">Whether the song is crawlable or not</param>
 /// <param name="isRatingsAllowed">Whether ratings are allowed or not</param>
 /// <param name="isPrivate">Whether the song is private or not</param>
 /// <param name="isUnlisted">Whether the song is unlisted or not</param>
@@ -31,8 +28,6 @@ public class SongInfo(
     string description,
     ShelfItem[] artists,
     TimeSpan duration,
-    bool isOwnerViewing,
-    bool isCrawlable,
     bool isRatingsAllowed,
     bool isPrivate,
     bool isUnlisted,
@@ -70,16 +65,6 @@ public class SongInfo(
     /// The duration of the song
     /// </summary>
     public TimeSpan Duration { get; } = duration;
-
-    /// <summary>
-    /// Weither the owner is viewing or not
-    /// </summary>
-    public bool IsOwnerViewing { get; } = isOwnerViewing;
-
-    /// <summary>
-    /// Weither the song is crawlable or not
-    /// </summary>
-    public bool IsCrawlable { get; } = isCrawlable;
 
     /// <summary>
     /// Weither ratings are allowed or not

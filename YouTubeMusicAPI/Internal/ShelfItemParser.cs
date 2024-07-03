@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.Globalization;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Shelf;
 using YouTubeMusicAPI.Types;
@@ -41,8 +40,8 @@ internal static class ShelfItemParser
         JToken jsonToken)
     {
         // Parse info from json token
-        ShelfItem[] artists = Parser.GetArtists(jsonToken, "flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 3);
-        Thumbnail[] thumbnails = Parser.GetThumbnails(jsonToken);
+        ShelfItem[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 3);
+        Thumbnail[] thumbnails = jsonToken.SelectThumbnails();
 
         string? name = jsonToken.SelectToken("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
         string? id = jsonToken.SelectToken("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId")?.ToString();
@@ -68,7 +67,7 @@ internal static class ShelfItemParser
             id,
             artists,
             new(album, albumId, ShelfKind.Albums),
-            Parser.TimeSpanExact(duration),
+            duration.ToTimeSpan(),
             isExplicit == "Explicit",
             plays,
             new(radioPlaylistId, radioVideoId),
@@ -89,7 +88,7 @@ internal static class ShelfItemParser
         int runsIndex = runs.Length == 7 ? 2 : 0;
 
         // Parse info from json token
-        Thumbnail[] thumbnails = Parser.GetThumbnails(jsonToken);
+        Thumbnail[] thumbnails = jsonToken.SelectThumbnails();
 
         string? name = jsonToken.SelectToken("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
         string? id = jsonToken.SelectToken("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId")?.ToString();
@@ -111,7 +110,7 @@ internal static class ShelfItemParser
             name,
             id,
             new(channel, channelId, ShelfKind.Artists),
-            Parser.TimeSpanExact(duration),
+            duration.ToTimeSpanLong(),
             views,
             new(radioPlaylistId, radioVideoId),
             thumbnails);
@@ -127,8 +126,8 @@ internal static class ShelfItemParser
         JToken jsonToken)
     {
         // Parse info from json token
-        ShelfItem[] artists = Parser.GetArtists(jsonToken, "flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 2, 1);
-        Thumbnail[] thumbnails = Parser.GetThumbnails(jsonToken);
+        ShelfItem[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 2, 1);
+        Thumbnail[] thumbnails = jsonToken.SelectThumbnails();
 
         string? name = jsonToken.SelectToken("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
         string? id = jsonToken.SelectToken("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId")?.ToString();
@@ -167,7 +166,7 @@ internal static class ShelfItemParser
         int runsIndex = runs.Length == 5 ? 2 : 0;
 
         // Parse info from json token
-        Thumbnail[] thumbnails = Parser.GetThumbnails(jsonToken);
+        Thumbnail[] thumbnails = jsonToken.SelectThumbnails();
 
         string? name = jsonToken.SelectToken("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
         string? id = jsonToken.SelectToken("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId")?.ToString();
@@ -202,7 +201,7 @@ internal static class ShelfItemParser
         JToken jsonToken)
     {
         // Parse info from json token
-        Thumbnail[] thumbnails = Parser.GetThumbnails(jsonToken);
+        Thumbnail[] thumbnails = jsonToken.SelectThumbnails();
 
         string? name = jsonToken.SelectToken("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
         string? id = jsonToken.SelectToken("navigationEndpoint.browseEndpoint.browseId")?.ToString();
@@ -238,7 +237,7 @@ internal static class ShelfItemParser
         int runsIndex = runs.Length == 3 ? 2 : 0;
 
         // Parse info from json token
-        Thumbnail[] thumbnails = Parser.GetThumbnails(jsonToken);
+        Thumbnail[] thumbnails = jsonToken.SelectThumbnails();
 
         string? name = jsonToken.SelectToken("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
         string? id = jsonToken.SelectToken("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId")?.ToString();
@@ -271,7 +270,7 @@ internal static class ShelfItemParser
         int runsIndex = runs.Length == 5 ? 2 : 0;
 
         // Parse info from json token
-        Thumbnail[] thumbnails = Parser.GetThumbnails(jsonToken);
+        Thumbnail[] thumbnails = jsonToken.SelectThumbnails();
 
         string? name = jsonToken.SelectToken("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
         string? id = jsonToken.SelectToken("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId")?.ToString();
@@ -305,7 +304,7 @@ internal static class ShelfItemParser
         JToken jsonToken)
     {
         // Parse info from json token
-        Thumbnail[] thumbnails = Parser.GetThumbnails(jsonToken);
+        Thumbnail[] thumbnails = jsonToken.SelectThumbnails();
 
         string? name = jsonToken.SelectToken("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
         string? id = jsonToken.SelectToken("navigationEndpoint.browseEndpoint.browseId")?.ToString();

@@ -21,9 +21,9 @@ internal static class InfoParser
     static TimeSpan ParseTimeSpan(
         string value)
     {
-        Regex hourPattern = new(@"(\d+)\s*hour");
-        Regex minutePattern = new(@"(\d+)\s*minute");
-        Regex secondPattern = new(@"(\d+)\s*second");
+        Regex hourPattern = new(@"(\d+)\s*\+?\s*hour", RegexOptions.IgnoreCase);
+        Regex minutePattern = new(@"(\d+)\s*\+?\s*minute", RegexOptions.IgnoreCase);
+        Regex secondPattern = new(@"(\d+)\s*\+?\s*second", RegexOptions.IgnoreCase);
 
         Match hourMatch = hourPattern.Match(value);
         Match minuteMatch = minutePattern.Match(value);
@@ -55,6 +55,33 @@ internal static class InfoParser
             return timeSpan;
 
         throw new ArgumentException("value has an invalid format");
+    }
+
+
+    static Thumbnail[] GetThumbnails(
+        JToken jsonToken)
+    {
+        // Parse thumbnails container from json token
+        JToken? thumbnails = jsonToken.SelectToken("thumbnail.musicThumbnailRenderer.thumbnail.thumbnails");
+        if (thumbnails is null)
+            return [];
+
+        List<Thumbnail> result = [];
+        foreach (JToken thumbnail in thumbnails)
+        {
+            // Parse info from thumbnails container
+            string? url = thumbnail.SelectToken("url")?.ToString();
+            string? width = thumbnail.SelectToken("width")?.ToString();
+            string? height = thumbnail.SelectToken("height")?.ToString();
+
+            if (url is null)
+                continue;
+
+            result.Add(new(url, width is null ? 0 : int.Parse(width), height is null ? 0 : int.Parse(height)));
+        }
+
+        // Return result
+        return [.. result];
     }
 
 
@@ -101,7 +128,7 @@ internal static class InfoParser
             string? primaryArtistId = jsonToken.SelectToken("videoDetails.channelId")?.ToString();
 
             if (artistNames is null || primaryArtistId is null)
-                throw new ArgumentNullException(null, "Failed song info response. One or more values of item is null.");
+                throw new ArgumentNullException(null, "One or more values of item is null.");
 
             // Add artists to result
             IEnumerable<string> artists = artistNames.Split(',', '&').Where(artistName => !string.IsNullOrWhiteSpace(artistName)).Select(artistName => artistName.Trim());
@@ -142,7 +169,7 @@ internal static class InfoParser
         JToken[]? availableCountries = jsonToken.SelectToken("microformat.microformatDataRenderer.availableCountries")?.ToArray();
 
         if (name is null || id is null || duration is null || isOwnerViewing is null || isCrawlable is null || allowRatings is null || viewCount is null || isPrivate is null || isUnpluggedCorpus is null || isLiveContent is null || description is null || unlisted is null || familySafe is null || publishDate is null || uploadDate is null)
-            throw new ArgumentNullException(null, "Failed song info response. One or more values of item is null.");
+            throw new ArgumentNullException(null, "One or more values of item is null.");
 
         return new(
             name,
@@ -170,37 +197,11 @@ internal static class InfoParser
     /// Parses album info data from the json token
     /// </summary>
     /// <param name="jsonToken">The json token containing the item data</param>
-    /// <returns>The song info</returns>
+    /// <returns>The album info</returns>
     /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
     public static AlbumInfo GetAlbum(
         JObject jsonToken)
-    {
-        static Thumbnail[] GetThumbnails(
-            JToken jsonToken)
-        {
-            // Parse thumbnails container from json token
-            JToken? thumbnails = jsonToken.SelectToken("thumbnail.musicThumbnailRenderer.thumbnail.thumbnails");
-            if (thumbnails is null)
-                return [];
-
-            List<Thumbnail> result = [];
-            foreach (JToken thumbnail in thumbnails)
-            {
-                // Parse info from thumbnails container
-                string? url = thumbnail.SelectToken("url")?.ToString();
-                string? width = thumbnail.SelectToken("width")?.ToString();
-                string? height = thumbnail.SelectToken("height")?.ToString();
-
-                if (url is null)
-                    continue;
-
-                result.Add(new(url, width is null ? 0 : int.Parse(width), height is null ? 0 : int.Parse(height)));
-            }
-
-            // Return result
-            return [.. result];
-        }
-        
+    {        
         static ShelfItem[] GetArtists(
             JToken jsonToken)
         {
@@ -210,7 +211,7 @@ internal static class InfoParser
             List<ShelfItem> result = [];
             foreach (JToken run in runs)
             {
-                // Check if the current token has the artist information
+                // Parse info from artist container
                 string? artist = run.SelectToken("text")?.ToString()?.Trim();
                 string? artistId = run.SelectToken("navigationEndpoint.browseEndpoint.browseId")?.ToString();
 
@@ -267,7 +268,7 @@ internal static class InfoParser
         AlbumSongInfo[] songs = GetSongs(jsonToken);
 
         string? name = token.SelectToken("title.runs[0].text")?.ToString();
-        string? id = "";//token.SelectToken("title.runs[0].text")?.ToString();
+        string? id = token.SelectToken("buttons[1].musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.playlistId")?.ToString();
         JToken[]? description = token.SelectToken("description.musicDescriptionShelfRenderer.description.runs")?.ToArray();
         string? isSingle = token.SelectToken("subtitle.runs[0].text")?.ToString();
         string? year = token.SelectToken("subtitle.runs[2].text")?.ToString();
@@ -275,7 +276,7 @@ internal static class InfoParser
         string? totalDuration = token.SelectToken("secondSubtitle.runs[2].text")?.ToString();
 
         if (name is null || id is null || isSingle is null || year is null || songCount is null || totalDuration is null)
-            throw new ArgumentNullException(null, "Failed song info response. One or more values of item is null.");
+            throw new ArgumentNullException(null, "One or more values of item is null.");
 
         return new AlbumInfo(
             name,
@@ -286,6 +287,136 @@ internal static class InfoParser
             int.Parse(songCount.Split(' ')[0]),
             int.Parse(year),
             isSingle == "Single",
+            thumbnails,
+            songs);
+    }
+
+    /// <summary>
+    /// Parses community playlist info data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the item data</param>
+    /// <returns>The community playlist info</returns>
+    /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
+    public static CommunityPlaylistInfo GetCommunityPlaylist(
+        JObject jsonToken)
+    {
+        static CommunityPlaylistSongInfo[] GetSongs(
+            JToken jsonToken)
+        {
+            static Thumbnail[] GetThumbnails(
+                JToken jsonToken)
+            {
+                // Parse thumbnails container from json token
+                JToken? thumbnails = jsonToken.SelectToken("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails");
+                if (thumbnails is null)
+                    return [];
+
+                List<Thumbnail> result = [];
+                foreach (JToken thumbnail in thumbnails)
+                {
+                    // Parse info from thumbnails container
+                    string? url = thumbnail.SelectToken("url")?.ToString();
+                    string? width = thumbnail.SelectToken("width")?.ToString();
+                    string? height = thumbnail.SelectToken("height")?.ToString();
+
+                    if (url is null)
+                        continue;
+
+                    result.Add(new(url, width is null ? 0 : int.Parse(width), height is null ? 0 : int.Parse(height)));
+                }
+
+                // Return result
+                return [.. result];
+            }
+
+            static ShelfItem[] GetArtists(
+                JToken jsonToken)
+            {
+                // Parse runs from json token
+                JToken[] runs = jsonToken.SelectToken("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs")?.ToArray() ?? throw new ArgumentNullException(null, "One or more values of item is null");
+
+                List<ShelfItem> result = [];
+                foreach (JToken run in runs)
+                {
+                    // Parse info from artist container
+                    string? artist = run.SelectToken("text")?.ToString()?.Trim();
+                    string? artistId = run.SelectToken("navigationEndpoint.browseEndpoint.browseId")?.ToString();
+
+                    // Skip tokens that are just separators (e.g., ", " or " & ")
+                    if (artist is null || artist == "," || artist == "&")
+                        continue;
+
+                    // Add the artist to the result list
+                    result.Add(new(artist, artistId, ShelfKind.Artists));
+                }
+
+                // Return result
+                return [.. result];
+            }
+
+
+            // Parse runs from json token
+            JToken[] contents = jsonToken.SelectToken("contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer.contents[0].musicPlaylistShelfRenderer.contents")?.ToArray() ?? throw new ArgumentNullException(null, "One or more values of item is null");
+
+            List<CommunityPlaylistSongInfo> result = [];
+            foreach (JToken content in contents)
+            {
+                ShelfItem[] artists = GetArtists(content);
+                Thumbnail[] thumbnails = GetThumbnails(content);
+
+                string? name = content.SelectToken("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
+                string? id = content.SelectToken("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId")?.ToString();
+                string? album = content.SelectToken("musicResponsiveListItemRenderer.flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text")?.ToString();
+                string? albumId = content.SelectToken("musicResponsiveListItemRenderer.flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.browseEndpoint.browseId")?.ToString();
+                string? duration = content.SelectToken("musicResponsiveListItemRenderer.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text")?.ToString();
+                JToken[]? isExplicit = content.SelectToken("musicResponsiveListItemRenderer.badges")?.ToArray();
+
+                if (name is null || duration is null)
+                    throw new ArgumentNullException(null, "One or more values of item is null");
+
+                result.Add(new(
+                    name,
+                    id,
+                    artists,
+                    album is null ? null : new(album, albumId, ShelfKind.Albums),
+                    isExplicit?.Any(badge => badge.SelectToken("musicInlineBadgeRenderer.icon.iconType")?.ToString() == "MUSIC_EXPLICIT_BADGE") ?? false,
+                    ParseTimeSpanExact(duration),
+                    thumbnails));
+            }
+
+            // Return result
+            return [.. result];
+        }
+
+
+        JToken token = jsonToken.SelectToken("contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicResponsiveHeaderRenderer") ?? throw new ArgumentNullException(null, "One or more values of item is null");
+
+        // Parse info from json token
+        Thumbnail[] thumbnails = GetThumbnails(token);
+        CommunityPlaylistSongInfo[] songs = GetSongs(jsonToken);
+
+        string? name = token.SelectToken("title.runs[0].text")?.ToString();
+        string? id = token.SelectToken("buttons[1].musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.playlistId")?.ToString();
+        string? creator = token.SelectToken("straplineTextOne.runs[0].text")?.ToString()?.Trim();
+        string? creatorId = token.SelectToken("straplineTextOne.runs[0].navigationEndpoint.browseEndpoint.browseId")?.ToString();
+        JToken[]? description = token.SelectToken("description.musicDescriptionShelfRenderer.description.runs")?.ToArray();
+        string? year = token.SelectToken("subtitle.runs[2].text")?.ToString();
+        string? viewsInfo = token.SelectToken("secondSubtitle.runs[0].text")?.ToString();
+        string? songCount = token.SelectToken("secondSubtitle.runs[2].text")?.ToString();
+        string? totalDuration = token.SelectToken("secondSubtitle.runs[4].text")?.ToString();
+
+        if (name is null || id is null || creator is null || year is null || viewsInfo is null || songCount is null || totalDuration is null)
+            throw new ArgumentNullException(null, "One or more values of item is null.");
+
+        return new CommunityPlaylistInfo(
+            name,
+            id,
+            description is not null ? string.Join("", description.Select(run => run.SelectToken("text")?.ToString())) : null,
+            new(creator, creatorId, ShelfKind.Artists),
+            viewsInfo,
+            ParseTimeSpan(totalDuration),
+            int.Parse(songCount.Split(' ')[0]),
+            int.Parse(year),
             thumbnails,
             songs);
     }

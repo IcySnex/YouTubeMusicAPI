@@ -37,6 +37,11 @@ internal abstract class TestData
     /// </summary>
     public const string PlaylistBrowseId = "VLPLUoI0V1lAvcLY47xdnLWGdf9zyUWKsulx";
     
+    /// <summary>
+    /// Test artist browse id
+    /// </summary>
+    public const string ArtistBrowseId = "UCZQd1fU9v7-jFOmOojsHXNw";
+    
 
     /// <summary>
     /// Test host language for requests

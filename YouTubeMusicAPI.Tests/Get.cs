@@ -66,13 +66,13 @@ internal class Get
     /// Get song information
     /// </summary>
     [Test]
-    public void Song()
+    public void SongVideo()
     {
-        SongInfo? song = null;
+        SongVideoInfo? song = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            song = await client.GetSongInfoAsync(TestData.SongId);
+            song = await client.GetSongVideoInfoAsync(TestData.SongVideoId);
         });
         Assert.That(song, Is.Not.Null);
 

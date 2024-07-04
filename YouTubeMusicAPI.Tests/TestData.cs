@@ -12,9 +12,9 @@ internal abstract class TestData
 
 
     /// <summary>
-    /// Test song id
+    /// Test song or video id
     /// </summary>
-    public const string SongId = "zAQo_IROFRw";
+    public const string SongVideoId = "GwkS-VMfytM";
     
     /// <summary>
     /// Test album id

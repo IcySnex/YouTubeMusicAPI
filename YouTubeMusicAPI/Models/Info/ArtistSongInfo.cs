@@ -38,7 +38,7 @@ public class ArtistSongInfo(
     /// The album of this song of an artist
     /// </summary>
     public ShelfItem Album { get; } = album;
-    
+
     /// <summary>
     /// The plays info of this song of an artist
     /// </summary>

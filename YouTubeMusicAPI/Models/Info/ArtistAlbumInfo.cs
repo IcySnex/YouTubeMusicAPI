@@ -38,12 +38,12 @@ public class ArtistAlbumInfo(
     /// Weither the album of an artist is a single or not
     /// </summary>
     public bool IsSingle { get; } = isSingle;
-    
+
     /// <summary>
     /// Weither the album of an artist is an EP or not
     /// </summary>
     public bool IsEp { get; } = isEp;
-    
+
     /// <summary>
     /// Weither the album of an artist is explicit or not
     /// </summary>

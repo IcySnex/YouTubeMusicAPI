@@ -88,7 +88,7 @@ internal static class Selectors
         string namePath,
         string idPath,
         ShelfKind kind) =>
-        value.SelectObjectOptional<string>(namePath) is string name ? new (
+        value.SelectObjectOptional<string>(namePath) is string name ? new(
             name,
             value.SelectObjectOptional<string>(idPath),
             kind) : null;
@@ -177,7 +177,7 @@ internal static class Selectors
     {
         // Parse container from json token
         JToken[] runs = value.SelectObject<JToken[]>(path);
-        
+
         List<ShelfItem> result = [];
         for (int i = startIndex; i < runs.Length - trimBy; i++)
         {

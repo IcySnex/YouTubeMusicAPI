@@ -9,12 +9,12 @@ internal abstract class Endpoints
     /// The base url to the YouTube Music internal API
     /// </summary>
     public const string BaseUrl = "https://music.youtube.com/youtubei/v1";
-    
+
     /// <summary>
     /// The web url to YouTube Music
     /// </summary>
     public const string WebUrl = "https://music.youtube.com";
-    
+
     /// <summary>
     /// The url to consent to Googles cookies
     /// </summary>
@@ -30,7 +30,7 @@ internal abstract class Endpoints
     /// The path the player endpoint
     /// </summary>
     public const string Player = "/player";
-    
+
     /// <summary>
     /// The path the browse endpoint
     /// </summary>

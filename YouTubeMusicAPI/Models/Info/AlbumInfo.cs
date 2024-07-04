@@ -58,7 +58,7 @@ public class AlbumInfo(
     /// The count of songs in the album
     /// </summary>
     public int SongCount { get; } = songCount;
-    
+
     /// <summary>
     /// The release year of the album
     /// </summary>
@@ -68,7 +68,7 @@ public class AlbumInfo(
     /// Weither the album is a single or not
     /// </summary>
     public bool IsSingle { get; } = isSingle;
-    
+
     /// <summary>
     /// Weither the album is an EP or not
     /// </summary>

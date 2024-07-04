@@ -3,26 +3,25 @@
 namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
-/// Contains information about a YouTube Music song
+/// Contains information about a YouTube Music song or video
 /// </summary>
-/// <param name="name">The name of the song</param>
-/// <param name="id">The id of the song</param>
-/// <param name="description">The description of the song</param>
-/// <param name="artists">The artist of the song</param>
-/// <param name="duration">The duration of the song</param>
+/// <param name="name">The name of the song or video</param>
+/// <param name="id">The id of the song or video</param>
+/// <param name="description">The description of the song or video</param>
+/// <param name="artists">The artist of the song or video</param>
+/// <param name="duration">The duration of the song or video</param>
 /// <param name="isRatingsAllowed">Whether ratings are allowed or not</param>
-/// <param name="isPrivate">Whether the song is private or not</param>
-/// <param name="isUnlisted">Whether the song is unlisted or not</param>
-/// <param name="isUnpluggedCorpus">Whether the song is unplugged corpus or not</param>
-/// <param name="isLiveContent">Whether the song is live content or not</param>
-/// <param name="isFamiliyFriendly">Whether the song is family friendly or not</param>
-/// <param name="viewsCount">The views count of the song</param>
-/// <param name="publishedAt">The date when the song was published</param>
-/// <param name="uploadedAt">The date when the song was uploaded</param>
-/// <param name="thumbnails">The thumbnails of the song</param>
-/// <param name="tags">The tags of the song</param>
-/// <param name="availableCountries">The available countries for the song</param>
-public class SongInfo(
+/// <param name="isPrivate">Whether the song or video is private or not</param>
+/// <param name="isUnlisted">Whether the song or video is unlisted or not</param>
+/// <param name="isUnpluggedCorpus">Whether the song or video is unplugged corpus or not</param>
+/// <param name="isLiveContent">Whether the song or video is live content or not</param>
+/// <param name="isFamiliyFriendly">Whether the song or video is family friendly or not</param>
+/// <param name="viewsCount">The views count of the song or video</param>
+/// <param name="publishedAt">The date when the song or video was published</param>
+/// <param name="uploadedAt">The date when the song or video was uploaded</param>
+/// <param name="thumbnails">The thumbnails of the song or video</param>
+/// <param name="tags">The tags of the song or video</param>
+public class SongVideoInfo(
     string name,
     string id,
     string description,
@@ -38,8 +37,7 @@ public class SongInfo(
     DateTime publishedAt,
     DateTime uploadedAt,
     Thumbnail[] thumbnails,
-    string[] tags,
-    string[] availableCountries)
+    string[] tags)
 {
     /// <summary>
     /// The name of the song
@@ -120,9 +118,4 @@ public class SongInfo(
     /// The tags of the song
     /// </summary>
     public string[] Tags { get; } = tags;
-
-    /// <summary>
-    /// The available countries for the song
-    /// </summary>
-    public string[] AvailableCountries { get; } = availableCountries;
 }

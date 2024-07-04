@@ -284,7 +284,6 @@ public class YouTubeMusicClient
         return match.Value.Trim('"');
     }
 
-
     /// <summary>
     /// Gets the browse id for an playlist used for getting information
     /// </summary>
@@ -308,24 +307,24 @@ public class YouTubeMusicClient
 
 
     /// <summary>
-    /// Gets the information about a song on YouTube Music
+    /// Gets the information about a song or video on YouTube Music
     /// </summary>
-    /// <param name="id">The id of the song</param>
+    /// <param name="id">The id of the song or video</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
-    /// <returns>The song info</returns>
+    /// <returns>The song or video info</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
     /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
     /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
     /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
-    public async Task<SongInfo> GetSongInfoAsync(
+    public async Task<SongVideoInfo> GetSongVideoInfoAsync(
         string id,
         CancellationToken cancellationToken = default)
     {
         // Prepare request
         if (string.IsNullOrWhiteSpace(id))
         {
-            logger?.LogError($"[YouTubeMusicClient-GetSongInfoAsync] Getting info failed. Id parameter is null or whitespace.");
+            logger?.LogError($"[YouTubeMusicClient-GetSongVideoInfoAsync] Getting info failed. Id parameter is null or whitespace.");
             throw new ArgumentNullException(nameof(id), "Getting info failed. Id parameter is null or whitespace.");
         }
 
@@ -338,7 +337,7 @@ public class YouTubeMusicClient
         JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, hostLanguage, geographicalLocation, cancellationToken);
 
         // Parse request response
-        SongInfo info = InfoParser.GetSong(requestResponse);
+        SongVideoInfo info = InfoParser.GetSongVideo(requestResponse);
         return info;
     }
 

@@ -10,12 +10,12 @@ namespace YouTubeMusicAPI.Internal;
 internal static class InfoParser
 {
     /// <summary>
-    /// Parses song info data from the json token
+    /// Parses song or video info data from the json token
     /// </summary>
     /// <param name="jsonToken">The json token containing the item data</param>
-    /// <returns>The song info</returns>
+    /// <returns>The song or video info</returns>
     /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
-    public static SongInfo GetSong(
+    public static SongVideoInfo GetSongVideo(
         JObject jsonToken)
     {
         return new(
@@ -34,8 +34,7 @@ internal static class InfoParser
             publishedAt: jsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.publishDate"),
             uploadedAt: jsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.uploadDate"),
             thumbnails: jsonToken.SelectThumbnails("videoDetails.thumbnail.thumbnails"),
-            tags: jsonToken.SelectObject<string[]>("microformat.microformatDataRenderer.tags"),
-            availableCountries: jsonToken.SelectObject<string[]>("microformat.microformatDataRenderer.availableCountries"));
+            tags: jsonToken.SelectObject<string[]>("microformat.microformatDataRenderer.tags"));
     }
 
     /// <summary>

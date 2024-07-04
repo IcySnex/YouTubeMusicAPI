@@ -131,7 +131,7 @@ public class YouTubeMusicClient
                     continue;
 
                 // Parse info from shelf item
-                IShelfItem item = kind switch
+                IShelfItem? item = kind switch
                 {
                     ShelfKind.Songs => ShelfItemParser.GetSong(itemObject),
                     ShelfKind.Videos => ShelfItemParser.GetVideo(itemObject),
@@ -141,10 +141,11 @@ public class YouTubeMusicClient
                     ShelfKind.Podcasts => ShelfItemParser.GetPodcast(itemObject),
                     ShelfKind.Episodes => ShelfItemParser.GetEpisode(itemObject),
                     ShelfKind.Profiles => ShelfItemParser.GetProfile(itemObject),
-                    _ => ShelfItemParser.GetUnknown(itemObject),
+                    _ => null
 
                 };
-                items.Add(item);
+                if (item is not null)
+                    items.Add(item);
             }
 
             // Create shelf

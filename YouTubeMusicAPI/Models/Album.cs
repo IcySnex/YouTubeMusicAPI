@@ -9,7 +9,7 @@ namespace YouTubeMusicAPI.Models;
 /// <param name="name">The name of this album</param>
 /// <param name="id">The id of this album</param>
 /// <param name="artists">The artists of this album</param>
-/// <param name="year">The year of this album</param>
+/// <param name="releaseYear">The release year of this album</param>
 /// <param name="isSingle">Weither this album is a single or not</param>
 /// <param name="radio">The radio channel of this album</param>
 /// <param name="thumbnails">The thumbnails of this album</param>
@@ -17,7 +17,7 @@ public class Album(
     string name,
     string id,
     ShelfItem[] artists,
-    int year,
+    int releaseYear,
     bool isSingle,
     Radio radio,
     Thumbnail[] thumbnails) : IShelfItem
@@ -48,9 +48,9 @@ public class Album(
     public ShelfItem[] Artists { get; } = artists;
 
     /// <summary>
-    /// The year of this album
+    /// The release year of this album
     /// </summary>
-    public int Year { get; } = year;
+    public int ReleaseYear { get; } = releaseYear;
 
     /// <summary>
     /// Weither this album is a single or not

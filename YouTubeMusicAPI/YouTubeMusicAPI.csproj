@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>1.1.1</Version>
-		<AssemblyVersion>1.1.1</AssemblyVersion>
-		<FileVersion>1.1.1</FileVersion>
+		<Version>1.1.2</Version>
+		<AssemblyVersion>1.1.2</AssemblyVersion>
+		<FileVersion>1.1.2</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,7 +24,7 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>- Fixed typo which caused YouTubeMusicClient-GetCommunityPlaylistBrowseId to return invalid browse id</PackageReleaseNotes>
+		<PackageReleaseNotes>- Fixed error when getting playlist info without view info</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

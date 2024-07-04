@@ -90,7 +90,7 @@ public class YouTubeMusicClient
         List<Shelf> results = [];
 
         // Get shelves
-        logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Getting shelves.");
+        logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Getting shelves from search response.");
         IEnumerable<JProperty> shelvesData = requestResponse
             .DescendantsAndSelf()
             .OfType<JProperty>()
@@ -105,18 +105,17 @@ public class YouTubeMusicClient
         foreach (JProperty shelfData in shelvesData)
         {
             // Parse shelf data
-            logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Parsing shelf data: {shelfData.Path}.");
             JToken? shelfDataObject = shelfData.First;
 
             if (shelfDataObject is null)
                 continue;
 
             // Parse info from shelf data
-            string query = shelfDataObject.SelectToken("bottomEndpoint.searchEndpoint.query")?.ToString() ?? string.Empty;
-            string @params = shelfDataObject.SelectToken("bottomEndpoint.searchEndpoint.params")?.ToString() ?? string.Empty;
+            string query = shelfDataObject.SelectObjectOptional<string>("bottomEndpoint.searchEndpoint.query") ?? string.Empty;
+            string @params = shelfDataObject.SelectObjectOptional<string>("bottomEndpoint.searchEndpoint.params") ?? string.Empty;
 
-            string? category = shelfDataObject.SelectToken("title.runs[0].text")?.ToString();
-            JToken shelfItems = shelfDataObject.SelectToken("contents") ?? new JArray();
+            string? category = shelfDataObject.SelectObjectOptional<string>("title.runs[0].text");
+            JToken[] shelfItems = shelfDataObject.SelectObjectOptional<JToken[]>("contents") ?? [];
 
             ShelfKind kind = category.ToShelfKind();
 
@@ -124,7 +123,6 @@ public class YouTubeMusicClient
             foreach (JToken shelfItem in shelfItems)
             {
                 // Parse shelf item
-                logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Parsing shelf item: {shelfItem.Path}.");
                 JToken? itemObject = shelfItem.First?.First;
 
                 if (itemObject is null)

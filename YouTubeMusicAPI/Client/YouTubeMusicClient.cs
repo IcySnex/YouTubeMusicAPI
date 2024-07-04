@@ -300,7 +300,7 @@ public class YouTubeMusicClient
         if (id.StartsWith("VL"))
             return id;
 
-        return $"Vl{id}";
+        return $"VL{id}";
     }
 
 

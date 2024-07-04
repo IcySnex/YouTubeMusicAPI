@@ -62,6 +62,43 @@ foreach (Shelf shelf in shelves)
   }
 }
 ```
+‎
+#### **Get information about a song/video, album, community playlist & artist**
+```cs
+// Song/Video
+YouTubeMusicClient client = new();
+
+SongVideoInfo info = await client.GetSongVideoInfoAsync(id);
+Console.WriteLine($"{info.Name}, {string.Join(", ", info.Artists.Select(artist => artist.Name))} - {info.Description}");
+```
+```cs
+// Album
+YouTubeMusicClient client = new();
+
+string browseId = await client.GetAlbumBrowseIdAsync(id);
+
+AlbumInfo info = await client.GetAlbumInfoAsync(browseId);
+foreach (AlbumSongInfo song in info.Songs)
+  Console.WriteLine($"{song.Name}, {song.SongNumber}/{info.SongCount}");
+```
+```cs
+// Community Playlist
+YouTubeMusicClient client = new();
+
+string browseId = client.GetCommunityPlaylistBrowseId(id);
+
+CommunityPlaylistInfo info = await client.GetCommunityPlaylistInfoAsync(browseId);
+foreach (CommunityPlaylistSongInfo song in info.Songs)
+  Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album?.Name}");
+```
+```cs
+// Artist
+YouTubeMusicClient client = new();
+
+ArtistInfo info = await client.GetArtistInfoAsync(id);
+foreach (ArtistSongInfo song in info.Songs)
+  Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album?.Name}");
+```
 
 ## Shelves
 In the usage samples you may have noticed there are two ways to search for something via this Wrapper - directly for the items or the "shelf".\

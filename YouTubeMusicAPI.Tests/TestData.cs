@@ -40,7 +40,7 @@ internal abstract class TestData
     /// <summary>
     /// Test artist browse id
     /// </summary>
-    public const string ArtistBrowseId = "UCZQd1fU9v7-jFOmOojsHXNw";
+    public const string ArtistBrowseId = "UCESdnJ-8tBDMqqkPpjHOuMg";
     
 
     /// <summary>

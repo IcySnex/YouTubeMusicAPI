@@ -12,7 +12,7 @@
 /// <param name="thumbnails">The thumbnails of the album of an artist</param>
 public class ArtistAlbumInfo(
     string name,
-    string? id,
+    string id,
     int releaseYear,
     bool isSingle,
     bool isEp,
@@ -27,7 +27,7 @@ public class ArtistAlbumInfo(
     /// <summary>
     /// The id of the album of an artist
     /// </summary>
-    public string? Id { get; } = id;
+    public string Id { get; } = id;
 
     /// <summary>
     /// The release year of the album of an artist

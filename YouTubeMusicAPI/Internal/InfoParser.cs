@@ -103,6 +103,8 @@ internal static class InfoParser
         ArtistSongInfo[] songs = [];
         List<ArtistAlbumInfo> albums = [];
         ArtistVideoInfo[] videos = [];
+        ArtistFeaturedOnInfo[] featuredOns = [];
+        ArtistsRelatedInfo[] related = [];
 
         string? viewsInfo = null;
 
@@ -130,23 +132,26 @@ internal static class InfoParser
                     videos = content.SelectArtistVideos("musicCarouselShelfRenderer.contents");
                     break;
                 case "Featured on":
+                    featuredOns = content.SelectArtistFeaturedOn("musicCarouselShelfRenderer.contents");
                     break;
                 case "Fans might also like":
+                    related = content.SelectArtistRelated("musicCarouselShelfRenderer.contents");
                     break;
             }
         }
 
-        // Return result
         return new(
             name: innerJsonToken.SelectObject<string>("title.runs[0].text"),
             id: jsonToken.SelectObject<string>("responseContext.serviceTrackingParams[0].params[2].value"),
             description: innerJsonToken.SelectObjectOptional<string>("description.runs[0].text"),
-            subscriberCount: innerJsonToken.SelectObjectOptional<string>("subscriptionButton.subscribeButtonRenderer.subscriberCountText.runs[0].text"),
+            subscribersInfo: innerJsonToken.SelectObjectOptional<string>("subscriptionButton.subscribeButtonRenderer.longSubscriberCountText.runs[0].text"),
             viewsInfo: viewsInfo,
             thumbnails: innerJsonToken.SelectThumbnails(),
             allSongsPlaylistId: allSongsPlaylistId is null ? null : allSongsPlaylistId.StartsWith("VL") ? allSongsPlaylistId.Substring(2) : allSongsPlaylistId,
             songs: songs,
             albums: [.. albums],
-            videos: videos);
+            videos: videos,
+            featuredOns: featuredOns,
+            related: related);
     }
 }

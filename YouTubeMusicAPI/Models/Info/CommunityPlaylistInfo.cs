@@ -20,7 +20,7 @@ public class CommunityPlaylistInfo(
     string id,
     string? description,
     ShelfItem creator,
-    string viewsInfo,
+    string? viewsInfo,
     TimeSpan duration,
     int songCount,
     int creationYear,
@@ -50,7 +50,7 @@ public class CommunityPlaylistInfo(
     /// <summary>
     /// The views info of the community playlist
     /// </summary>
-    public string ViewsInfo { get; } = viewsInfo;
+    public string? ViewsInfo { get; } = viewsInfo;
 
     /// <summary>
     /// The total duration of all tracks in the community playlist

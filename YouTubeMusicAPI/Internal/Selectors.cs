@@ -95,6 +95,35 @@ internal static class Selectors
 
 
     /// <summary>
+    /// Selects and casts a radio from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the item data</param>
+    /// <param name="playlistIdPath">The json token playlist id path</param>
+    /// <param name="videoIdPath">The json token video id path</param>
+    /// <exception cref="ArgumentNullException">Occurrs when the specified path could not be found</exception>
+    /// <returns>A new radio</returns>
+    public static Radio SelectRadio(
+        this JToken value,
+        string playlistIdPath = "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.playlistId",
+        string? videoIdPath = "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.videoId") =>
+        new(
+            value.SelectObject<string>(playlistIdPath),
+            videoIdPath is null ? null : value.SelectObjectOptional<string>(videoIdPath));
+
+    /// <summary>
+    /// Selects and casts a bool weither its explicit from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the item data</param>
+    /// <param name="badgesPath">The json token badges path</param>
+    /// <exception cref="ArgumentNullException">Occurrs when the specified path could not be found</exception>
+    /// <returns>A bool</returns>
+    public static bool SelectIsExplicit(
+        this JToken value,
+        string badgesPath) =>
+        value.SelectObjectOptional<JToken[]>(badgesPath)?.Any(badge => badge.SelectObjectOptional<string>("musicInlineBadgeRenderer.icon.iconType") == "MUSIC_EXPLICIT_BADGE") ?? false;
+
+
+    /// <summary>
     /// Selects and casts a thumbnail array from a json token
     /// </summary>
     /// <param name="value">The json token containing the item data</param>

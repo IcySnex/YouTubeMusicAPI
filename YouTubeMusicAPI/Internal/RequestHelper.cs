@@ -136,11 +136,11 @@ internal class RequestHelper
         {
             Method = HttpMethod.Post,
             RequestUri = new UriBuilder(url) { Query = parameters }.Uri,
-            
+
         };
         if (body is not null)
             request.Content = new StringContent(JsonConvert.SerializeObject(body, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }), Encoding.UTF8, "application/json");
-        
+
         // Send HTTP request
         logger?.LogInformation($"[RequestHelper-PostBodyAsync] Sending HTTP reuqest. POST: {url}.");
         return httpClient.SendAsync(request, cancellationToken);

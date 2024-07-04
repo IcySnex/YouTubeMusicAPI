@@ -48,7 +48,7 @@ public class ArtistInfo(
     /// The subscribers info of the artist
     /// </summary>
     public string? SubscribersInfo { get; } = subscribersInfo;
-    
+
     /// <summary>
     /// The views info of the artist
     /// </summary>

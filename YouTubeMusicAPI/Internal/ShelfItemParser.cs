@@ -19,14 +19,14 @@ internal static class ShelfItemParser
     public static Song GetSong(
         JToken jsonToken)
     {
-        ShelfItem[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 3);
+        ShelfItem[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 0, 3);
         int albumIndex = artists[0].Id is null ? 2 : (artists.Length * 2);
         int durationIndex = artists[0].Id is null ? 4 : ((artists.Length * 2) + 2);
 
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId"),
-            artists: jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 3),
+            artists: artists,
             album: jsonToken.SelectSehlfItem($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId", ShelfKind.Albums),
             duration: jsonToken.SelectObject<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{durationIndex}].text").ToTimeSpan(),
             isExplicit: jsonToken.SelectIsExplicit("badges"),

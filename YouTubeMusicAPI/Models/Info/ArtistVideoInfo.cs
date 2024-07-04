@@ -12,7 +12,7 @@ namespace YouTubeMusicAPI.Models.Info;
 /// <param name="thumbnails">The thumbnails of the video of an artist</param>
 public class ArtistVideoInfo(
     string name,
-    string? id,
+    string id,
     ShelfItem[] artists,
     string viewsInfo,
     Thumbnail[] thumbnails)
@@ -25,7 +25,7 @@ public class ArtistVideoInfo(
     /// <summary>
     /// The id of the video of an artist
     /// </summary>
-    public string? Id { get; } = id;
+    public string Id { get; } = id;
 
     /// <summary>
     /// The artist of this video of an artist

@@ -6,24 +6,28 @@
 /// <param name="name">The name of the artist</param>
 /// <param name="id">The id of the artist</param>
 /// <param name="description">The description of the artist</param>
-/// <param name="subscriberCount">The subscriber count of the artist</param>
+/// <param name="subscribersInfo">The subscriber info of the artist</param>
 /// <param name="viewsInfo">The views info of the artist</param>
 /// <param name="thumbnails">The thumbnails of the artist</param>
 /// <param name="allSongsPlaylistId">The id of the playlist containing all songs of the artist</param>
 /// <param name="songs">The info of all songs in artist</param>
 /// <param name="albums">The info of all albums in artist</param>
 /// <param name="videos">The info of all videos in artist</param>
+/// <param name="featuredOns">The info of all artist featured on playlists</param>
+/// <param name="related">The info of all related artists of the artist</param>
 public class ArtistInfo(
     string name,
     string id,
     string? description,
-    string? subscriberCount,
+    string? subscribersInfo,
     string? viewsInfo,
     Thumbnail[] thumbnails,
     string? allSongsPlaylistId,
     ArtistSongInfo[] songs,
     ArtistAlbumInfo[] albums,
-    ArtistVideoInfo[] videos)
+    ArtistVideoInfo[] videos,
+    ArtistFeaturedOnInfo[] featuredOns,
+    ArtistsRelatedInfo[] related)
 {
     /// <summary>
     /// The name of the artist
@@ -41,9 +45,9 @@ public class ArtistInfo(
     public string? Description { get; } = description;
 
     /// <summary>
-    /// The subscriber count of the artist
+    /// The subscribers info of the artist
     /// </summary>
-    public string? SubscriberCount { get; } = subscriberCount;
+    public string? SubscribersInfo { get; } = subscribersInfo;
     
     /// <summary>
     /// The views info of the artist
@@ -74,5 +78,15 @@ public class ArtistInfo(
     /// The info of all videos of the artist
     /// </summary>
     public ArtistVideoInfo[] Videos { get; } = videos;
+
+    /// <summary>
+    /// The info of all artist featured on playlists
+    /// </summary>
+    public ArtistFeaturedOnInfo[] FeaturedOns { get; } = featuredOns;
+
+    /// <summary>
+    /// The info of all related artists of the artist
+    /// </summary>
+    public ArtistsRelatedInfo[] Related { get; } = related;
 
 }

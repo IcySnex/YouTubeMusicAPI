@@ -287,7 +287,7 @@ internal static class Selectors
         foreach (JToken content in value.SelectObject<JToken[]>(path))
             result.Add(new(
                 name: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
-                id: content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId"),
+                id: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId"),
                 artists: content.SelectArtists("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs"),
                 album: content.SelectSehlfItem("musicResponsiveListItemRenderer.flexColumns[3].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text", "musicResponsiveListItemRenderer.flexColumns[3].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.browseEndpoint.browseId", ShelfKind.Albums),
                 playsinfo: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
@@ -343,9 +343,55 @@ internal static class Selectors
 
             result.Add(new(
                 name: content.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
-                id: content.SelectObjectOptional<string>("musicTwoRowItemRenderer.navigationEndpoint.watchEndpoint.videoId"),
+                id: content.SelectObject<string>("musicTwoRowItemRenderer.navigationEndpoint.watchEndpoint.videoId"),
                 artists: artists,
                 viewsInfo: content.SelectObject<string>($"musicTwoRowItemRenderer.subtitle.runs[{artists.Length * 2}].text"),
+                thumbnails: content.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails")));
+        }
+
+        return [.. result];
+    }
+
+    /// <summary>
+    /// Selects and casts artist featured on playlists from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the item data</param>
+    /// <param name="path">The json token path</param>
+    /// <returns>An array of artist videos</returns>
+    public static ArtistFeaturedOnInfo[] SelectArtistFeaturedOn(
+        this JToken value,
+        string path)
+    {
+        List<ArtistFeaturedOnInfo> result = [];
+        foreach (JToken content in value.SelectObject<JToken[]>(path))
+        {
+            result.Add(new(
+                name: content.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
+                id: content.SelectObject<string>("musicTwoRowItemRenderer.navigationEndpoint.browseEndpoint.browseId"),
+                creator: content.SelectSehlfItem("musicTwoRowItemRenderer.subtitle.runs[2].text", "musicTwoRowItemRenderer.subtitle.runs[2].navigationEndpoint.browseEndpoint.browseId", ShelfKind.Profiles),
+                thumbnails: content.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails")));
+        }
+
+        return [.. result];
+    }
+
+    /// <summary>
+    /// Selects and casts related artists from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the item data</param>
+    /// <param name="path">The json token path</param>
+    /// <returns>An array of artist videos</returns>
+    public static ArtistsRelatedInfo[] SelectArtistRelated(
+        this JToken value,
+        string path)
+    {
+        List<ArtistsRelatedInfo> result = [];
+        foreach (JToken content in value.SelectObject<JToken[]>(path))
+        {
+            result.Add(new(
+                name: content.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
+                id: content.SelectObject<string>("musicTwoRowItemRenderer.navigationEndpoint.browseEndpoint.browseId"),
+                subscribersInfo: content.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text"),
                 thumbnails: content.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails")));
         }
 

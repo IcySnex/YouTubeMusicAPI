@@ -34,7 +34,7 @@ internal static class InfoParser
             publishedAt: jsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.publishDate"),
             uploadedAt: jsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.uploadDate"),
             thumbnails: jsonToken.SelectThumbnails("videoDetails.thumbnail.thumbnails"),
-            tags: jsonToken.SelectObject<string[]>("microformat.microformatDataRenderer.tags"));
+            tags: jsonToken.SelectObjectOptional<string[]>("microformat.microformatDataRenderer.tags") ?? []);
     }
 
     /// <summary>

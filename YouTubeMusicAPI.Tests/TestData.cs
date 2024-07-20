@@ -35,7 +35,7 @@ internal abstract class TestData
     /// <summary>
     /// Test playlist browse id
     /// </summary>
-    public const string PlaylistBrowseId = "VLPLUoI0V1lAvcLY47xdnLWGdf9zyUWKsulx";
+    public const string PlaylistBrowseId = "VLOLAK5uy_n702orxx0Q4py946IQLTE0yQk36vrsGYQ";
     
     /// <summary>
     /// Test artist browse id

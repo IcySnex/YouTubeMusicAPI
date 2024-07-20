@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
-using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 
 namespace YouTubeMusicAPI.Tests;
@@ -23,7 +22,7 @@ internal class Get
         });
 
         logger = factory.CreateLogger<Search>();
-        client = new(logger, TestData.HostLanguage, TestData.GeographicalLocation);
+        client = new(logger, TestData.GeographicalLocation);
     }
 
 

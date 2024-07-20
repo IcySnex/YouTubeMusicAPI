@@ -17,19 +17,15 @@ public class YouTubeMusicClient
     readonly ILogger? logger;
     readonly YouTubeMusicBase baseClient;
 
-    readonly string hostLanguage;
     readonly string geographicalLocation;
 
     /// <summary>
     /// Creates a new search client
     /// </summary>
-    /// <param name="hostLanguage">The language for the payload</param>
     /// <param name="geographicalLocation">The region for the payload</param>
     public YouTubeMusicClient(
-        string hostLanguage = "en",
         string geographicalLocation = "US")
     {
-        this.hostLanguage = hostLanguage;
         this.geographicalLocation = geographicalLocation;
 
         this.baseClient = new();
@@ -41,14 +37,11 @@ public class YouTubeMusicClient
     /// Creates a new search client with extendended logging functions
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
-    /// <param name="hostLanguage">The language for the payload</param>
     /// <param name="geographicalLocation">The region for the payload</param>
     public YouTubeMusicClient(
         ILogger logger,
-        string hostLanguage = "en",
         string geographicalLocation = "US")
     {
-        this.hostLanguage = hostLanguage;
         this.geographicalLocation = geographicalLocation;
 
         this.logger = logger;
@@ -187,7 +180,7 @@ public class YouTubeMusicClient
         ];
 
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Search, payload, hostLanguage, geographicalLocation, cancellationToken);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Search, payload, "en", geographicalLocation, cancellationToken);
 
         // Parse request response
         IEnumerable<Shelf> searchResults = ParseSearchResponse(requestResponse);
@@ -332,7 +325,7 @@ public class YouTubeMusicClient
         ];
 
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, hostLanguage, geographicalLocation, cancellationToken);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, "en", geographicalLocation, cancellationToken);
 
         // Parse request response
         SongVideoInfo info = InfoParser.GetSongVideo(requestResponse);
@@ -368,7 +361,7 @@ public class YouTubeMusicClient
         ];
 
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, hostLanguage, geographicalLocation, cancellationToken);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, "en", geographicalLocation, cancellationToken);
 
         // Parse request response
         AlbumInfo info = InfoParser.GetAlbum(requestResponse);
@@ -403,7 +396,7 @@ public class YouTubeMusicClient
         ];
 
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, hostLanguage, geographicalLocation, cancellationToken);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, "en", geographicalLocation, cancellationToken);
 
         // Parse request response
         CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylist(requestResponse);
@@ -438,7 +431,7 @@ public class YouTubeMusicClient
         ];
 
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, hostLanguage, geographicalLocation, cancellationToken);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, "en", geographicalLocation, cancellationToken);
 
         // Parse request response
         ArtistInfo info = InfoParser.GetArtist(requestResponse);

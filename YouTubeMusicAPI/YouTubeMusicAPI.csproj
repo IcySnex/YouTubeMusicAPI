@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>1.1.3</Version>
-		<AssemblyVersion>1.1.3</AssemblyVersion>
-		<FileVersion>1.1.3</FileVersion>
+		<Version>1.1.4</Version>
+		<AssemblyVersion>1.1.4</AssemblyVersion>
+		<FileVersion>1.1.4</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,7 +24,8 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>- Fixed error when a getting info of a video with no tags</PackageReleaseNotes>
+		<PackageReleaseNotes>- Removed host language parameter
+- Fixed bug where views info was set as album for community playlist track</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

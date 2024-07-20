@@ -44,11 +44,6 @@ internal abstract class TestData
     
 
     /// <summary>
-    /// Test host language for requests
-    /// </summary>
-    public const string HostLanguage = "en";
-
-    /// <summary>
     /// Test geographical location for requests
     /// </summary>
     public const string GeographicalLocation = "US";

@@ -19,7 +19,7 @@ dotnet add package YouTubeMusicAPI
 // Search for items directly
 YouTubeMusicClient client = new();
 
-IEnumerable<IShelfItem> searchResults = await client.SearchAsync<IShelfItem>(query);
+IEnumerable<IShelfItem> searchResults = await client.SearchAsync<IShelfItem>(query, limit);
 foreach (IShelfItem item in searchResults)
   Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
 ```
@@ -27,10 +27,10 @@ foreach (IShelfItem item in searchResults)
 // Search for shelves
 YouTubeMusicClient client = new();
 
-IEnumerable<Shelf> shelves = await client.SearchAsync(query, null);
+IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, null);
 foreach (Shelf shelf in shelves)
 {
-  Console.WriteLine($"{shelf.Kind} - Query: {shelf.Query}, Params: {shelf.Params}");
+  Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
 
   foreach (IShelfItem item in shelf.Items)
     Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
@@ -50,10 +50,10 @@ foreach (Song song in searchResults)
 // Search for the songs shelves
 YouTubeMusicClient client = new();
 
-IEnumerable<Shelf> shelves = await client.SearchAsync(query, ShelfKind.Songs);
+IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, ShelfKind.Songs);
 foreach (Shelf shelf in shelves)
 {
-  Console.WriteLine($"{shelf.Kind}: Query-{shelf.Query}, Params-{shelf.Params}");
+  Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
 
   foreach (IShelfItem item in shelf.Items)
   {
@@ -103,9 +103,9 @@ foreach (ArtistSongInfo song in info.Songs)
 ## Shelves
 In the usage samples you may have noticed there are two ways to search for something via this Wrapper - directly for the items or the "shelf".\
 But what is a shelf? The internal YouTube Music API returns so called "shelves" when searching. A shelf is like a container for search results like songs, videos etc.\
-Each shelf has a kind which says what items it contains for example "Songs". A Shelf is also connected to the sent request so it contains properties like "Query" or "Params" which help identify the initial request used for the search.
+Each shelf has a kind which says what items it contains for example "Songs". A Shelf is also contains the 'Next Continuation Token' which is useful if you want to dynamically load more search results (e.g. when scrolling on a page).
 
-If all of this sounds kind of useless to you, dont worry! You can just use the search method with a generic type `SearchAsync<IShelfItem>()` instead.\
+If all of this sounds kind of useless to you, dont worry! You can just use the search method with a generic type `SearchAsync<IShelfItem>()` instead, this also contains a property to limit the search result so you dont have to manually implement that with the 'Next Continuation Token'.\
 This handles all the shelf stuff in the background and returns a list of all your search results.
 
 ---

@@ -12,11 +12,12 @@ namespace YouTubeMusicAPI.Tests;
 internal class Sample
 {
     public static async Task SearchAsync(
-        string query)
+        string query,
+        int limit)
     {
         YouTubeMusicClient client = new();
 
-        IEnumerable<IShelfItem> searchResults = await client.SearchAsync<IShelfItem>(query);
+        IEnumerable<IShelfItem> searchResults = await client.SearchAsync<IShelfItem>(query, limit);
         foreach (IShelfItem item in searchResults)
             Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
     }
@@ -26,7 +27,7 @@ internal class Sample
     {
         YouTubeMusicClient client = new();
 
-        IEnumerable<Shelf> shelves = await client.SearchAsync(query, null);
+        IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, null);
         foreach (Shelf shelf in shelves)
         {
             Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");

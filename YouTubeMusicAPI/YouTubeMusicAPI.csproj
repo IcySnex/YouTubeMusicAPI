@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>1.1.4</Version>
-		<AssemblyVersion>1.1.4</AssemblyVersion>
-		<FileVersion>1.1.4</FileVersion>
+		<Version>1.2.0</Version>
+		<AssemblyVersion>1.2.0</AssemblyVersion>
+		<FileVersion>1.2.0</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,8 +24,9 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>- Removed host language parameter
-- Fixed bug where views info was set as album for community playlist track</PackageReleaseNotes>
+		<PackageReleaseNotes>- Added support for search query limit and continuation tokens
+- Fixed crash when podcast episode DateTime has "x ago" format
+- Fixed search query parsing bugs</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

@@ -17,7 +17,7 @@ public class CommunityPlaylist(
     string id,
     ShelfItem creator,
     string viewsInfo,
-    Radio radio,
+    Radio? radio,
     Thumbnail[] thumbnails) : IShelfItem
 {
     /// <summary>
@@ -53,7 +53,7 @@ public class CommunityPlaylist(
     /// <summary>
     /// The radio channel of this community playlist
     /// </summary>
-    public Radio Radio { get; } = radio;
+    public Radio? Radio { get; } = radio;
 
     /// <summary>
     /// The thumbnails of this community playlist

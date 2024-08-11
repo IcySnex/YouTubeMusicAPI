@@ -93,13 +93,13 @@ public class YouTubeMusicClient
                 .SelectToken("continuationContents")
             : requestResponse
                 .SelectToken("contents.tabbedSearchResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents")
-                .Where(token => token["musicShelfRenderer"] is not null)
-                .Select(token => token.First!);
+                ?.Where(token => token["musicShelfRenderer"] is not null)
+                ?.Select(token => token.First!);
 
         if (shelvesData is null || !shelvesData.Any())
         {
-            logger?.LogError($"[YouTubeMusicClient-ParseSearchResponse] Parsing search failed. Request response does not contain any shelves.");
-            throw new ArgumentNullException(nameof(shelvesData), "Parsing search failed. Request response does not contain any shelves.");
+            logger?.LogWarning($"[YouTubeMusicClient-ParseSearchResponse] Parsing search failed. Request response does not contain any shelves.");
+            return [];
         }
 
         foreach (JToken? shelfData in shelvesData)
@@ -114,8 +114,8 @@ public class YouTubeMusicClient
             string? category = isContinued
                 ? requestResponse
                     .SelectToken("header.musicHeaderRenderer.header.chipCloudRenderer.chips")
-                    .FirstOrDefault(token => token.SelectObjectOptional<bool>("chipCloudChipRenderer.isSelected"))
-                    .SelectObjectOptional<string>("chipCloudChipRenderer.uniqueId")
+                    ?.FirstOrDefault(token => token.SelectObjectOptional<bool>("chipCloudChipRenderer.isSelected"))
+                    ?.SelectObjectOptional<string>("chipCloudChipRenderer.uniqueId")
                 : shelfDataObject
                     .SelectObjectOptional<string>("title.runs[0].text");
             JToken[] shelfItems = shelfDataObject.SelectObjectOptional<JToken[]>("contents") ?? [];
@@ -195,7 +195,7 @@ public class YouTubeMusicClient
 
         // Parse request response
         IEnumerable<Shelf> searchResults = ParseSearchResponse(requestResponse);
-        return kind is null ? searchResults : searchResults.Where(searchResult => searchResult.Kind == kind);
+        return kind is null || kind == ShelfKind.Unknown ? searchResults : searchResults.Where(searchResult => searchResult.Kind == kind);
     }
 
     /// <summary>
@@ -241,8 +241,8 @@ public class YouTubeMusicClient
             Shelf? requestedShelf = currentShelf.FirstOrDefault(shelf => shelf.Kind == kind);
             if (requestedShelf is null)
             {
-                logger?.LogError($"[YouTubeMusicClient-SearchAsync] Search failed. Search results do not cotain requested filtered shelf.");
-                throw new NullReferenceException("Search failed. Search results do not cotain requested filtered shelf.");
+                logger?.LogWarning($"[YouTubeMusicClient-SearchAsync] Search results do not cotain requested filtered shelf.");
+                break;
             }
 
             searchResults.AddRange(requestedShelf.Items.Cast<T>());

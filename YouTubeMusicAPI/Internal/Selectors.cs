@@ -98,6 +98,35 @@ internal static class Selectors
     /// Selects and casts a radio from a json token
     /// </summary>
     /// <param name="value">The json token containing the item data</param>
+    /// <param name="path">The json token path</param>
+    /// <exception cref="ArgumentNullException">Occurrs when the specified path could not be found</exception>
+    /// <returns>A new radio</returns>
+    public static DateTime SelectDateTime(
+        this JToken value,
+        string path)
+    {
+        string stringifiedDate = value.SelectObject<string>(path);
+
+        if (!stringifiedDate.Contains(" ago"))
+            return DateTime.Parse(stringifiedDate);
+
+        string[] timeSpanParts = stringifiedDate.Split(' ');
+        int timeSpanValue = int.Parse(timeSpanParts[0]);
+
+        return timeSpanParts[1][0] switch
+        {
+            'd' => DateTime.Now - TimeSpan.FromDays(timeSpanValue),
+            'h' => DateTime.Now - TimeSpan.FromHours(timeSpanValue),
+            'm' => DateTime.Now - TimeSpan.FromMinutes(timeSpanValue),
+            's' => DateTime.Now - TimeSpan.FromSeconds(timeSpanValue),
+            _ => DateTime.Now
+        };
+    }
+
+    /// <summary>
+    /// Selects and casts a radio from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the item data</param>
     /// <param name="playlistIdPath">The json token playlist id path</param>
     /// <param name="videoIdPath">The json token video id path</param>
     /// <exception cref="ArgumentNullException">Occurrs when the specified path could not be found</exception>

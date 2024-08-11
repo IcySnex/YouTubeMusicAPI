@@ -8,7 +8,17 @@ internal abstract class TestData
     /// <summary>
     /// Test query for search requests
     /// </summary>
-    public const string Query = "Pashanim";
+    public const string SearchQuery = "Pashanim";
+
+    /// <summary>
+    /// Test search query continuation token to get further elemnts from a pervious search
+    /// </summary>
+    public const string SearchQueryContinuationToken = null;
+
+    /// <summary>
+    /// Test search query limit of items to return
+    /// </summary>
+    public const int SearchQueryLimit = 200;
 
 
     /// <summary>

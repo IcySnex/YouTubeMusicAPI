@@ -38,7 +38,7 @@ internal class SearchShelves
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            searchResults = await client.SearchAsync(TestData.Query, kind);
+            searchResults = await client.SearchAsync(TestData.SearchQuery, TestData.SearchQueryContinuationToken, kind);
         });
         Assert.That(searchResults, Is.Not.Null);
         Assert.That(searchResults, Is.Not.Empty);

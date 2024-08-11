@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Models;
@@ -84,10 +86,15 @@ public class YouTubeMusicClient
 
         // Get shelves
         logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Getting shelves from search response.");
-        IEnumerable<JProperty> shelvesData = requestResponse
-            .DescendantsAndSelf()
-            .OfType<JProperty>()
-            .Where(prop => prop.Name == "musicShelfRenderer");
+        bool isContinued = requestResponse.ContainsKey("continuationContents");
+
+        IEnumerable<JToken>? shelvesData = isContinued
+            ? requestResponse
+                .SelectToken("continuationContents")
+            : requestResponse
+                .SelectToken("contents.tabbedSearchResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents")
+                .Where(token => token["musicShelfRenderer"] is not null)
+                .Select(token => token.First!);
 
         if (shelvesData is null || !shelvesData.Any())
         {
@@ -95,52 +102,53 @@ public class YouTubeMusicClient
             throw new ArgumentNullException(nameof(shelvesData), "Parsing search failed. Request response does not contain any shelves.");
         }
 
-        foreach (JProperty shelfData in shelvesData)
+        foreach (JToken? shelfData in shelvesData)
         {
-            // Parse shelf data
             JToken? shelfDataObject = shelfData.First;
-
             if (shelfDataObject is null)
                 continue;
 
             // Parse info from shelf data
-            string query = shelfDataObject.SelectObjectOptional<string>("bottomEndpoint.searchEndpoint.query") ?? string.Empty;
-            string @params = shelfDataObject.SelectObjectOptional<string>("bottomEndpoint.searchEndpoint.params") ?? string.Empty;
+            string? nextContinuationToken = shelfDataObject.SelectObjectOptional<string>("continuations[0].nextContinuationData.continuation");
 
-            string? category = shelfDataObject.SelectObjectOptional<string>("title.runs[0].text");
+            string? category = isContinued
+                ? requestResponse
+                    .SelectToken("header.musicHeaderRenderer.header.chipCloudRenderer.chips")
+                    .FirstOrDefault(token => token.SelectObjectOptional<bool>("chipCloudChipRenderer.isSelected"))
+                    .SelectObjectOptional<string>("chipCloudChipRenderer.uniqueId")
+                : shelfDataObject
+                    .SelectObjectOptional<string>("title.runs[0].text");
             JToken[] shelfItems = shelfDataObject.SelectObjectOptional<JToken[]>("contents") ?? [];
 
             ShelfKind kind = category.ToShelfKind();
+            Func<JToken, IShelfItem>? getShelfItem = kind switch
+            {
+                ShelfKind.Songs => ShelfItemParser.GetSong,
+                ShelfKind.Videos => ShelfItemParser.GetVideo,
+                ShelfKind.Albums => ShelfItemParser.GetAlbums,
+                ShelfKind.CommunityPlaylists => ShelfItemParser.GetCommunityPlaylist,
+                ShelfKind.Artists => ShelfItemParser.GetArtist,
+                ShelfKind.Podcasts => ShelfItemParser.GetPodcast,
+                ShelfKind.Episodes => ShelfItemParser.GetEpisode,
+                ShelfKind.Profiles => ShelfItemParser.GetProfile,
+                _ => null
+            };
 
             List<IShelfItem> items = [];
-            foreach (JToken shelfItem in shelfItems)
-            {
-                // Parse shelf item
-                JToken? itemObject = shelfItem.First?.First;
-
-                if (itemObject is null)
-                    continue;
-
-                // Parse info from shelf item
-                IShelfItem? item = kind switch
+            if (getShelfItem is not null)
+                foreach (JToken shelfItem in shelfItems)
                 {
-                    ShelfKind.Songs => ShelfItemParser.GetSong(itemObject),
-                    ShelfKind.Videos => ShelfItemParser.GetVideo(itemObject),
-                    ShelfKind.Albums => ShelfItemParser.GetAlbums(itemObject),
-                    ShelfKind.CommunityPlaylists => ShelfItemParser.GetCommunityPlaylist(itemObject),
-                    ShelfKind.Artists => ShelfItemParser.GetArtist(itemObject),
-                    ShelfKind.Podcasts => ShelfItemParser.GetPodcast(itemObject),
-                    ShelfKind.Episodes => ShelfItemParser.GetEpisode(itemObject),
-                    ShelfKind.Profiles => ShelfItemParser.GetProfile(itemObject),
-                    _ => null
+                    // Parse shelf item
+                    JToken? itemObject = shelfItem.First?.First;
 
-                };
-                if (item is not null)
-                    items.Add(item);
-            }
+                    if (itemObject is null)
+                        continue;
+
+                    items.Add(getShelfItem(itemObject));
+                }
 
             // Create shelf
-            Shelf shelf = new(query, @params, [.. items], kind);
+            Shelf shelf = new(nextContinuationToken, [.. items], kind);
             results.Add(shelf);
         }
 
@@ -153,6 +161,7 @@ public class YouTubeMusicClient
     /// Searches for a query on YouTube Music
     /// </summary>
     /// <param name="query">The query to search for</param>
+    /// <param name="continuationToken">The continuation token to get further elemnts from a pervious search</param>
     /// <param name="kind">The shelf kind of items to search for</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>An array of shelves containing all search results</returns>
@@ -163,6 +172,7 @@ public class YouTubeMusicClient
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
     public async Task<IEnumerable<Shelf>> SearchAsync(
         string query,
+        string? continuationToken = null,
         ShelfKind? kind = null,
         CancellationToken cancellationToken = default)
     {
@@ -176,7 +186,8 @@ public class YouTubeMusicClient
         (string key, object? value)[] payload =
         [
             ("query", query),
-            ("params", kind.ToParams())
+            ("params", kind.ToParams()),
+            ("continuation", continuationToken)
         ];
 
         // Send request
@@ -184,13 +195,14 @@ public class YouTubeMusicClient
 
         // Parse request response
         IEnumerable<Shelf> searchResults = ParseSearchResponse(requestResponse);
-        return searchResults;
+        return kind is null ? searchResults : searchResults.Where(searchResult => searchResult.Kind == kind);
     }
 
     /// <summary>
     /// Searches for a specfic shelf for a query on YouTube Music
     /// </summary>
     /// <param name="query">The query to search for</param>
+    /// <param name="limit">The limit of items to return</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>An array of the specific shelf items</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
@@ -200,34 +212,46 @@ public class YouTubeMusicClient
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
     public async Task<IEnumerable<T>> SearchAsync<T>(
         string query,
+        int limit = 20,
         CancellationToken cancellationToken = default) where T : IShelfItem
     {
         ShelfKind kind = GetShelfKind<T>();
 
-        // Send request
-        IEnumerable<Shelf> searchResults = await SearchAsync(query, kind, cancellationToken);
-
+        // All items requested (does not support continuation)
         if (kind == ShelfKind.Unknown)
         {
-            logger?.LogInformation($"[YouTubeMusicClient-SearchSongsAsync] Concatenating shelf items.");
-            IEnumerable<T> allShelfItems = searchResults.SelectMany(shelf => shelf.Items).Cast<T>();
+            IEnumerable<Shelf> allShelves = await SearchAsync(query, null, kind, cancellationToken);
 
-            return allShelfItems;
+            return allShelves
+                .SelectMany(shelf => shelf.Items)
+                .Take(limit)
+                .Cast<T>();
         }
 
-        // Get songs shelf
-        Shelf? songsResults = searchResults.FirstOrDefault(shelf => shelf.Kind == kind);
+        // Special items requested
+        List<T> searchResults = [];
 
-        if (songsResults is null)
+        string? nextContinuationToken = null;
+        bool hasMoreResults = true;
+
+        while (searchResults.Count < limit && hasMoreResults)
         {
-            logger?.LogError($"[YouTubeMusicClient-SearchSongsAsync] Search failed. Search results do not cotain requested filtered shelf.");
-            throw new ArgumentNullException(nameof(songsResults), "Search failed. Search results do not cotain requested filtered shelf.");
+            IEnumerable<Shelf> currentShelf = await SearchAsync(query, nextContinuationToken, kind, cancellationToken);
+
+            Shelf? requestedShelf = currentShelf.FirstOrDefault(shelf => shelf.Kind == kind);
+            if (requestedShelf is null)
+            {
+                logger?.LogError($"[YouTubeMusicClient-SearchAsync] Search failed. Search results do not cotain requested filtered shelf.");
+                throw new NullReferenceException("Search failed. Search results do not cotain requested filtered shelf.");
+            }
+
+            searchResults.AddRange(requestedShelf.Items.Cast<T>());
+
+            nextContinuationToken = requestedShelf.NextContinuationToken;
+            hasMoreResults = !string.IsNullOrEmpty(nextContinuationToken);
         }
 
-        logger?.LogInformation($"[YouTubeMusicClient-SearchSongsAsync] Casting shelf items.");
-        IEnumerable<T> singleShelfItems = songsResults.Items.Cast<T>();
-
-        return singleShelfItems;
+        return searchResults.Take(limit);
     }
 
 

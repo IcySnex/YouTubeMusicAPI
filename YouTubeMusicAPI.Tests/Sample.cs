@@ -1,5 +1,4 @@
-﻿using System;
-using YouTubeMusicAPI.Client;
+﻿using YouTubeMusicAPI.Client;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Shelf;
@@ -30,7 +29,7 @@ internal class Sample
         IEnumerable<Shelf> shelves = await client.SearchAsync(query, null);
         foreach (Shelf shelf in shelves)
         {
-            Console.WriteLine($"{shelf.Kind}: Query-{shelf.Query}, Params-{shelf.Params}");
+            Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
 
             foreach (IShelfItem item in shelf.Items)
                 Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
@@ -53,10 +52,10 @@ internal class Sample
     {
         YouTubeMusicClient client = new();
 
-        IEnumerable<Shelf> shelves = await client.SearchAsync(query, ShelfKind.Songs);
+        IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, ShelfKind.Songs);
         foreach (Shelf shelf in shelves)
         {
-            Console.WriteLine($"{shelf.Kind} - Query: {shelf.Query}, Params: {shelf.Params}");
+            Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
 
             foreach (IShelfItem item in shelf.Items)
             {

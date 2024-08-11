@@ -37,14 +37,14 @@ internal class Search
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            searchResults = await client.SearchAsync<T>(TestData.Query);
+            searchResults = await client.SearchAsync<T>(TestData.SearchQuery, TestData.SearchQueryLimit);
         });
         Assert.That(searchResults, Is.Not.Null);
         Assert.That(searchResults, Is.Not.Empty);
 
         // Output
         string readableResults = JsonConvert.SerializeObject(searchResults, Formatting.Indented);
-        logger.LogInformation("\nSearch Results:\n{readableResults}", readableResults);
+        logger.LogInformation("\nSearch Results ({resultsCount}):\n{readableResults}", searchResults.Count(), readableResults);
     }
 
 

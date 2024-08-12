@@ -30,6 +30,11 @@ internal abstract class Endpoints
     /// The path the player endpoint
     /// </summary>
     public const string Player = "/player";
+    
+    /// <summary>
+    /// The path the next endpoint
+    /// </summary>
+    public const string Next = "/next";
 
     /// <summary>
     /// The path the browse endpoint

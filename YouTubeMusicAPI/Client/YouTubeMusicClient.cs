@@ -345,14 +345,15 @@ public class YouTubeMusicClient
 
         (string key, object? value)[] payload =
         [
-            ("video_id", id)
+            ("videoId", id)
         ];
 
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, "en", geographicalLocation, cancellationToken);
+        JObject playerRequestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, "en", geographicalLocation, cancellationToken);
+        JObject nextRequestResponse = await baseClient.SendRequestAsync(Endpoints.Next, payload, "en", geographicalLocation, cancellationToken);
 
         // Parse request response
-        SongVideoInfo info = InfoParser.GetSongVideo(requestResponse);
+        SongVideoInfo info = InfoParser.GetSongVideo(playerRequestResponse, nextRequestResponse);
         return info;
     }
 

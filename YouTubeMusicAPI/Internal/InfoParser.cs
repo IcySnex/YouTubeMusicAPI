@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
+using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Types;
 
@@ -12,29 +14,40 @@ internal static class InfoParser
     /// <summary>
     /// Parses song or video info data from the json token
     /// </summary>
-    /// <param name="jsonToken">The json token containing the item data</param>
+    /// <param name="playerJsonToken">The json token containing the player item data</param>
+    /// <param name="nextJsonToken">The json token containing the next item data</param>
     /// <returns>The song or video info</returns>
     /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
     public static SongVideoInfo GetSongVideo(
-        JObject jsonToken)
+        JObject playerJsonToken,
+        JObject nextJsonToken)
     {
+        JToken nextTabContainer = nextJsonToken.SelectRequieredToken("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs");
+        JToken nextItem = nextTabContainer.SelectRequieredToken("[0].tabRenderer.content.musicQueueRenderer.content.playlistPanelRenderer.contents[0].playlistPanelVideoRenderer");
+
+        int albumIndex = nextItem.SelectObject<JToken[]>("longBylineText.runs").Length - 3;
+        string? albumId = nextItem.SelectObjectOptional<string>($"longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId");
+
         return new(
-            name: jsonToken.SelectObject<string>("videoDetails.title"),
-            id: jsonToken.SelectObject<string>("videoDetails.videoId"),
-            description: jsonToken.SelectObject<string>("microformat.microformatDataRenderer.description"),
-            artists: jsonToken.SelectArtistsSimple(),
-            duration: TimeSpan.FromSeconds(jsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
-            isRatingsAllowed: jsonToken.SelectObject<bool>("videoDetails.allowRatings"),
-            isPrivate: jsonToken.SelectObject<bool>("videoDetails.isPrivate"),
-            isUnlisted: jsonToken.SelectObject<bool>("microformat.microformatDataRenderer.unlisted"),
-            isUnpluggedCorpus: jsonToken.SelectObject<bool>("videoDetails.isUnpluggedCorpus"),
-            isLiveContent: jsonToken.SelectObject<bool>("videoDetails.isLiveContent"),
-            isFamiliyFriendly: jsonToken.SelectObject<bool>("microformat.microformatDataRenderer.familySafe"),
-            viewsCount: jsonToken.SelectObject<int>("videoDetails.viewCount"),
-            publishedAt: jsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.publishDate"),
-            uploadedAt: jsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.uploadDate"),
-            thumbnails: jsonToken.SelectThumbnails("videoDetails.thumbnail.thumbnails"),
-            tags: jsonToken.SelectObjectOptional<string[]>("microformat.microformatDataRenderer.tags") ?? []);
+            name: playerJsonToken.SelectObject<string>("videoDetails.title"),
+            id: playerJsonToken.SelectObject<string>("videoDetails.videoId"),
+            browseId: nextTabContainer.SelectObject<string>("[2].tabRenderer.endpoint.browseEndpoint.browseId"),
+            description: playerJsonToken.SelectObject<string>("microformat.microformatDataRenderer.description"),
+            artists: nextItem.SelectArtists("longBylineText.runs", 0, 3),
+            album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId, ShelfKind.Albums) : null,
+            duration: TimeSpan.FromSeconds(playerJsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
+            radio: nextItem.SelectRadio(),
+            isRatingsAllowed: playerJsonToken.SelectObject<bool>("videoDetails.allowRatings"),
+            isPrivate: playerJsonToken.SelectObject<bool>("videoDetails.isPrivate"),
+            isUnlisted: playerJsonToken.SelectObject<bool>("microformat.microformatDataRenderer.unlisted"),
+            isLiveContent: playerJsonToken.SelectObject<bool>("videoDetails.isLiveContent"),
+            isFamiliyFriendly: playerJsonToken.SelectObject<bool>("microformat.microformatDataRenderer.familySafe"),
+            isExplicit: nextItem.SelectIsExplicit("badges"),
+            viewsCount: playerJsonToken.SelectObject<int>("videoDetails.viewCount"),
+            publishedAt: playerJsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.publishDate"),
+            uploadedAt: playerJsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.uploadDate"),
+            thumbnails: playerJsonToken.SelectThumbnails("videoDetails.thumbnail.thumbnails"),
+            tags: playerJsonToken.SelectObjectOptional<string[]>("microformat.microformatDataRenderer.tags") ?? []);
     }
 
     /// <summary>

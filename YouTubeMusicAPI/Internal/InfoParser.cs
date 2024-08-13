@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
-using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Types;
 
@@ -99,6 +97,31 @@ internal static class InfoParser
             creationYear: innerJsonToken.SelectObject<int>("subtitle.runs[2].text"),
             thumbnails: innerJsonToken.SelectThumbnails(),
             songs: jsonToken.SelectCommunityPlaylistSongs("contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer.contents[0].musicPlaylistShelfRenderer.contents"));
+    }
+    /// <summary>
+    /// Parses simple community playlist info data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the item data</param>
+    /// <returns>The community playlist info</returns>
+    /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
+    public static CommunityPlaylistInfo GetCommunityPlaylistSimple(
+        JObject jsonToken)
+    {
+        JToken innerJsonToken = jsonToken.SelectRequieredToken("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content.musicQueueRenderer");
+
+        CommunityPlaylistSongInfo[] songs = innerJsonToken.SelectCommunityPlaylistSimpleSongs("content.playlistPanelRenderer.contents");
+
+        return new CommunityPlaylistInfo(
+            name: innerJsonToken.SelectObject<string>("header.musicQueueHeaderRenderer.subtitle.runs[0].text"),
+            id: innerJsonToken.SelectObject<string>("content.playlistPanelRenderer.playlistId"),
+            description: null,
+            creator: new("YouTube Music", null, ShelfKind.Profiles),
+            viewsInfo: null,
+            duration: TimeSpan.FromSeconds(songs.Sum(song => song.Duration.Seconds)),
+            songCount: songs.Length,
+            creationYear: DateTime.Now.Year,
+            thumbnails: jsonToken.SelectThumbnails("playerOverlays.playerOverlayRenderer.browserMediaSession.browserMediaSessionRenderer.thumbnailDetails.thumbnails"),
+            songs: songs);
     }
 
     /// <summary>

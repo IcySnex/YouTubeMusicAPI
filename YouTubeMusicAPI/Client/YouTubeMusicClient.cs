@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Models;
@@ -415,17 +413,37 @@ public class YouTubeMusicClient
             throw new ArgumentNullException(nameof(browseId), "Getting info failed. Browse id parameter is null or whitespace.");
         }
 
-        (string key, object? value)[] payload =
-        [
-            ("browseId", browseId)
-        ];
+        try
+        {
+            (string key, object? value)[] payload =
+            [
+                ("browseId", browseId)
+            ];
 
-        // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, "en", geographicalLocation, cancellationToken);
+            // Send request
+            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, "en", geographicalLocation, cancellationToken);
 
-        // Parse request response
-        CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylist(requestResponse);
-        return info;
+            // Parse request response
+            CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylist(requestResponse);
+            return info;
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.Message != "HTTP request failed. StatusCode: NotFound.")
+                throw;
+
+            (string key, object? value)[] payload =
+            [
+                ("playlistId", browseId.StartsWith("VL") ? browseId.Substring(2) : browseId)
+            ];
+
+            // Send request
+            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Next, payload, "en", geographicalLocation, cancellationToken);
+
+            // Parse request response
+            CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylistSimple(requestResponse);
+            return info;
+        }
     }
 
     /// <summary>

@@ -304,6 +304,34 @@ internal static class Selectors
 
         return [.. result];
     }
+    /// <summary>
+    /// Selects and casts simple community playlists songs from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the item data</param>
+    /// <param name="path">The json token path</param>
+    /// <returns>An array of album songs</returns>
+    public static CommunityPlaylistSongInfo[] SelectCommunityPlaylistSimpleSongs(
+        this JToken value,
+        string path)
+    {
+        List<CommunityPlaylistSongInfo> result = [];
+        foreach (JToken content in value.SelectObject<JToken[]>(path))
+        {
+            int albumIndex = content.SelectObject<JToken[]>("playlistPanelVideoRenderer.longBylineText.runs").Length - 3;
+            string? albumId = content.SelectObjectOptional<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId");
+            
+            result.Add(new(
+                name: content.SelectObject<string>("playlistPanelVideoRenderer.title.runs[0].text"),
+                id: content.SelectObjectOptional<string>("playlistPanelVideoRenderer.navigationEndpoint.watchEndpoint.videoId"),
+                artists: content.SelectArtists("playlistPanelVideoRenderer.longBylineText.runs", 0, 3),
+                album: albumId is not null ? new(content.SelectObject<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].text"), albumId, ShelfKind.Albums) : null,
+                isExplicit: content.SelectIsExplicit("playlistPanelVideoRenderer.badges"),
+                duration: content.SelectObject<string>("playlistPanelVideoRenderer.lengthText.runs[0].text").ToTimeSpan(),
+                thumbnails: content.SelectThumbnails("playlistPanelVideoRenderer.thumbnail.thumbnails")));
+        }
+
+        return [.. result];
+    }
 
 
     /// <summary>

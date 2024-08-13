@@ -110,7 +110,10 @@ internal static class InfoParser
     public static ArtistInfo GetArtist(
         JObject jsonToken)
     {
-        JToken innerJsonToken = jsonToken.SelectRequieredToken("header.musicImmersiveHeaderRenderer");
+        JToken? innerJsonToken = jsonToken.SelectToken("header.musicImmersiveHeaderRenderer");
+        bool isRich = innerJsonToken is not null;
+        innerJsonToken ??= jsonToken.SelectRequieredToken("header.musicVisualHeaderRenderer");
+
         JToken[] contents = jsonToken.SelectObject<JToken[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents");
 
         string? allSongsPlaylistId = null;
@@ -160,7 +163,7 @@ internal static class InfoParser
             description: innerJsonToken.SelectObjectOptional<string>("description.runs[0].text"),
             subscribersInfo: innerJsonToken.SelectObjectOptional<string>("subscriptionButton.subscribeButtonRenderer.longSubscriberCountText.runs[0].text"),
             viewsInfo: viewsInfo,
-            thumbnails: innerJsonToken.SelectThumbnails(),
+            thumbnails: innerJsonToken.SelectThumbnails(isRich ? "thumbnail.musicThumbnailRenderer.thumbnail.thumbnails" : "foregroundThumbnail.musicThumbnailRenderer.thumbnail.thumbnails"),
             allSongsPlaylistId: allSongsPlaylistId is null ? null : allSongsPlaylistId.StartsWith("VL") ? allSongsPlaylistId.Substring(2) : allSongsPlaylistId,
             songs: songs,
             albums: [.. albums],

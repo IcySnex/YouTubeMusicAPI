@@ -28,7 +28,7 @@ public class YouTubeMusicBase
                 client = new
                 {
                     clientName = "WEB_REMIX",
-                    clientVersion = "0.1",
+                    clientVersion = "1.20240918.01.00",
                     hl = hostLanguage,
                     gl = geographicalLocation,
                 }

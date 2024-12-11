@@ -90,7 +90,7 @@ internal static class InfoParser
             name: innerJsonToken.SelectObject<string>("title.runs[0].text"),
             id: innerJsonToken.SelectObject<string>("buttons[1].musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.playlistId"),
             description: innerJsonToken.SelectObjectOptional<JToken[]>("description.musicDescriptionShelfRenderer.description.runs")?.Aggregate("", (desc, run) => desc + run.SelectObjectOptional<string>("text")),
-            creator: innerJsonToken.SelectSehlfItem("straplineTextOne.runs[0].text", "straplineTextOne.runs[0].navigationEndpoint.browseEndpoint.browseId", ShelfKind.Profiles),
+            creator: innerJsonToken.SelectSehlfItem("facepile.avatarStackViewModel.text.content", "facepile.avatarStackViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId", ShelfKind.Profiles),
             viewsInfo: runs.Length - 5 < 0 ? null : innerJsonToken.SelectObjectOptional<string>("secondSubtitle.runs[0].text"),
             duration: innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{runs.Length - 1}].text").ToTimeSpanLong(),
             songCount: int.Parse(innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{runs.Length - 3}].text").Split(' ')[0]),

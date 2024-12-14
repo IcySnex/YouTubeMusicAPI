@@ -181,15 +181,14 @@ public class YouTubeMusicClient
             throw new ArgumentNullException(nameof(query), "Search failed. Query parameter is null or whitespace.");
         }
 
-        (string key, object? value)[] payload =
-        [
-            ("query", query),
-            ("params", kind.ToParams()),
-            ("continuation", continuationToken)
-        ];
-
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Search, payload, "en", geographicalLocation, cancellationToken);
+        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            [
+                ("query", query),
+                ("params", kind.ToParams()),
+                ("continuation", continuationToken)
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Search, payload, cancellationToken);
 
         // Parse request response
         IEnumerable<Shelf> searchResults = ParseSearchResponse(requestResponse);
@@ -341,14 +340,13 @@ public class YouTubeMusicClient
             throw new ArgumentNullException(nameof(id), "Getting info failed. Id parameter is null or whitespace.");
         }
 
-        (string key, object? value)[] payload =
-        [
-            ("videoId", id)
-        ];
-
-        // Send request
-        JObject playerRequestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, "en", geographicalLocation, cancellationToken);
-        JObject nextRequestResponse = await baseClient.SendRequestAsync(Endpoints.Next, payload, "en", geographicalLocation, cancellationToken);
+        // Send requests
+        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            [
+                ("videoId", id)
+            ]);
+        JObject playerRequestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, cancellationToken);
+        JObject nextRequestResponse = await baseClient.SendRequestAsync(Endpoints.Next, payload, cancellationToken);
 
         // Parse request response
         SongVideoInfo info = InfoParser.GetSongVideo(playerRequestResponse, nextRequestResponse);
@@ -378,13 +376,12 @@ public class YouTubeMusicClient
             throw new ArgumentNullException(nameof(browseId), "Getting info failed. Browse id parameter is null or whitespace.");
         }
 
-        (string key, object? value)[] payload =
-        [
-            ("browseId", browseId)
-        ];
-
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, "en", geographicalLocation, cancellationToken);
+        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            [
+                ("browseId", browseId)
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
 
         // Parse request response
         AlbumInfo info = InfoParser.GetAlbum(requestResponse);
@@ -415,13 +412,12 @@ public class YouTubeMusicClient
 
         try
         {
-            (string key, object? value)[] payload =
-            [
-                ("browseId", browseId)
-            ];
-
             // Send request
-            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, "en", geographicalLocation, cancellationToken);
+            Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+                [
+                    ("browseId", browseId)
+                ]);
+            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
 
             // Parse request response
             CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylist(requestResponse);
@@ -432,13 +428,12 @@ public class YouTubeMusicClient
             if (ex.Message != "HTTP request failed. StatusCode: NotFound.")
                 throw;
 
-            (string key, object? value)[] payload =
-            [
-                ("playlistId", browseId.StartsWith("VL") ? browseId.Substring(2) : browseId)
-            ];
-
             // Send request
-            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Next, payload, "en", geographicalLocation, cancellationToken);
+            Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+                [
+                    ("playlistId", browseId.StartsWith("VL") ? browseId.Substring(2) : browseId)
+                ]);
+            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Next, payload, cancellationToken);
 
             // Parse request response
             CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylistSimple(requestResponse);
@@ -468,13 +463,12 @@ public class YouTubeMusicClient
             throw new ArgumentNullException(nameof(browseId), "Getting info failed. Browse id parameter is null or whitespace.");
         }
 
-        (string key, object? value)[] payload =
-        [
-            ("browseId", browseId)
-        ];
-
         // Send request
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, "en", geographicalLocation, cancellationToken);
+        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            [
+                ("browseId", browseId)
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
 
         // Parse request response
         ArtistInfo info = InfoParser.GetArtist(requestResponse);

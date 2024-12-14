@@ -13,6 +13,7 @@ namespace YouTubeMusicAPI.Models.Info;
 /// <param name="album">The album of the song or video</param>
 /// <param name="duration">The duration of the song or video</param>
 /// <param name="radio">The radio channel of the song or video</param>
+/// <param name="playabilityStatus">The playability status of the song or video</param>
 /// <param name="isRatingsAllowed">Whether ratings are allowed or not</param>
 /// <param name="isPrivate">Whether the song or video is private or not</param>
 /// <param name="isUnlisted">Whether the song or video is unlisted or not</param>
@@ -33,6 +34,7 @@ public class SongVideoInfo(
     ShelfItem? album,
     TimeSpan duration,
     Radio radio,
+    PlayabilityStatus playabilityStatus,
     bool isRatingsAllowed,
     bool isPrivate,
     bool isUnlisted,
@@ -84,6 +86,11 @@ public class SongVideoInfo(
     /// The radio channel of the song or video
     /// </summary>
     public Radio Radio { get; } = radio;
+
+    /// <summary>
+    /// The playability status of the song or video
+    /// </summary>
+    public PlayabilityStatus PlayabilityStatus { get; } = playabilityStatus;
 
     /// <summary>
     /// Weither ratings for the song or video are allowed or not

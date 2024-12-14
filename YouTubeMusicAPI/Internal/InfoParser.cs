@@ -35,6 +35,7 @@ internal static class InfoParser
             album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId, ShelfKind.Albums) : null,
             duration: TimeSpan.FromSeconds(playerJsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
             radio: nextItem.SelectRadio(),
+            playabilityStatus: new(playerJsonToken.SelectObject<string>("playabilityStatus.status") == "OK", playerJsonToken.SelectObjectOptional<string>("playabilityStatus.reason")),
             isRatingsAllowed: playerJsonToken.SelectObject<bool>("videoDetails.allowRatings"),
             isPrivate: playerJsonToken.SelectObject<bool>("videoDetails.isPrivate"),
             isUnlisted: playerJsonToken.SelectObject<bool>("microformat.microformatDataRenderer.unlisted"),

@@ -24,7 +24,9 @@ internal static class InfoParser
         JToken nextItem = nextTabContainer.SelectRequieredToken("[0].tabRenderer.content.musicQueueRenderer.content.playlistPanelRenderer.contents[0].playlistPanelVideoRenderer");
 
         int albumIndex = nextItem.SelectObject<JToken[]>("longBylineText.runs").Length - 3;
-        string? albumId = nextItem.SelectObjectOptional<string>($"longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId");
+        string? albumId = albumIndex > -1 ? nextItem.SelectObjectOptional<string>($"longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId") : null;
+
+        bool isLive = playerJsonToken.SelectObject<bool>("videoDetails.isLiveContent");
 
         return new(
             name: playerJsonToken.SelectObject<string>("videoDetails.title"),
@@ -34,12 +36,12 @@ internal static class InfoParser
             artists: nextItem.SelectArtists("longBylineText.runs", 0, 3),
             album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId, YouTubeMusicItemKind.Albums) : null,
             duration: TimeSpan.FromSeconds(playerJsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
-            radio: nextItem.SelectRadio(),
+            radio: isLive ? null : nextItem.SelectRadio(),
             playabilityStatus: new(playerJsonToken.SelectObject<string>("playabilityStatus.status") == "OK", playerJsonToken.SelectObjectOptional<string>("playabilityStatus.reason")),
             isRatingsAllowed: playerJsonToken.SelectObject<bool>("videoDetails.allowRatings"),
             isPrivate: playerJsonToken.SelectObject<bool>("videoDetails.isPrivate"),
             isUnlisted: playerJsonToken.SelectObject<bool>("microformat.microformatDataRenderer.unlisted"),
-            isLiveContent: playerJsonToken.SelectObject<bool>("videoDetails.isLiveContent"),
+            isLiveContent: isLive,
             isFamiliyFriendly: playerJsonToken.SelectObject<bool>("microformat.microformatDataRenderer.familySafe"),
             isExplicit: nextItem.SelectIsExplicit("badges"),
             viewsCount: playerJsonToken.SelectObject<int>("videoDetails.viewCount"),

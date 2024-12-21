@@ -13,7 +13,6 @@
 /// <param name="duration">The approximated duration of the stream</param>
 /// <param name="contentLenght">The content length of the media stream in bytes</param>
 /// <param name="bitrate">The bitrate of the stream</param>
-/// <param name="averageBitrate">The average bitrate of the stream</param>
 /// <param name="quality">The quality of the audio stream</param>
 /// <param name="sampleRate">The sample rate of the audio stream</param>
 /// <param name="channels">The number of audio channels</param>
@@ -26,11 +25,10 @@ public class AudioStreamInfo(
     TimeSpan duration,
     long contentLenght,
     int bitrate,
-    int averageBitrate,
     string quality,
     int sampleRate,
     int channels,
-    double loudnessDb) : MediaStreamInfo(itag, url, container, lastModifedAt, duration, contentLenght, bitrate, averageBitrate)
+    double loudnessDb) : MediaStreamInfo(itag, url, container, lastModifedAt, duration, contentLenght, bitrate)
 {
     /// <summary>
     /// The quality of the audio stream

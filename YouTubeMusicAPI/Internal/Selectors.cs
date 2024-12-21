@@ -470,24 +470,34 @@ internal static class Selectors
         this JToken value,
         string path = "streamingData.adaptiveFormats")
     {
+        JToken[]? adaptiveFormats = value.SelectObjectOptional<JToken[]>(path);
+        if (adaptiveFormats is null)
+            return [];
+
         List<MediaStreamInfo> result = [];
-        foreach (JToken content in value.SelectObject<JToken[]>(path))
+        foreach (JToken content in adaptiveFormats)
         {
             string mimeType = content.SelectObject<string>("mimeType");
             string format = mimeType.Split('/')[1].Split(';')[0];
             string codecs = mimeType.Split('"')[1];
 
+            int itag = content.SelectObject<int>("itag");
+            string url = content.SelectObject<string>("url");
+            DateTime lastModifiedAt = content["lastModifed"] is null ? DateTime.Now : DateTimeOffset.FromUnixTimeMilliseconds(content.SelectObjectOptional<long>("lastModified") / 1000).DateTime;
+            TimeSpan duration = content["approxDurationMs"] is null ? TimeSpan.MaxValue : TimeSpan.FromMilliseconds(content.SelectObject<long>("approxDurationMs"));
+            long contentLength = content["contentLength"] is null ? long.MaxValue : content.SelectObject<long>("contentLength");
+            int bitrate = content.SelectObject<int>("bitrate");
+
             if (mimeType.StartsWith("video"))
             {
                 result.Add(new VideoStreamInfo(
-                    itag: content.SelectObject<int>("itag"),
-                    url: content.SelectObject<string>("url"),
+                    itag: itag,
+                    url: url,
                     container: new(false, true, format, codecs),
-                    lastModifedAt: DateTimeOffset.FromUnixTimeMilliseconds(content.SelectObject<long>("lastModified") / 1000).DateTime,
-                    duration: TimeSpan.FromMilliseconds(content.SelectObject<long>("approxDurationMs")),
-                    contentLenght: content.SelectObject<long>("contentLength"),
-                    bitrate: content.SelectObject<int>("bitrate"),
-                    averageBitrate: content.SelectObject<int>("averageBitrate"),
+                    lastModifedAt: lastModifiedAt,
+                    duration: duration,
+                    contentLenght: contentLength,
+                    bitrate: bitrate,
                     framerate: content.SelectObject<int>("fps"),
                     quality: content.SelectObject<string>("quality"),
                     qualityLabel: content.SelectObject<string>("qualityLabel"),
@@ -497,18 +507,17 @@ internal static class Selectors
             else if (mimeType.StartsWith("audio"))
             {
                 result.Add(new AudioStreamInfo(
-                    itag: content.SelectObject<int>("itag"),
-                    url: content.SelectObject<string>("url"),
+                    itag: itag,
+                    url: url,
                     container: new(true, false, format, codecs),
-                    lastModifedAt: DateTimeOffset.FromUnixTimeMilliseconds(content.SelectObject<long>("lastModified") / 1000).DateTime,
-                    duration: TimeSpan.FromMilliseconds(content.SelectObject<long>("approxDurationMs")),
-                    contentLenght: content.SelectObject<long>("contentLength"),
-                    bitrate: content.SelectObject<int>("bitrate"),
-                    averageBitrate: content.SelectObject<int>("averageBitrate"),
+                    lastModifedAt: lastModifiedAt,
+                    duration: duration,
+                    contentLenght: contentLength,
+                    bitrate: bitrate,
                     quality: content.SelectObject<string>("quality"),
                     sampleRate: content.SelectObject<int>("audioSampleRate"),
                     channels: content.SelectObject<int>("audioChannels"),
-                    loudnessDb: content.SelectObject<double>("loudnessDb")));
+                    loudnessDb: content["loudnessDb"] is null ? 0 : content.SelectObject<double>("loudnessDb")));
             }
             else
                 throw new InvalidDataException("Invalid stream mime type. Only video and audio are supported.");

@@ -22,6 +22,7 @@ public static class StreamingParser
 
         return new(
             streamInfo: jsonToken.SelectStreamInfo(),
+            isLiveContent: jsonToken.SelectObject<bool>("videoDetails.isLiveContent"),
             expiresIn: TimeSpan.FromSeconds(jsonToken.SelectObject<int>("streamingData.expiresInSeconds")),
             hlsManifestUrl: jsonToken.SelectObject<string>("streamingData.hlsManifestUrl"),
             aspectRatio: jsonToken.SelectObject<double>("streamingData.aspectRatio"));

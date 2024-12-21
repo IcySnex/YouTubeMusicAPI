@@ -15,7 +15,6 @@ namespace YouTubeMusicAPI.Models.Streaming;
 /// <param name="duration">The approximated duration of the stream</param>
 /// <param name="contentLenght">The content length of the media stream in bytes</param>
 /// <param name="bitrate">The bitrate of the stream</param>
-/// <param name="averageBitrate">The average bitrate of the stream</param>
 public abstract class MediaStreamInfo(
     int itag,
     string url,
@@ -23,8 +22,7 @@ public abstract class MediaStreamInfo(
     DateTime lastModifedAt,
     TimeSpan duration,
     long contentLenght,
-    int bitrate,
-    int averageBitrate)
+    int bitrate)
 {
     /// <summary>
     /// The encoding identifier for the media stream
@@ -60,11 +58,6 @@ public abstract class MediaStreamInfo(
     /// The bitrate of the stream
     /// </summary>
     public int Bitrate { get; } = bitrate;
-
-    /// <summary>
-    /// The average bitrate of the stream
-    /// </summary>
-    public int AverageBitrate { get; } = averageBitrate;
 
 
     /// <summary>

@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-
-namespace YouTubeMusicAPI.Models.Info;
+﻿namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
 /// Contains information about a YouTube Music song of an artist
@@ -14,8 +12,8 @@ namespace YouTubeMusicAPI.Models.Info;
 public class ArtistSongInfo(
     string name,
     string id,
-    ShelfItem[] artists,
-    ShelfItem album,
+    YouTubeMusicItem[] artists,
+    YouTubeMusicItem album,
     string playsinfo,
     Thumbnail[] thumbnails)
 {
@@ -32,12 +30,12 @@ public class ArtistSongInfo(
     /// <summary>
     /// The artist of this song of an artist
     /// </summary>
-    public ShelfItem[] Artists { get; } = artists;
+    public YouTubeMusicItem[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of this song of an artist
     /// </summary>
-    public ShelfItem Album { get; } = album;
+    public YouTubeMusicItem Album { get; } = album;
 
     /// <summary>
     /// The plays info of this song of an artist

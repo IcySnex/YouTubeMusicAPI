@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
 using YouTubeMusicAPI.Models;
-using YouTubeMusicAPI.Models.Shelf;
+using YouTubeMusicAPI.Models.Search;
 
 namespace YouTubeMusicAPI.Tests;
 
@@ -31,7 +31,7 @@ internal class Search
     /// Search for shelf items
     /// </summary>
     /// <typeparam name="T">The type of shelf items to search for</typeparam>
-    void Test<T>() where T : IShelfItem
+    void Test<T>() where T : IYouTubeMusicItem
     {
         IEnumerable<T>? searchResults = null;
 
@@ -53,7 +53,7 @@ internal class Search
     /// </summary>
     [Test]
     public void All() =>
-        Test<IShelfItem>();
+        Test<IYouTubeMusicItem>();
 
 
     /// <summary>
@@ -61,54 +61,54 @@ internal class Search
     /// </summary>
     [Test]
     public void Songs() =>
-        Test<Song>();
+        Test<SongSearchResult>();
 
     /// <summary>
     /// Search for videos 
     /// </summary>
     [Test]
     public void Videos() =>
-        Test<Video>();
+        Test<VideoSearchResult>();
 
     /// <summary>
     /// Search for albums 
     /// </summary>
     [Test]
     public void Albums() =>
-        Test<Album>();
+        Test<AlbumSearchResult>();
 
     /// <summary>
     /// Search for community playlists 
     /// </summary>
     [Test]
     public void CommunityPlaylists() =>
-        Test<CommunityPlaylist>();
+        Test<CommunityPlaylistSearchResult>();
 
     /// <summary>
     /// Search for artists 
     /// </summary>
     [Test]
     public void Artists() =>
-        Test<Artist>();
+        Test<ArtistSearchResult>();
 
     /// <summary>
     /// Search for songs 
     /// </summary>
     [Test]
     public void Podcasts() =>
-        Test<Podcast>();
+        Test<PodcastSearchResult>();
 
     /// <summary>
     /// Search for podcasts episodes 
     /// </summary>
     [Test]
     public void Episodes() =>
-        Test<Episode>();
+        Test<EpisodeSearchResult>();
 
     /// <summary>
     /// Search for profiles 
     /// </summary>
     [Test]
     public void Profiles() =>
-        Test<Profile>();
+        Test<ProfileSearchResult>();
 }

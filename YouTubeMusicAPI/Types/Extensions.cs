@@ -8,40 +8,40 @@ public static class Extensions
     /// <summary>
     /// Converts search kind to YouTube Music request payload params
     /// </summary>
-    /// <param name="kind">The shelf kind to convert</param>
+    /// <param name="kind">The YouTube Music item kind to convert</param>
     /// <returns>A YouTube Music request payload params</returns>
     public static string? ToParams(
-        this ShelfKind? kind) =>
+        this YouTubeMusicItemKind? kind) =>
         kind switch
         {
-            ShelfKind.Songs => "EgWKAQIIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            ShelfKind.Videos => "EgWKAQIQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            ShelfKind.Albums => "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            ShelfKind.CommunityPlaylists => "EgeKAQQoAEABahAQAxAKEAkQBBAFEBEQEBAV",
-            ShelfKind.Artists => "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            ShelfKind.Podcasts => "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            ShelfKind.Episodes => "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            ShelfKind.Profiles => "EgWKAQJYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            YouTubeMusicItemKind.Songs => "EgWKAQIIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            YouTubeMusicItemKind.Videos => "EgWKAQIQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            YouTubeMusicItemKind.Albums => "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            YouTubeMusicItemKind.CommunityPlaylists => "EgeKAQQoAEABahAQAxAKEAkQBBAFEBEQEBAV",
+            YouTubeMusicItemKind.Artists => "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            YouTubeMusicItemKind.Podcasts => "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            YouTubeMusicItemKind.Episodes => "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            YouTubeMusicItemKind.Profiles => "EgWKAQJYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             _ => null
         };
 
     /// <summary>
-    /// Converts string to shelf kind
+    /// Converts string to YouTube Music item kind
     /// </summary>
     /// <param name="shelfKindString">The string to convert</param>
-    /// <returns>A ShelfKind enum value</returns>
-    public static ShelfKind ToShelfKind(
+    /// <returns>A YouTubeMusicItemKind enum value</returns>
+    public static YouTubeMusicItemKind ToShelfKind(
         this string? shelfKindString) =>
         shelfKindString switch
         {
-            "Songs" => ShelfKind.Songs,
-            "Videos" => ShelfKind.Videos,
-            "Albums" => ShelfKind.Albums,
-            "Community playlists" => ShelfKind.CommunityPlaylists,
-            "Artists" => ShelfKind.Artists,
-            "Podcasts" => ShelfKind.Podcasts,
-            "Episodes" => ShelfKind.Episodes,
-            "Profiles" => ShelfKind.Profiles,
-            _ => ShelfKind.Unknown
+            "Songs" => YouTubeMusicItemKind.Songs,
+            "Videos" => YouTubeMusicItemKind.Videos,
+            "Albums" => YouTubeMusicItemKind.Albums,
+            "Community playlists" => YouTubeMusicItemKind.CommunityPlaylists,
+            "Artists" => YouTubeMusicItemKind.Artists,
+            "Podcasts" => YouTubeMusicItemKind.Podcasts,
+            "Episodes" => YouTubeMusicItemKind.Episodes,
+            "Profiles" => YouTubeMusicItemKind.Profiles,
+            _ => YouTubeMusicItemKind.Unknown
         };
 }

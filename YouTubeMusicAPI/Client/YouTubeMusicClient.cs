@@ -2,9 +2,10 @@
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Internal;
+using YouTubeMusicAPI.Internal.Parsers;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
-using YouTubeMusicAPI.Models.Shelf;
+using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Streaming;
 using YouTubeMusicAPI.Types;
 
@@ -53,22 +54,22 @@ public class YouTubeMusicClient
 
 
     /// <summary>
-    /// Gets the shelf kind based on the type of the shelf item
+    /// Gets the YouTube Music item kind based on the type of the item
     /// </summary>
-    /// <typeparam name="T">The requested shelf type</typeparam>
+    /// <typeparam name="T">The requested YouTube Music Item type</typeparam>
     /// <returns>The shelf kind</returns>
-    ShelfKind GetShelfKind<T>() where T : IShelfItem =>
+    YouTubeMusicItemKind GetSearchResultKind<T>() where T : IYouTubeMusicItem =>
         typeof(T) switch
         {
-            Type type when type == typeof(Song) => ShelfKind.Songs,
-            Type type when type == typeof(Video) => ShelfKind.Videos,
-            Type type when type == typeof(Album) => ShelfKind.Albums,
-            Type type when type == typeof(CommunityPlaylist) => ShelfKind.CommunityPlaylists,
-            Type type when type == typeof(Artist) => ShelfKind.Artists,
-            Type type when type == typeof(Podcast) => ShelfKind.Podcasts,
-            Type type when type == typeof(Episode) => ShelfKind.Episodes,
-            Type type when type == typeof(Profile) => ShelfKind.Profiles,
-            _ => ShelfKind.Unknown
+            Type type when type == typeof(SongSearchResult) => YouTubeMusicItemKind.Songs,
+            Type type when type == typeof(VideoSearchResult) => YouTubeMusicItemKind.Videos,
+            Type type when type == typeof(AlbumSearchResult) => YouTubeMusicItemKind.Albums,
+            Type type when type == typeof(CommunityPlaylistSearchResult) => YouTubeMusicItemKind.CommunityPlaylists,
+            Type type when type == typeof(ArtistSearchResult) => YouTubeMusicItemKind.Artists,
+            Type type when type == typeof(PodcastSearchResult) => YouTubeMusicItemKind.Podcasts,
+            Type type when type == typeof(EpisodeSearchResult) => YouTubeMusicItemKind.Episodes,
+            Type type when type == typeof(ProfileSearchResult) => YouTubeMusicItemKind.Profiles,
+            _ => YouTubeMusicItemKind.Unknown
         };
 
 
@@ -119,21 +120,21 @@ public class YouTubeMusicClient
                     .SelectObjectOptional<string>("title.runs[0].text");
             JToken[] shelfItems = shelfDataObject.SelectObjectOptional<JToken[]>("contents") ?? [];
 
-            ShelfKind kind = category.ToShelfKind();
-            Func<JToken, IShelfItem>? getShelfItem = kind switch
+            YouTubeMusicItemKind kind = category.ToShelfKind();
+            Func<JToken, IYouTubeMusicItem>? getShelfItem = kind switch
             {
-                ShelfKind.Songs => ShelfItemParser.GetSong,
-                ShelfKind.Videos => ShelfItemParser.GetVideo,
-                ShelfKind.Albums => ShelfItemParser.GetAlbums,
-                ShelfKind.CommunityPlaylists => ShelfItemParser.GetCommunityPlaylist,
-                ShelfKind.Artists => ShelfItemParser.GetArtist,
-                ShelfKind.Podcasts => ShelfItemParser.GetPodcast,
-                ShelfKind.Episodes => ShelfItemParser.GetEpisode,
-                ShelfKind.Profiles => ShelfItemParser.GetProfile,
+                YouTubeMusicItemKind.Songs => SearchParser.GetSong,
+                YouTubeMusicItemKind.Videos => SearchParser.GetVideo,
+                YouTubeMusicItemKind.Albums => SearchParser.GetAlbums,
+                YouTubeMusicItemKind.CommunityPlaylists => SearchParser.GetCommunityPlaylist,
+                YouTubeMusicItemKind.Artists => SearchParser.GetArtist,
+                YouTubeMusicItemKind.Podcasts => SearchParser.GetPodcast,
+                YouTubeMusicItemKind.Episodes => SearchParser.GetEpisode,
+                YouTubeMusicItemKind.Profiles => SearchParser.GetProfile,
                 _ => null
             };
 
-            List<IShelfItem> items = [];
+            List<IYouTubeMusicItem> items = [];
             if (getShelfItem is not null)
                 foreach (JToken shelfItem in shelfItems)
                 {
@@ -161,7 +162,7 @@ public class YouTubeMusicClient
     /// </summary>
     /// <param name="query">The query to search for</param>
     /// <param name="continuationToken">The continuation token to get further elemnts from a pervious search</param>
-    /// <param name="kind">The shelf kind of items to search for</param>
+    /// <param name="kind">The kind of items to search for</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>An array of shelves containing all search results</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
@@ -172,7 +173,7 @@ public class YouTubeMusicClient
     public async Task<IEnumerable<Shelf>> SearchAsync(
         string query,
         string? continuationToken = null,
-        ShelfKind? kind = null,
+        YouTubeMusicItemKind? kind = null,
         CancellationToken cancellationToken = default)
     {
         // Prepare request
@@ -193,7 +194,7 @@ public class YouTubeMusicClient
 
         // Parse request response
         IEnumerable<Shelf> searchResults = ParseSearchResponse(requestResponse);
-        return kind is null || kind == ShelfKind.Unknown ? searchResults : searchResults.Where(searchResult => searchResult.Kind == kind);
+        return kind is null || kind == YouTubeMusicItemKind.Unknown ? searchResults : searchResults.Where(searchResult => searchResult.Kind == kind);
     }
 
     /// <summary>
@@ -211,12 +212,12 @@ public class YouTubeMusicClient
     public async Task<IEnumerable<T>> SearchAsync<T>(
         string query,
         int limit = 20,
-        CancellationToken cancellationToken = default) where T : IShelfItem
+        CancellationToken cancellationToken = default) where T : IYouTubeMusicItem
     {
-        ShelfKind kind = GetShelfKind<T>();
+        YouTubeMusicItemKind kind = GetSearchResultKind<T>();
 
         // All items requested (does not support continuation)
-        if (kind == ShelfKind.Unknown)
+        if (kind == YouTubeMusicItemKind.Unknown)
         {
             IEnumerable<Shelf> allShelves = await SearchAsync(query, null, kind, cancellationToken);
 
@@ -510,5 +511,4 @@ public class YouTubeMusicClient
         StreamingData streamingData = StreamingParser.GetData(requestResponse);
         return streamingData;
     }
-
 }

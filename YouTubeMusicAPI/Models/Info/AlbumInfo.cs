@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-
-namespace YouTubeMusicAPI.Models.Info;
+﻿namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
 /// Contains information about a YouTube Music album
@@ -20,7 +18,7 @@ public class AlbumInfo(
     string name,
     string id,
     string? description,
-    ShelfItem[] artists,
+    YouTubeMusicItem[] artists,
     TimeSpan duration,
     int songCount,
     int releaseYear,
@@ -47,7 +45,7 @@ public class AlbumInfo(
     /// <summary>
     /// The artist of the album
     /// </summary>
-    public ShelfItem[] Artists { get; } = artists;
+    public YouTubeMusicItem[] Artists { get; } = artists;
 
     /// <summary>
     /// The total duration of all tracks in the album

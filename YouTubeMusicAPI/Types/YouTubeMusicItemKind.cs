@@ -1,9 +1,9 @@
 ﻿namespace YouTubeMusicAPI.Types;
 
 /// <summary>
-/// Represents the kind of a shelf
+/// Represents the kind of a YouTube Music item
 /// </summary>
-public enum ShelfKind
+public enum YouTubeMusicItemKind
 {
     /// <summary>
     /// Kind is unknown

@@ -1,10 +1,9 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-using YouTubeMusicAPI.Types;
+﻿using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models;
+namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a YouTube Music song
+/// Represents a YouTube Music song search result
 /// </summary>
 /// <param name="name">The name of this song</param>
 /// <param name="id">The id of this song</param>
@@ -15,16 +14,16 @@ namespace YouTubeMusicAPI.Models;
 /// <param name="playsInfo">The plays Info of this song</param>
 /// <param name="radio">The radio channel of this song</param>
 /// <param name="thumbnails">The thumbnails of this song</param>
-public class Song(
+public class SongSearchResult(
     string name,
     string id,
-    ShelfItem[] artists,
-    ShelfItem album,
+    YouTubeMusicItem[] artists,
+    YouTubeMusicItem album,
     TimeSpan duration,
     bool isExplicit,
     string playsInfo,
     Radio radio,
-    Thumbnail[] thumbnails) : IShelfItem
+    Thumbnail[] thumbnails) : IYouTubeMusicItem
 {
     /// <summary>
     /// Gets the url of this song which leads to YouTube music
@@ -32,7 +31,7 @@ public class Song(
     /// <param name="song">The song to get the url for </param>
     /// <returns>An url of this song which leads to YouTube music</returns>
     public static string GetUrl(
-        Song song) =>
+        SongSearchResult song) =>
         $"https://music.youtube.com/watch?v={song.Id}";
 
 
@@ -49,12 +48,12 @@ public class Song(
     /// <summary>
     /// The artist of this song
     /// </summary>
-    public ShelfItem[] Artists { get; } = artists;
+    public YouTubeMusicItem[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of this song
     /// </summary>
-    public ShelfItem Album { get; } = album;
+    public YouTubeMusicItem Album { get; } = album;
 
     /// <summary>
     /// The duration of this song
@@ -83,7 +82,7 @@ public class Song(
 
 
     /// <summary>
-    /// The kind of this shelf item
+    /// The kind of this YouTube Music item
     /// </summary>
-    public ShelfKind Kind => ShelfKind.Songs;
+    public YouTubeMusicItemKind Kind => YouTubeMusicItemKind.Songs;
 }

@@ -1,22 +1,21 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-using YouTubeMusicAPI.Types;
+﻿using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models;
+namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a YouTube Music artist
+/// Represents a YouTube Music artist search result
 /// </summary>
 /// <param name="name">The name of this artist</param>
 /// <param name="id">The id of this artist</param>
 /// <param name="subscribersInfo">The subscribers info of this artist</param>
 /// <param name="radio">The radio channel of this artist</param>
 /// <param name="thumbnails">The thumbnails of this artist</param>
-public class Artist(
+public class ArtistSearchResult(
     string name,
     string id,
     string subscribersInfo,
     Radio radio,
-    Thumbnail[] thumbnails) : IShelfItem
+    Thumbnail[] thumbnails) : IYouTubeMusicItem
 {
     /// <summary>
     /// Gets the url of this artist which leads to YouTube music
@@ -24,7 +23,7 @@ public class Artist(
     /// <param name="artist">The artist to get the url for </param>
     /// <returns>An url of this artist which leads to YouTube music</returns>
     public static string GetUrl(
-        Artist artist) =>
+        ArtistSearchResult artist) =>
         $"https://music.youtube.com/channel/{artist.Id}";
 
 
@@ -55,7 +54,7 @@ public class Artist(
 
 
     /// <summary>
-    /// The kind of this shelf item
+    /// The kind of this YouTube Music item
     /// </summary>
-    public ShelfKind Kind => ShelfKind.Artists;
+    public YouTubeMusicItemKind Kind => YouTubeMusicItemKind.Artists;
 }

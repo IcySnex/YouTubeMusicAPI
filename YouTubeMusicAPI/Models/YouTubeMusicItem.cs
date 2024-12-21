@@ -1,17 +1,17 @@
 ﻿using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models.Shelf;
+namespace YouTubeMusicAPI.Models;
 
 /// <summary>
-/// Represents an unknown item in a YouTube Music shelf
+/// Represents an unknown item in YouTube Music
 /// </summary>
 /// <param name="name">The name of this item</param>
 /// <param name="id">the id of this item</param>
 /// <param name="kind">the kind of this shelf item</param>
-public class ShelfItem(
+public class YouTubeMusicItem(
     string name,
     string? id,
-    ShelfKind kind = ShelfKind.Unknown) : IShelfItem
+    YouTubeMusicItemKind kind = YouTubeMusicItemKind.Unknown) : IYouTubeMusicItem
 {
     /// <summary>
     /// The name of this item
@@ -25,7 +25,7 @@ public class ShelfItem(
 
 
     /// <summary>
-    /// The kind of this shelf item
+    /// The kind of this YouTube Music item
     /// </summary>
-    public ShelfKind Kind { get; } = kind;
+    public YouTubeMusicItemKind Kind { get; } = kind;
 }

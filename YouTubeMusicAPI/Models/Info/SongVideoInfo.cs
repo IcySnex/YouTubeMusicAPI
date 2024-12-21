@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-
-namespace YouTubeMusicAPI.Models.Info;
+﻿namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
 /// Contains information about a YouTube Music song or video
@@ -30,8 +28,8 @@ public class SongVideoInfo(
     string id,
     string browseId,
     string description,
-    ShelfItem[] artists,
-    ShelfItem? album,
+    YouTubeMusicItem[] artists,
+    YouTubeMusicItem? album,
     TimeSpan duration,
     Radio radio,
     PlayabilityStatus playabilityStatus,
@@ -70,12 +68,12 @@ public class SongVideoInfo(
     /// <summary>
     /// The artist of the song or video
     /// </summary>
-    public ShelfItem[] Artists { get; } = artists;
+    public YouTubeMusicItem[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of the song or video
     /// </summary>
-    public ShelfItem? Album { get; } = album;
+    public YouTubeMusicItem? Album { get; } = album;
 
     /// <summary>
     /// The duration of the song or video

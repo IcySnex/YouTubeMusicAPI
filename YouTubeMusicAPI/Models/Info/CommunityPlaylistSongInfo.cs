@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-
-namespace YouTubeMusicAPI.Models.Info;
+﻿namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
 /// Contains information about a YouTube Music song in a community playlist
@@ -15,8 +13,8 @@ namespace YouTubeMusicAPI.Models.Info;
 public class CommunityPlaylistSongInfo(
     string name,
     string? id,
-    ShelfItem[] artists,
-    ShelfItem? album,
+    YouTubeMusicItem[] artists,
+    YouTubeMusicItem? album,
     bool isExplicit,
     TimeSpan duration,
     Thumbnail[] thumbnails)
@@ -34,12 +32,12 @@ public class CommunityPlaylistSongInfo(
     /// <summary>
     /// The artist of this community playlist song
     /// </summary>
-    public ShelfItem[] Artists { get; } = artists;
+    public YouTubeMusicItem[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of this community playlist song
     /// </summary>
-    public ShelfItem? Album { get; } = album;
+    public YouTubeMusicItem? Album { get; } = album;
 
     /// <summary>
     /// Weither the community playlist song is explicit or not

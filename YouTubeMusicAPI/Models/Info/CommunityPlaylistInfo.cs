@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-
-namespace YouTubeMusicAPI.Models.Info;
+﻿namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
 /// Contains information about a YouTube Music community playlist
@@ -19,7 +17,7 @@ public class CommunityPlaylistInfo(
     string name,
     string id,
     string? description,
-    ShelfItem creator,
+    YouTubeMusicItem creator,
     string? viewsInfo,
     TimeSpan duration,
     int songCount,
@@ -45,7 +43,7 @@ public class CommunityPlaylistInfo(
     /// <summary>
     /// The artist of the community playlist
     /// </summary>
-    public ShelfItem Creator { get; } = creator;
+    public YouTubeMusicItem Creator { get; } = creator;
 
     /// <summary>
     /// The views info of the community playlist

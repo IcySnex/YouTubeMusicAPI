@@ -1,10 +1,9 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-using YouTubeMusicAPI.Types;
+﻿using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models;
+namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a YouTube Music album
+/// Represents a YouTube Music album search result
 /// </summary>
 /// <param name="name">The name of this album</param>
 /// <param name="id">The id of this album</param>
@@ -13,14 +12,14 @@ namespace YouTubeMusicAPI.Models;
 /// <param name="isSingle">Weither this album is a single or not</param>
 /// <param name="radio">The radio channel of this album</param>
 /// <param name="thumbnails">The thumbnails of this album</param>
-public class Album(
+public class AlbumSearchResult(
     string name,
     string id,
-    ShelfItem[] artists,
+    YouTubeMusicItem[] artists,
     int releaseYear,
     bool isSingle,
     Radio radio,
-    Thumbnail[] thumbnails) : IShelfItem
+    Thumbnail[] thumbnails) : IYouTubeMusicItem
 {
     /// <summary>
     /// Gets the url of this album which leads to YouTube music
@@ -28,7 +27,7 @@ public class Album(
     /// <param name="album">The album to get the url for </param>
     /// <returns>An url of this album which leads to YouTube music</returns>
     public static string GetUrl(
-        Album album) =>
+        AlbumSearchResult album) =>
         $"https://music.youtube.com/playlist?list={album.Id}";
 
 
@@ -45,7 +44,7 @@ public class Album(
     /// <summary>
     /// The artists of this album
     /// </summary>
-    public ShelfItem[] Artists { get; } = artists;
+    public YouTubeMusicItem[] Artists { get; } = artists;
 
     /// <summary>
     /// The release year of this album
@@ -69,7 +68,7 @@ public class Album(
 
 
     /// <summary>
-    /// The kind of this shelf item
+    /// The kind of this YouTube Music item
     /// </summary>
-    public ShelfKind Kind => ShelfKind.Albums;
+    public YouTubeMusicItemKind Kind => YouTubeMusicItemKind.Albums;
 }

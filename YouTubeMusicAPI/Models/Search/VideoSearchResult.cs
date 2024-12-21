@@ -1,10 +1,9 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-using YouTubeMusicAPI.Types;
+﻿using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models;
+namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a YouTube Music video
+/// Represents a YouTube Music video search result
 /// </summary>
 /// <param name="name">The name of this video</param>
 /// <param name="id">The id of this video</param>
@@ -13,14 +12,14 @@ namespace YouTubeMusicAPI.Models;
 /// <param name="viewsInfo">The views info of this video</param>
 /// <param name="radio">The radio of this video</param>
 /// <param name="thumbnails">The thumbnails of this video</param>
-public class Video(
+public class VideoSearchResult(
     string name,
     string id,
-    ShelfItem artist,
+    YouTubeMusicItem artist,
     TimeSpan duration,
     string viewsInfo,
     Radio radio,
-    Thumbnail[] thumbnails) : IShelfItem
+    Thumbnail[] thumbnails) : IYouTubeMusicItem
 {
     /// <summary>
     /// Gets the url of this video which leads to YouTube music
@@ -28,7 +27,7 @@ public class Video(
     /// <param name="video">The video to get the url for </param>
     /// <returns>An url of this video which leads to YouTube music</returns>
     public static string GetUrl(
-        Video video) =>
+        VideoSearchResult video) =>
         $"https://music.youtube.com/watch?v={video.Id}";
 
 
@@ -45,7 +44,7 @@ public class Video(
     /// <summary>
     /// The artist of this video
     /// </summary>
-    public ShelfItem Artist { get; } = artist;
+    public YouTubeMusicItem Artist { get; } = artist;
 
     /// <summary>
     /// The duration of this video
@@ -69,7 +68,7 @@ public class Video(
 
 
     /// <summary>
-    /// The kind of this shelf item
+    /// The kind of this YouTube Music item
     /// </summary>
-    public ShelfKind Kind => ShelfKind.Videos;
+    public YouTubeMusicItemKind Kind => YouTubeMusicItemKind.Videos;
 }

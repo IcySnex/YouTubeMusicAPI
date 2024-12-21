@@ -1,10 +1,9 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-using YouTubeMusicAPI.Types;
+﻿using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models;
+namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a YouTube Music podcast episode
+/// Represents a YouTube Music podcast episode search result
 /// </summary>
 /// <param name="name">The name of this podcast episode</param>
 /// <param name="id">The id of this podcast episode</param>
@@ -12,13 +11,13 @@ namespace YouTubeMusicAPI.Models;
 /// <param name="releasedAt">The date when this podcast episode was released</param>
 /// <param name="isLikesAllowed">Weither likes for this podcast episode are allowed or not</param>
 /// <param name="thumbnails">The thumbnails of this podcast episode</param>
-public class Episode(
+public class EpisodeSearchResult(
     string name,
     string id,
-    ShelfItem podcast,
+    YouTubeMusicItem podcast,
     DateTime releasedAt,
     bool isLikesAllowed,
-    Thumbnail[] thumbnails) : IShelfItem
+    Thumbnail[] thumbnails) : IYouTubeMusicItem
 {
     /// <summary>
     /// Gets the url of this podcast episode which leads to YouTube music
@@ -26,7 +25,7 @@ public class Episode(
     /// <param name="episode">The podcast episode to get the url for </param>
     /// <returns>An url of this podcast episode which leads to YouTube music</returns>
     public static string GetUrl(
-        Episode episode) =>
+        EpisodeSearchResult episode) =>
         $"https://music.youtube.com/watch?v={episode.Id}";
 
 
@@ -43,7 +42,7 @@ public class Episode(
     /// <summary>
     /// The podcast of this podcast episode
     /// </summary>
-    public ShelfItem Podcast { get; } = podcast;
+    public YouTubeMusicItem Podcast { get; } = podcast;
 
     /// <summary>
     /// The date when this podcast episode was released
@@ -62,7 +61,7 @@ public class Episode(
 
 
     /// <summary>
-    /// The kind of this shelf item
+    /// The kind of this YouTube Music item
     /// </summary>
-    public ShelfKind Kind => ShelfKind.Episodes;
+    public YouTubeMusicItemKind Kind => YouTubeMusicItemKind.Episodes;
 }

@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using YouTubeMusicAPI.Models.Streaming;
 
-namespace YouTubeMusicAPI.Internal;
+namespace YouTubeMusicAPI.Internal.Parsers;
 
 /// <summary>
 /// Contains methods to parse streams from json tokens
@@ -17,6 +17,9 @@ public static class StreamingParser
     public static StreamingData GetData(
         JObject jsonToken)
     {
+        if (jsonToken.SelectObject<string>("playabilityStatus.status") != "OK")
+            throw new InvalidOperationException($"This media stream is not playable: {jsonToken.SelectObjectOptional<string>("playabilityStatus.reason") ?? "Unknown reason"}");
+
         return new(
             streamInfo: jsonToken.SelectStreamInfo(),
             expiresIn: TimeSpan.FromSeconds(jsonToken.SelectObject<int>("streamingData.expiresInSeconds")),

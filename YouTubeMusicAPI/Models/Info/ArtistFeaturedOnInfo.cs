@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Models.Shelf;
-
-namespace YouTubeMusicAPI.Models.Info;
+﻿namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
 /// Contains information about a YouTube Music artist featured on playlist
@@ -12,7 +10,7 @@ namespace YouTubeMusicAPI.Models.Info;
 public class ArtistFeaturedOnInfo(
     string name,
     string id,
-    ShelfItem creator,
+    YouTubeMusicItem creator,
     Thumbnail[] thumbnails)
 {
     /// <summary>
@@ -28,7 +26,7 @@ public class ArtistFeaturedOnInfo(
     /// <summary>
     /// The creator of the artist featured on playlist
     /// </summary>
-    public ShelfItem Creator { get; } = creator;
+    public YouTubeMusicItem Creator { get; } = creator;
 
     /// <summary>
     /// The thumbnails of the artist featured on playlist

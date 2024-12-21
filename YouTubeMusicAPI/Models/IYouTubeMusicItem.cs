@@ -1,11 +1,11 @@
 ﻿using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models.Shelf;
+namespace YouTubeMusicAPI.Models;
 
 /// <summary>
-/// Represents an unknown item in a YouTube Music shelf
+/// Represents an item in YouTube Music
 /// </summary>
-public interface IShelfItem
+public interface IYouTubeMusicItem
 {
     /// <summary>
     /// The name of this item
@@ -21,5 +21,5 @@ public interface IShelfItem
     /// <summary>
     /// The kind of this shelf item
     /// </summary>
-    public ShelfKind Kind { get; }
+    public YouTubeMusicItemKind Kind { get; }
 }

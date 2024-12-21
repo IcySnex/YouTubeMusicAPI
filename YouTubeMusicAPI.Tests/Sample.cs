@@ -1,7 +1,7 @@
 ﻿using YouTubeMusicAPI.Client;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
-using YouTubeMusicAPI.Models.Shelf;
+using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Tests;
@@ -17,8 +17,8 @@ internal class Sample
     {
         YouTubeMusicClient client = new();
 
-        IEnumerable<IShelfItem> searchResults = await client.SearchAsync<IShelfItem>(query, limit);
-        foreach (IShelfItem item in searchResults)
+        IEnumerable<IYouTubeMusicItem> searchResults = await client.SearchAsync<IYouTubeMusicItem>(query, limit);
+        foreach (IYouTubeMusicItem item in searchResults)
             Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
     }
 
@@ -32,7 +32,7 @@ internal class Sample
         {
             Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
 
-            foreach (IShelfItem item in shelf.Items)
+            foreach (IYouTubeMusicItem item in shelf.Items)
                 Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
         }
     }
@@ -43,8 +43,8 @@ internal class Sample
     {
         YouTubeMusicClient client = new();
 
-        IEnumerable<Song> searchResults = await client.SearchAsync<Song>(query);
-        foreach (Song song in searchResults)
+        IEnumerable<SongSearchResult> searchResults = await client.SearchAsync<SongSearchResult>(query);
+        foreach (SongSearchResult song in searchResults)
             Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album.Name}");
     }
 
@@ -53,14 +53,14 @@ internal class Sample
     {
         YouTubeMusicClient client = new();
 
-        IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, ShelfKind.Songs);
+        IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, YouTubeMusicItemKind.Songs);
         foreach (Shelf shelf in shelves)
         {
             Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
 
-            foreach (IShelfItem item in shelf.Items)
+            foreach (IYouTubeMusicItem item in shelf.Items)
             {
-                Song song = (Song)item;
+                SongSearchResult song = (SongSearchResult)item;
                 Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album.Name}");
             }
         }

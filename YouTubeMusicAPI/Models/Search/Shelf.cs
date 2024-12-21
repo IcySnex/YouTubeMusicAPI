@@ -1,17 +1,17 @@
 ﻿using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Models.Shelf;
+namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a YouTube Music shelf
+/// Represents a YouTube Music search result shelf
 /// </summary>
 /// <param name="nextContinuationToken">The next continuation token to get further elemnts from this search</param>
-/// <param name="items">The shelf items of this shelf</param>
+/// <param name="items">The YouTube Music items of this shelf</param>
 /// <param name="kind">The kind of this shelf</param>
 public class Shelf(
     string? nextContinuationToken,
-    IShelfItem[] items,
-    ShelfKind kind)
+    IYouTubeMusicItem[] items,
+    YouTubeMusicItemKind kind)
 {
     /// <summary>
     /// The next continuation token to get further elemnts from this search
@@ -21,11 +21,11 @@ public class Shelf(
     /// <summary>
     /// The shelf items of this shelf
     /// </summary>
-    public IShelfItem[] Items { get; } = items;
+    public IYouTubeMusicItem[] Items { get; } = items;
 
 
     /// <summary>
     /// The kind of this shelf
     /// </summary>
-    public ShelfKind Kind { get; } = kind;
+    public YouTubeMusicItemKind Kind { get; } = kind;
 }

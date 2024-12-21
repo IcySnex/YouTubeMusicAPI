@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
-using YouTubeMusicAPI.Models.Shelf;
+using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Tests;
@@ -32,7 +32,7 @@ internal class SearchShelves
     /// </summary>
     /// <param name="kind">The type of shelf to search for</param>
     void Test(
-        ShelfKind? kind)
+        YouTubeMusicItemKind? kind)
     {
         IEnumerable<Shelf>? searchResults = null;
 
@@ -62,54 +62,54 @@ internal class SearchShelves
     /// </summary>
     [Test]
     public void Songs() =>
-        Test(ShelfKind.Songs);
+        Test(YouTubeMusicItemKind.Songs);
 
     /// <summary>
     /// Search for videos shelf
     /// </summary>
     [Test]
     public void Videos() =>
-        Test(ShelfKind.Videos);
+        Test(YouTubeMusicItemKind.Videos);
 
     /// <summary>
     /// Search for albums shelf
     /// </summary>
     [Test]
     public void Albums() =>
-        Test(ShelfKind.Albums);
+        Test(YouTubeMusicItemKind.Albums);
 
     /// <summary>
     /// Search for community playlists shelf
     /// </summary>
     [Test]
     public void CommunityPlaylists() =>
-        Test(ShelfKind.CommunityPlaylists);
+        Test(YouTubeMusicItemKind.CommunityPlaylists);
 
     /// <summary>
     /// Search for artists shelf
     /// </summary>
     [Test]
     public void Artists() =>
-        Test(ShelfKind.Artists);
+        Test(YouTubeMusicItemKind.Artists);
 
     /// <summary>
     /// Search for podcasts shelf
     /// </summary>
     [Test]
     public void Podcasts() =>
-        Test(ShelfKind.Podcasts);
+        Test(YouTubeMusicItemKind.Podcasts);
 
     /// <summary>
     /// Search for podcasts episodes shelf
     /// </summary>
     [Test]
     public void Episodes() =>
-        Test(ShelfKind.Episodes);
+        Test(YouTubeMusicItemKind.Episodes);
 
     /// <summary>
     /// Search for profiles shelf
     /// </summary>
     [Test]
     public void Profiles() =>
-        Test(ShelfKind.Profiles);
+        Test(YouTubeMusicItemKind.Profiles);
 }

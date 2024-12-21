@@ -2,7 +2,7 @@
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Types;
 
-namespace YouTubeMusicAPI.Internal;
+namespace YouTubeMusicAPI.Internal.Parsers;
 
 /// <summary>
 /// Contains methods to parse info from json tokens
@@ -32,7 +32,7 @@ internal static class InfoParser
             browseId: nextTabContainer.SelectObject<string>("[2].tabRenderer.endpoint.browseEndpoint.browseId"),
             description: playerJsonToken.SelectObject<string>("microformat.microformatDataRenderer.description"),
             artists: nextItem.SelectArtists("longBylineText.runs", 0, 3),
-            album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId, ShelfKind.Albums) : null,
+            album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId, YouTubeMusicItemKind.Albums) : null,
             duration: TimeSpan.FromSeconds(playerJsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
             radio: nextItem.SelectRadio(),
             playabilityStatus: new(playerJsonToken.SelectObject<string>("playabilityStatus.status") == "OK", playerJsonToken.SelectObjectOptional<string>("playabilityStatus.reason")),
@@ -91,7 +91,7 @@ internal static class InfoParser
             name: innerJsonToken.SelectObject<string>("title.runs[0].text"),
             id: innerJsonToken.SelectObject<string>("buttons[1].musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.playlistId"),
             description: innerJsonToken.SelectObjectOptional<JToken[]>("description.musicDescriptionShelfRenderer.description.runs")?.Aggregate("", (desc, run) => desc + run.SelectObjectOptional<string>("text")),
-            creator: innerJsonToken.SelectSehlfItem("facepile.avatarStackViewModel.text.content", "facepile.avatarStackViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId", ShelfKind.Profiles),
+            creator: innerJsonToken.SelectYouTubeMusicItem("facepile.avatarStackViewModel.text.content", "facepile.avatarStackViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId", YouTubeMusicItemKind.Profiles),
             viewsInfo: runs.Length - 5 < 0 ? null : innerJsonToken.SelectObjectOptional<string>("secondSubtitle.runs[0].text"),
             duration: innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{runs.Length - 1}].text").ToTimeSpanLong(),
             songCount: int.Parse(innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{runs.Length - 3}].text").Split(' ')[0]),
@@ -116,7 +116,7 @@ internal static class InfoParser
             name: innerJsonToken.SelectObject<string>("header.musicQueueHeaderRenderer.subtitle.runs[0].text"),
             id: innerJsonToken.SelectObject<string>("content.playlistPanelRenderer.playlistId"),
             description: null,
-            creator: new("YouTube Music", null, ShelfKind.Profiles),
+            creator: new("YouTube Music", null, YouTubeMusicItemKind.Profiles),
             viewsInfo: null,
             duration: TimeSpan.FromSeconds(songs.Sum(song => song.Duration.Seconds)),
             songCount: songs.Length,

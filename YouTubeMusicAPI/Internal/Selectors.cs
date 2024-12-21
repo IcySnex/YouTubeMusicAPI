@@ -2,6 +2,7 @@
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Shelf;
+using YouTubeMusicAPI.Models.Streaming;
 using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Internal;
@@ -454,6 +455,64 @@ internal static class Selectors
                 id: content.SelectObject<string>("musicTwoRowItemRenderer.navigationEndpoint.browseEndpoint.browseId"),
                 subscribersInfo: content.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text"),
                 thumbnails: content.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails")));
+        }
+
+        return [.. result];
+    }
+
+
+    /// <summary>
+    /// Selects and casts media stream info from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the item data</param>
+    /// <param name="path">The json token path</param>
+    /// <returns>An array of media stream info</returns>
+    public static MediaStreamInfo[] SelectStreamInfo(
+        this JToken value,
+        string path = "streamingData.adaptiveFormats")
+    {
+        List<MediaStreamInfo> result = [];
+        foreach (JToken content in value.SelectObject<JToken[]>(path))
+        {
+            string mimeType = content.SelectObject<string>("mimeType");
+            string format = mimeType.Split('/')[1].Split(';')[0];
+            string codecs = mimeType.Split('"')[1];
+
+            if (mimeType.StartsWith("video"))
+            {
+                result.Add(new VideoStreamInfo(
+                    itag: content.SelectObject<int>("itag"),
+                    url: content.SelectObject<string>("url"),
+                    container: new(false, true, format, codecs),
+                    lastModifedAt: DateTimeOffset.FromUnixTimeMilliseconds(content.SelectObject<long>("lastModified") / 1000).DateTime,
+                    duration: TimeSpan.FromMilliseconds(content.SelectObject<long>("approxDurationMs")),
+                    contentLenght: content.SelectObject<long>("contentLength"),
+                    bitrate: content.SelectObject<int>("bitrate"),
+                    averageBitrate: content.SelectObject<int>("averageBitrate"),
+                    framerate: content.SelectObject<int>("fps"),
+                    quality: content.SelectObject<string>("quality"),
+                    qualityLabel: content.SelectObject<string>("qualityLabel"),
+                    width: content.SelectObjectOptional<int>("width"),
+                    height: content.SelectObjectOptional<int>("height")));
+            }
+            else if (mimeType.StartsWith("audio"))
+            {
+                result.Add(new AudioStreamInfo(
+                    itag: content.SelectObject<int>("itag"),
+                    url: content.SelectObject<string>("url"),
+                    container: new(true, false, format, codecs),
+                    lastModifedAt: DateTimeOffset.FromUnixTimeMilliseconds(content.SelectObject<long>("lastModified") / 1000).DateTime,
+                    duration: TimeSpan.FromMilliseconds(content.SelectObject<long>("approxDurationMs")),
+                    contentLenght: content.SelectObject<long>("contentLength"),
+                    bitrate: content.SelectObject<int>("bitrate"),
+                    averageBitrate: content.SelectObject<int>("averageBitrate"),
+                    quality: content.SelectObject<string>("quality"),
+                    sampleRate: content.SelectObject<int>("audioSampleRate"),
+                    channels: content.SelectObject<int>("audioChannels"),
+                    loudnessDb: content.SelectObject<double>("loudnessDb")));
+            }
+            else
+                throw new InvalidDataException("Invalid stream mime type. Only video and audio are supported.");
         }
 
         return [.. result];

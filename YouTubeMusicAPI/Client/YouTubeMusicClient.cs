@@ -5,6 +5,7 @@ using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Shelf;
+using YouTubeMusicAPI.Models.Streaming;
 using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Client;
@@ -474,4 +475,40 @@ public class YouTubeMusicClient
         ArtistInfo info = InfoParser.GetArtist(requestResponse);
         return info;
     }
+
+
+    /// <summary>
+    /// Gets the streaming data of a song or video on YouTube Music
+    /// </summary>
+    /// <param name="id">The id of the song or video</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The song or video streaming data</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<StreamingData> GetStreamingDataAsync(
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetStreamingDataAsync] Getting streaming data failed. Id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(id), "Getting streaming data failed. Id parameter is null or whitespace.");
+        }
+
+        // Send requests
+        Dictionary<string, object> payload = Payload.Mobile(geographicalLocation,
+            [
+                ("videoId", id)
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, cancellationToken);
+
+        // Parse request response
+        StreamingData streamingData = StreamingParser.GetData(requestResponse);
+        return streamingData;
+    }
+
 }

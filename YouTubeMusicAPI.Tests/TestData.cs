@@ -57,4 +57,10 @@ internal abstract class TestData
     /// Test geographical location for requests
     /// </summary>
     public const string GeographicalLocation = "US";
+
+
+    /// <summary>
+    /// File path to download test media stream
+    /// </summary>
+    public const string FilePath = @"C:\Users\User69\Desktop\test.mp4";
 }

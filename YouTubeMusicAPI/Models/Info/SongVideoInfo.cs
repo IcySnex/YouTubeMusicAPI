@@ -10,7 +10,7 @@
 /// <param name="artists">The artist of the song or video</param>
 /// <param name="album">The album of the song or video</param>
 /// <param name="duration">The duration of the song or video</param>
-/// <param name="radio">The radio channel of the song or video</param>
+/// <param name="radio">The radio channel of the song or video (null when live content is true)</param>
 /// <param name="playabilityStatus">The playability status of the song or video</param>
 /// <param name="isRatingsAllowed">Whether ratings are allowed or not</param>
 /// <param name="isPrivate">Whether the song or video is private or not</param>
@@ -31,7 +31,7 @@ public class SongVideoInfo(
     YouTubeMusicItem[] artists,
     YouTubeMusicItem? album,
     TimeSpan duration,
-    Radio radio,
+    Radio? radio,
     PlayabilityStatus playabilityStatus,
     bool isRatingsAllowed,
     bool isPrivate,
@@ -81,9 +81,9 @@ public class SongVideoInfo(
     public TimeSpan Duration { get; } = duration;
 
     /// <summary>
-    /// The radio channel of the song or video
+    /// The radio channel of the song or video (null when live content is true)
     /// </summary>
-    public Radio Radio { get; } = radio;
+    public Radio? Radio { get; } = radio;
 
     /// <summary>
     /// The playability status of the song or video

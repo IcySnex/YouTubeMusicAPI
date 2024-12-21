@@ -1,117 +1,136 @@
 # <img src="https://github.com/IcySnex/YouTubeMusicAPI/blob/main/icon.png" alt="YouTube Music Icon" width="40" height="40"> YouTubeMusicAPI
 
-YouTubeMusicAPI is a simple and efficient wrapper for the internal YouTube Music Web API for dotnet & C# developers.
-This library allows you to easily search for songs, videos, albums, community playlists, artists, podcasts, podcast episodes & profiles on YouTube Music.
+YouTubeMusicAPI is a simple and efficient C# wrapper for the YouTube Music Web API, enabling easy search and retrieval of songs, videos, albums, artists, podcasts, and more. It also provides streaming data and URLs, all with minimal effort.
 
 ---
 
-## Installation
+## Getting Started
 To install YouTubeMusicAPI, add the following package to your project:
 ```
 dotnet add package YouTubeMusicAPI
+```
+To start using YouTube Music in your project, just create a new `YouTubeMusicClient`.
+```cs
+YouTubeMusicClient client = new(logger, geographicalLocation);
 ```
 
 ---
 
 ## Usage
-#### **Search**
-```cs
-// Search for items directly
-YouTubeMusicClient client = new();
+### Search
+Using this wrapper, you can search in two ways: directly for items or via "shelves." A shelf is a container for search results like songs or videos. Each shelf has a type (e.g., "Songs") and a "Next Continuation Token" to load more results dynamically (e.g., for infinite scrolling on a page).
 
-IEnumerable<IShelfItem> searchResults = await client.SearchAsync<IShelfItem>(query, limit);
-foreach (IShelfItem item in searchResults)
-  Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
-```
-```cs
-// Search for shelves
-YouTubeMusicClient client = new();
-
-IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, null);
-foreach (Shelf shelf in shelves)
-{
-  Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
-
-  foreach (IShelfItem item in shelf.Items)
-    Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
-}
-```
-‎
-#### **Search for specific item only (songs, videos, albums, community playlists, artists, podcasts, podcast episodes profiles)**
+If this seems complicated, no worries! You can simply use the search method with a generic type `SearchAsync<IYouTubeMusicItem>()` instead, which also contains a property to limit the search result so you dont have to deal with any of the shelf or token stuff.
 ```cs
 // Search for songs directly
-YouTubeMusicClient client = new();
+IEnumerable<SongSearchResult> searchResults = await client.SearchAsync<SongSearchResult>(query);
 
-IEnumerable<Song> searchResults = await client.SearchAsync<Song>(query);
-foreach (Song song in searchResults)
+foreach (SongSearchResult song in searchResults)
   Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album.Name}");
 ```
 ```cs
-// Search for the songs shelves
-YouTubeMusicClient client = new();
+// Search for the songs using shelves
+IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, YouTubeMusicItemKind.Songs);
 
-IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, ShelfKind.Songs);
 foreach (Shelf shelf in shelves)
 {
   Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
 
-  foreach (IShelfItem item in shelf.Items)
+  foreach (IYouTubeMusicItem item in shelf.Items)
   {
-    Song song = (Song)item;
+    SongSearchResult song = (SongSearchResult)item;
     Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album.Name}");
   }
 }
 ```
 ‎
-#### **Get information about a song/video, album, community playlist & artist**
+```cs
+// Search for all kinds directly
+IEnumerable<IYouTubeMusicItem> searchResults = await client.SearchAsync<IYouTubeMusicItem>(query, limit);
+
+foreach (IYouTubeMusicItem item in searchResults)
+  Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
+```
+```cs
+// Search for shelves including all kinds
+IEnumerable<Shelf> shelves = await client.SearchAsync(query, null, null);
+
+foreach (Shelf shelf in shelves)
+{
+  Console.WriteLine($"{shelf.Kind}: Next Continuation Token-{shelf.NextContinuationToken}");
+
+  foreach (IYouTubeMusicItem item in shelf.Items)
+    Console.WriteLine($"{item.Kind}: {item.Name} - {item.Id}");
+}
+```
+‎
+### Getting more information
 ```cs
 // Song/Video
-YouTubeMusicClient client = new();
-
 SongVideoInfo info = await client.GetSongVideoInfoAsync(id);
+
 Console.WriteLine($"{info.Name}, {string.Join(", ", info.Artists.Select(artist => artist.Name))} - {info.Description}");
 ```
 ```cs
 // Album
-YouTubeMusicClient client = new();
-
 string browseId = await client.GetAlbumBrowseIdAsync(id);
-
 AlbumInfo info = await client.GetAlbumInfoAsync(browseId);
+
 foreach (AlbumSongInfo song in info.Songs)
   Console.WriteLine($"{song.Name}, {song.SongNumber}/{info.SongCount}");
 ```
 ```cs
 // Community Playlist
-YouTubeMusicClient client = new();
-
 string browseId = client.GetCommunityPlaylistBrowseId(id);
-
 CommunityPlaylistInfo info = await client.GetCommunityPlaylistInfoAsync(browseId);
+
 foreach (CommunityPlaylistSongInfo song in info.Songs)
   Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album?.Name}");
 ```
 ```cs
 // Artist
-YouTubeMusicClient client = new();
-
 ArtistInfo info = await client.GetArtistInfoAsync(id);
+
 foreach (ArtistSongInfo song in info.Songs)
   Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album?.Name}");
 ```
+‎
+### Streaming & Downloading
+```cs
+// Getting streaming data of a song
+StreamingData streamingData = await client.GetStreamingDataAsync(id);
 
-## Shelves
-In the usage samples you may have noticed there are two ways to search for something via this Wrapper - directly for the items or the "shelf".\
-But what is a shelf? The internal YouTube Music API returns so called "shelves" when searching. A shelf is like a container for search results like songs, videos etc.\
-Each shelf has a kind which says what items it contains for example "Songs". A Shelf is also contains the 'Next Continuation Token' which is useful if you want to dynamically load more search results (e.g. when scrolling on a page).
+Console.WriteLine($"Expires in: {streamingData.ExpiresIn}");
+Console.WriteLine($"Hls Manifest URL: {streamingData.HlsManifestUrl}");
 
-If all of this sounds kind of useless to you, dont worry! You can just use the search method with a generic type `SearchAsync<IShelfItem>()` instead, this also contains a property to limit the search result so you dont have to manually implement that with the 'Next Continuation Token'.\
-This handles all the shelf stuff in the background and returns a list of all your search results.
+foreach(MediaStreamInfo streamInfo in streamingData.StreamInfo)
+{
+  if (streamInfo is VideoStreamInfo videoStreamInfo)
+    Console.WriteLine($"Video ({videoStreamInfo.Quality}): {videoStreamInfo.Url}");
+  else if (streamInfo is AudioStreamInfo audioStreamInfo)
+    Console.WriteLine($"Audio ({audioStreamInfo.SampleRate}): {audioStreamInfo.Url}");
+}
+```
+```cs
+// Download highest quality audio stream
+StreamingData streamingData = await client.GetStreamingDataAsync(id);
+
+MediaStreamInfo highestAudioStreamInfo = streamingData.StreamInfo
+  .OfType<AudioStreamInfo>()
+  .OrderBy(info => info.Bitrate)
+  .First();
+Stream stream = await highestAudioStreamInfo.GetStreamAsync();
+
+using FileStream fileStream = new("audio.m4a", FileMode.Create, FileAccess.Write);
+await stream.CopyToAsync(fileStream);
+```
 
 ---
 
 ## License
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](/LICENSE) file for details.
+
+---
 
 ## Contact
 For questions, suggestions or problems, please [open an issue](https://github.com/IcySnex/YouTubeMusicAPI/issues) with a detailed description.

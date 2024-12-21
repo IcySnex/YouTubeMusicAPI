@@ -320,7 +320,7 @@ internal static class Selectors
         {
             int albumIndex = content.SelectObject<JToken[]>("playlistPanelVideoRenderer.longBylineText.runs").Length - 3;
             string? albumId = content.SelectObjectOptional<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId");
-            
+
             result.Add(new(
                 name: content.SelectObject<string>("playlistPanelVideoRenderer.title.runs[0].text"),
                 id: content.SelectObjectOptional<string>("playlistPanelVideoRenderer.navigationEndpoint.watchEndpoint.videoId"),

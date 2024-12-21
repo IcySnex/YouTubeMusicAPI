@@ -38,7 +38,7 @@ public class VideoStreamInfo(
     /// The framerate of the video stream
     /// </summary>
     public int Framerate { get; } = framerate;
-    
+
     /// <summary>
     /// The quality of the video stream
     /// </summary>

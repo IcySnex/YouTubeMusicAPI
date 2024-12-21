@@ -14,7 +14,7 @@ internal abstract class Endpoints
     /// The web url to YouTube Music
     /// </summary>
     public const string MusicWebUrl = "https://music.youtube.com";
-    
+
     /// <summary>
     /// The web url to YouTube
     /// </summary>
@@ -24,7 +24,7 @@ internal abstract class Endpoints
     /// The url to consent to Googles cookies
     /// </summary>
     public const string CookiesUrl = "https://consent.youtube.com";
-    
+
 
     /// <summary>
     /// The path the search endpoint
@@ -35,7 +35,7 @@ internal abstract class Endpoints
     /// The path the player endpoint
     /// </summary>
     public const string Player = "/player";
-    
+
     /// <summary>
     /// The path the next endpoint
     /// </summary>

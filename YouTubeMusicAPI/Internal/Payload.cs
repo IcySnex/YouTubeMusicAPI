@@ -63,7 +63,7 @@ public static class Payload
                     deviceMake = "Apple",
                     deviceModel = "iPhone16,2",
                     osName = "iPhone",
-                    osVersion  = "17.5.1.21F90",
+                    osVersion = "17.5.1.21F90",
                     userAgent = "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)",
                     timeZone = "UTC",
                     utcOffsetMinutes = 0,

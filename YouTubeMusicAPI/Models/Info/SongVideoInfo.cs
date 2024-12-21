@@ -71,7 +71,7 @@ public class SongVideoInfo(
     /// The artist of the song or video
     /// </summary>
     public ShelfItem[] Artists { get; } = artists;
-    
+
     /// <summary>
     /// The album of the song or video
     /// </summary>

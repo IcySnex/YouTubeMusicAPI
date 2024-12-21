@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Specialized;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Web;
 using YouTubeMusicAPI.Internal;
 

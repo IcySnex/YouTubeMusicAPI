@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Internal.Parsers;
@@ -25,12 +26,14 @@ public class YouTubeMusicClient
     /// Creates a new search client
     /// </summary>
     /// <param name="geographicalLocation">The region for the payload</param>
+    /// <param name="cookies">Initial cookies used for authentication</param>
     public YouTubeMusicClient(
-        string geographicalLocation = "US")
+        string geographicalLocation = "US",
+        IEnumerable<Cookie>? cookies = null)
     {
         this.geographicalLocation = geographicalLocation;
 
-        this.baseClient = new();
+        this.baseClient = new(cookies);
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient has been initialized.");
     }
@@ -40,14 +43,16 @@ public class YouTubeMusicClient
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
     /// <param name="geographicalLocation">The region for the payload</param>
+    /// <param name="cookies">Initial cookies used for authentication</param>
     public YouTubeMusicClient(
         ILogger logger,
-        string geographicalLocation = "US")
+        string geographicalLocation = "US",
+        IEnumerable<Cookie>? cookies = null)
     {
         this.geographicalLocation = geographicalLocation;
 
         this.logger = logger;
-        this.baseClient = new(logger);
+        this.baseClient = new(logger, cookies);
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient with extendended logging functions has been initialized.");
     }

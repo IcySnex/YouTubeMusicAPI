@@ -85,19 +85,20 @@ internal static class InfoParser
     public static CommunityPlaylistInfo GetCommunityPlaylist(
         JObject jsonToken)
     {
-        JToken innerJsonToken = jsonToken.SelectRequieredToken("contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicResponsiveHeaderRenderer");
+        JToken? innerJsonToken = jsonToken.SelectToken("contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicResponsiveHeaderRenderer") ?? jsonToken.SelectRequieredToken("contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicEditablePlaylistDetailHeaderRenderer.header.musicResponsiveHeaderRenderer");
 
-        JToken[] runs = innerJsonToken.SelectObject<JToken[]>("secondSubtitle.runs");
+        JToken[] runs = innerJsonToken.SelectObject<JToken[]>("subtitle.runs");
+        JToken[] secondRuns = innerJsonToken.SelectObject<JToken[]>("secondSubtitle.runs");
 
         return new(
             name: innerJsonToken.SelectObject<string>("title.runs[0].text"),
             id: innerJsonToken.SelectObject<string>("buttons[1].musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.playlistId"),
             description: innerJsonToken.SelectObjectOptional<JToken[]>("description.musicDescriptionShelfRenderer.description.runs")?.Aggregate("", (desc, run) => desc + run.SelectObjectOptional<string>("text")),
             creator: innerJsonToken.SelectYouTubeMusicItem("facepile.avatarStackViewModel.text.content", "facepile.avatarStackViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId", YouTubeMusicItemKind.Profiles),
-            viewsInfo: runs.Length - 5 < 0 ? null : innerJsonToken.SelectObjectOptional<string>("secondSubtitle.runs[0].text"),
-            duration: innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{runs.Length - 1}].text").ToTimeSpanLong(),
-            songCount: int.Parse(innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{runs.Length - 3}].text").Split(' ')[0]),
-            creationYear: innerJsonToken.SelectObject<int>("subtitle.runs[2].text"),
+            viewsInfo: secondRuns.Length - 5 < 0 ? null : innerJsonToken.SelectObjectOptional<string>("secondSubtitle.runs[0].text"),
+            duration: innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 1}].text").ToTimeSpanLong(),
+            songCount: int.Parse(innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 3}].text").Split(' ')[0]),
+            creationYear: innerJsonToken.SelectObject<int>($"subtitle.runs[{runs.Length - 1}].text"),
             thumbnails: innerJsonToken.SelectThumbnails(),
             songs: jsonToken.SelectCommunityPlaylistSongs("contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer.contents[0].musicPlaylistShelfRenderer.contents"));
     }

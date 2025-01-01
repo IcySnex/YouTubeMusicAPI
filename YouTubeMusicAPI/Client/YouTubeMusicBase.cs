@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Collections.Specialized;
+using System.Net;
 using System.Web;
 using YouTubeMusicAPI.Internal;
 
@@ -12,54 +13,31 @@ namespace YouTubeMusicAPI.Client;
 public class YouTubeMusicBase
 {
     readonly ILogger? logger;
-    readonly RequestHelper requestHelper = new();
+    readonly RequestHelper requestHelper;
 
     /// <summary>
     /// Creates a new base client
     /// </summary>
-    public YouTubeMusicBase()
+    /// <param name="cookies">Initial cookies used for authentication</param>
+    public YouTubeMusicBase(
+        IEnumerable<Cookie>? cookies = null)
     {
+        this.requestHelper = new(cookies);
     }
 
     /// <summary>
     /// Creates a new base client with extendended logging functions
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
+    /// <param name="cookies">Initial cookies used for authentication</param>
     public YouTubeMusicBase(
-        ILogger logger)
+        ILogger logger,
+        IEnumerable<Cookie>? cookies = null)
     {
         this.logger = logger;
+        this.requestHelper = new(cookies);
 
         logger.LogInformation($"[BaseClient-.ctor] BaseClient with with extendended logging functions has been initialized.");
-    }
-
-
-    /// <summary>
-    /// Consents cookies for YouTube Music
-    /// </summary>
-    /// <param name="hostLanguage">The language for the parameters</param>
-    /// <param name="geographicalLocation">The region for the parameters</param>
-    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
-    async Task ConsentCookiesAsync(
-        string hostLanguage = "en",
-        string geographicalLocation = "US",
-        CancellationToken cancellationToken = default)
-    {
-        string url = Endpoints.CookiesUrl + Endpoints.Save;
-
-        // Create parameters
-        logger?.LogInformation($"[YouTubeMusicBase-GenerateCookiesAsync] Creating parameters.");
-        NameValueCollection parameters = HttpUtility.ParseQueryString(string.Empty);
-        parameters.Set("hl", hostLanguage);
-        parameters.Set("gl", geographicalLocation);
-        parameters.Set("pc", "ytm");
-        parameters.Set("continue", "https://music.youtube.com/?cbrd=1");
-        parameters.Set("x", "6");
-        parameters.Set("bl", "boq_identityfrontenduiserver_20240617.06_p0");
-        parameters.Set("set_eom", "true");
-
-        // Send request
-        await requestHelper.PostAsync(url, null, parameters.ToString(), cancellationToken);
     }
 
 
@@ -79,10 +57,6 @@ public class YouTubeMusicBase
         CancellationToken cancellationToken = default)
     {
         string url = Endpoints.MusicWebUrl + apiEndpoint;
-
-        // Cookies
-        if (requestHelper.Cookies.GetCookies(new(Endpoints.CookiesUrl)).Count < 1)
-            await ConsentCookiesAsync();
 
         // Create parameters
         logger?.LogInformation($"[YouTubeMusicBase-GetWebContentAsync] Creating parameters.");

@@ -45,7 +45,7 @@ internal abstract class TestData
     /// <summary>
     /// Test playlist browse id
     /// </summary>
-    public const string PlaylistBrowseId = "VLOLAK5uy_n702orxx0Q4py946IQLTE0yQk36vrsGYQ";
+    public const string PlaylistBrowseId = "VLPLuvXOFt0CoEbwWSQj5LmzPhIVKS0SvJ-1";
     
     /// <summary>
     /// Test artist browse id
@@ -57,6 +57,21 @@ internal abstract class TestData
     /// Test geographical location for requests
     /// </summary>
     public const string GeographicalLocation = "US";
+
+    /// <summary>
+    /// Test cookies for authentication
+    /// 
+    /// To parse, use:
+    /// IEnumerable<Cookie> parsedCookies = cookiesString
+    ///     .Split(';')
+    ///     .Select(cookieString =>
+    ///     {
+    ///         string[] parts = cookieString.Split("=");
+    ///         return new Cookie(parts[0], parts[1]) { Domain = ".youtube.com" };
+    ///     });
+    /// 
+    /// </summary>
+    public const string CookiesString = "wide=...;SOCS=...;_gcl_au=...;PREF=...;LOGIN_INFO=...;__Secure-1PSIDTS=...;__Secure-3PSIDTS=...;__Secure-1PSID=...;__Secure-3PSID=...;HSID=...;SSID=...;APISID=...;SAPISID=...;__Secure-1PAPISID=...;__Secure-3PAPISID=...;__Secure-YEC=...;SIDCC=...;__Secure-1PSIDCC=...;__Secure-3PSIDCC=...";
 
 
     /// <summary>

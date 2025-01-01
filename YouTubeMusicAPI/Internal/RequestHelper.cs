@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.Data;
+using System.Globalization;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace YouTubeMusicAPI.Internal;
@@ -12,41 +16,30 @@ internal class RequestHelper
 {
     readonly ILogger? logger;
 
-    readonly public CookieContainer Cookies;
-
-    readonly HttpClientHandler handler;
     readonly HttpClient httpClient;
 
     /// <summary>
     /// Creates a new request helper
     /// </summary>
-    public RequestHelper()
+    /// <param name="cookies">Initial cookies used for authentication</param>
+    public RequestHelper(
+        IEnumerable<Cookie>? cookies = null)
     {
-        Cookies = new();
-        handler = new()
-        {
-            CookieContainer = Cookies
-        };
-        httpClient = new(handler);
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+        httpClient = new(new CookiesHttpHandler(cookies));
     }
 
     /// <summary>
-    /// Creates a new request helper with extendended logging functions
+    /// Creates a new request helper
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
+    /// <param name="cookies">Initial cookies used for authentication</param>
     public RequestHelper(
-        ILogger logger)
+        ILogger logger,
+        IEnumerable<Cookie>? cookies = null)
     {
-        Cookies = new();
-        handler = new()
-        {
-            CookieContainer = Cookies
-        };
-        httpClient = new(handler);
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
-
         this.logger = logger;
+
+        httpClient = new(new CookiesHttpHandler(cookies));
 
         logger.LogInformation($"[RequestHelper-.ctor] RequestHelper with extendended logging functions has been initialized.");
     }
@@ -136,7 +129,6 @@ internal class RequestHelper
         {
             Method = HttpMethod.Post,
             RequestUri = new UriBuilder(url) { Query = parameters }.Uri,
-
         };
         if (body is not null)
             request.Content = new StringContent(JsonConvert.SerializeObject(body, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }), Encoding.UTF8, "application/json");

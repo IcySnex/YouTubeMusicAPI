@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>2.0.0</Version>
-		<AssemblyVersion>2.0.0</AssemblyVersion>
-		<FileVersion>2.0.0</FileVersion>
+		<Version>2.1.0</Version>
+		<AssemblyVersion>2.1.0</AssemblyVersion>
+		<FileVersion>2.1.0</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,12 +24,7 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>UPDATE CONTAINS BREAKING CHANGES, PLEASE READ CHANGELOG BEFORE UPDATING
-- Introduced ability to get song/video streaming info &amp; url
-- Implemented "PlayabilityStatus" for SongVideoInfo
-- Reorganized project (new names, namespaces, etc...)
-- Fixed issues with live content
-- Fixed info parsing for "Community Playlist &gt; Creator"</PackageReleaseNotes>
+		<PackageReleaseNotes>-Introduced ability to add custom cookies for authentication</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

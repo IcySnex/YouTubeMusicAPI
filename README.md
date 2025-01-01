@@ -11,7 +11,7 @@ dotnet add package YouTubeMusicAPI
 ```
 To start using YouTube Music in your project, just create a new `YouTubeMusicClient`.
 ```cs
-YouTubeMusicClient client = new(logger, geographicalLocation);
+YouTubeMusicClient client = new(logger, geographicalLocation, cookies);
 ```
 
 ---

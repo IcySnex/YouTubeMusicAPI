@@ -117,7 +117,7 @@ StreamingData streamingData = await client.GetStreamingDataAsync(id);
 
 MediaStreamInfo highestAudioStreamInfo = streamingData.StreamInfo
   .OfType<AudioStreamInfo>()
-  .OrderBy(info => info.Bitrate)
+  .OrderByDescending(info => info.Bitrate)
   .First();
 Stream stream = await highestAudioStreamInfo.GetStreamAsync();
 

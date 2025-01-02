@@ -53,7 +53,7 @@ internal static class SearchParser
             artist: jsonToken.SelectYouTubeMusicItem($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Artists),
             duration: (jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 4}].text") ?? "00:00").ToTimeSpanLong(),
             viewsInfo: jsonToken.SelectObjectOptional<string?>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 2}].text") ?? "0 views",
-            radio: runsCount == 3 ? new(jsonToken.SelectObject<string>("menu.menuRenderer.items[4].menuNavigationItemRenderer.navigationEndpoint.browseEndpoint.browseId"), null) : jsonToken.SelectRadio(),
+            radio: runsCount == 3 ? new(jsonToken.SelectObjectOptional<string>("menu.menuRenderer.items[4].menuNavigationItemRenderer.navigationEndpoint.browseEndpoint.browseId")!, null) : jsonToken.SelectRadio(),
             thumbnails: jsonToken.SelectThumbnails());
     }
 

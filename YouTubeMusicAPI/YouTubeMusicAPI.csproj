@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>2.1.0</Version>
-		<AssemblyVersion>2.1.0</AssemblyVersion>
-		<FileVersion>2.1.0</FileVersion>
+		<Version>2.1.1</Version>
+		<AssemblyVersion>2.1.1</AssemblyVersion>
+		<FileVersion>2.1.1</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,7 +24,9 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>-Introduced ability to add custom cookies for authentication</PackageReleaseNotes>
+		<PackageReleaseNotes>- Fixed parsing playlist/album song count parsing when over thousand songs
+- Fixed exception when hlsManifestUrl is null in GetStreamingData
+- Fixed exception when YouTube Music returns "Podcast Episode" result in "Videos Only" search request (unsafe)</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

@@ -24,7 +24,7 @@ internal abstract class TestData
     /// <summary>
     /// Test song or video id
     /// </summary>
-    public const string SongVideoId = "CbqCT4Od3y4";
+    public const string SongVideoId = "Waaa9VBoVpI";
     
     /// <summary>
     /// Test album id

@@ -15,7 +15,7 @@ public class StreamingData(
     MediaStreamInfo[] streamInfo,
     bool isLiveContent,
     TimeSpan expiresIn,
-    string hlsManifestUrl,
+    string? hlsManifestUrl,
     double aspectRatio)
 {
     /// <summary>
@@ -36,7 +36,7 @@ public class StreamingData(
     /// <summary>
     /// The url to the HLS manifest
     /// </summary>
-    public string HlsManifestUrl { get; } = hlsManifestUrl;
+    public string? HlsManifestUrl { get; } = hlsManifestUrl;
 
     /// <summary>
     /// The aspect ratio of the streams

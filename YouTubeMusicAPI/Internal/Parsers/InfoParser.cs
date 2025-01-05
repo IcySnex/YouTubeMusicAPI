@@ -69,7 +69,7 @@ internal static class InfoParser
             description: innerJsonToken.SelectObjectOptional<JToken[]>("description.musicDescriptionShelfRenderer.description.runs")?.Aggregate("", (desc, run) => desc + run.SelectObjectOptional<string>("text")),
             artists: innerJsonToken.SelectArtists("straplineTextOne.runs"),
             duration: innerJsonToken.SelectObject<string>("secondSubtitle.runs[2].text").ToTimeSpanLong(),
-            songCount: int.Parse(innerJsonToken.SelectObject<string>("secondSubtitle.runs[0].text").Split(' ')[0]),
+            songCount: int.Parse(innerJsonToken.SelectObject<string>("secondSubtitle.runs[0].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
             releaseYear: innerJsonToken.SelectObject<int>("subtitle.runs[2].text"),
             isSingle: innerJsonToken.SelectObject<string>("subtitle.runs[0].text") == "Single",
             isEp: innerJsonToken.SelectObject<string>("subtitle.runs[0].text") == "EP",
@@ -98,7 +98,7 @@ internal static class InfoParser
             creator: innerJsonToken.SelectYouTubeMusicItem("facepile.avatarStackViewModel.text.content", "facepile.avatarStackViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId", YouTubeMusicItemKind.Profiles),
             viewsInfo: secondRuns.Length - 5 < 0 ? null : innerJsonToken.SelectObjectOptional<string>("secondSubtitle.runs[0].text"),
             duration: innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 1}].text").ToTimeSpanLong(),
-            songCount: int.Parse(innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 3}].text").Split(' ')[0], NumberStyles.AllowThousands,CultureInfo.InvariantCulture),
+            songCount: int.Parse(innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 3}].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
             creationYear: innerJsonToken.SelectObject<int>($"subtitle.runs[{runs.Length - 1}].text"),
             thumbnails: innerJsonToken.SelectThumbnails(),
             songs: jsonToken.SelectCommunityPlaylistSongs("contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer.contents[0].musicPlaylistShelfRenderer.contents"));

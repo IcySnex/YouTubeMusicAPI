@@ -6,6 +6,7 @@ using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Internal.Parsers;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
+using YouTubeMusicAPI.Models.Library;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Streaming;
 using YouTubeMusicAPI.Types;
@@ -480,6 +481,37 @@ public class YouTubeMusicClient
         // Parse request response
         ArtistInfo info = InfoParser.GetArtist(requestResponse);
         return info;
+    }
+
+
+    /// <summary>
+    /// Gets all saved community playlists for the currently authenticated user on YouTube Music
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The community playlists</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<IEnumerable<LibraryCommunityPlaylist>> GetLibraryCommunityPlaylistsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        // Send request
+        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            [
+                ("browseId", "FEmusic_liked_playlists")
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
+
+        // Parse request response
+        JObject[] itemTokens = requestResponse.SelectObjectOptional<JObject[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].gridRenderer.items") ?? [];
+
+        List<LibraryCommunityPlaylist> items = [];
+        for (int i = 2; i < itemTokens.Length - 1; i++)
+            items.Add(LibraryParser.GetCommunityPlaylist(itemTokens[i]));
+
+        return items;
     }
 
 

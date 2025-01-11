@@ -113,4 +113,20 @@ internal class LibraryParser
             radio: radioPlaylistId is null ? null : new(radioPlaylistId, null),
             thumbnails: jsonToken.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails"));
     }
+
+    /// <summary>
+    /// Parses podcast data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the item data</param>
+    /// <returns>The podcast</returns>
+    /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
+    public static LibraryPodcast GetPodcast(
+        JObject jsonToken)
+    {
+        return new(
+            name: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
+            id: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.thumbnailOverlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId"),
+            host: jsonToken.SelectYouTubeMusicItem("musicTwoRowItemRenderer.subtitle.runs[0].text", "musicTwoRowItemRenderer.subtitle.runs[0].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Profiles),
+            thumbnails: jsonToken.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails"));
+    }
 }

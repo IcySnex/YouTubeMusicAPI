@@ -136,4 +136,24 @@ internal class Library
         string readableResults = JsonConvert.SerializeObject(subscriptions, Formatting.Indented);
         logger.LogInformation("\nSubscriptions:\n{readableResults}", readableResults);
     }
+
+    /// <summary>
+    /// Get podcasts
+    /// </summary>
+    [Test]
+    public void Podcasts()
+    {
+        IEnumerable<LibraryPodcast>? podcasts = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            podcasts = await client.GetLibraryPodcastsAsync();
+        });
+        Assert.That(podcasts, Is.Not.Null);
+        Assert.That(podcasts, Is.Not.Empty);
+
+        // Output
+        string readableResults = JsonConvert.SerializeObject(podcasts, Formatting.Indented);
+        logger.LogInformation("\nPodcasts:\n{readableResults}", readableResults);
+    }
 }

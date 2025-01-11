@@ -647,6 +647,43 @@ public class YouTubeMusicClient
         return items;
     }
 
+    /// <summary>
+    /// Gets all saved podcasts for the currently authenticated user on YouTube Music
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The podcasts</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<IEnumerable<LibraryPodcast>> GetLibraryPodcastsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        // Send request
+        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            [
+                ("browseId", "FEmusic_library_non_music_audio_list")
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
+
+        // Get items
+        JObject[] itemTokens = requestResponse.SelectObjectOptional<JObject[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].gridRenderer.items") ?? [];
+
+        // Parse request response
+        List<LibraryPodcast> items = [];
+        foreach (JObject itemToken in itemTokens)
+        {
+            JToken[]? menuItems = itemToken.SelectObjectOptional<JToken[]>("musicTwoRowItemRenderer.menu.menuRenderer.items");
+            if (menuItems is null || menuItems.Length > 2)
+                continue;
+
+            items.Add(LibraryParser.GetPodcast(itemToken));
+        }
+
+        return items;
+    }
+
 
     /// <summary>
     /// Gets the streaming data of a song or video on YouTube Music

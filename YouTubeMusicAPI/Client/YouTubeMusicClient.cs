@@ -504,12 +504,48 @@ public class YouTubeMusicClient
             ]);
         JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
 
-        // Parse request response
-        JObject[] itemTokens = requestResponse.SelectObjectOptional<JObject[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].gridRenderer.items") ?? [];
+        // Get items
+        JObject[]? itemTokens = requestResponse.SelectObjectOptional<JObject[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].gridRenderer.items");
+        if (itemTokens is null || itemTokens.Length < 4)
+            return [];
 
+        // Parse request response
         List<LibraryCommunityPlaylist> items = [];
         for (int i = 2; i < itemTokens.Length - 1; i++)
             items.Add(LibraryParser.GetCommunityPlaylist(itemTokens[i]));
+
+        return items;
+    }
+
+    /// <summary>
+    /// Gets all saved songs for the currently authenticated user on YouTube Music
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The songs</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<IEnumerable<LibrarySong>> GetLibrarySongsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        // Send request
+        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            [
+                ("browseId", "FEmusic_liked_videos")
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
+
+        // Get items
+        JObject[]? itemTokens = requestResponse.SelectObjectOptional<JObject[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicShelfRenderer.contents");
+        if (itemTokens is null || itemTokens.Length < 2)
+            return [];
+
+        // Parse request response
+        List<LibrarySong> items = [];
+        for (int i = 1; i < itemTokens.Length; i++)
+            items.Add(LibraryParser.GetSong(itemTokens[i]));
 
         return items;
     }

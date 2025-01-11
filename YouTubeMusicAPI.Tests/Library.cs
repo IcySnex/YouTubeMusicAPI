@@ -56,4 +56,24 @@ internal class Library
         string readableResults = JsonConvert.SerializeObject(communityPlaylists, Formatting.Indented);
         logger.LogInformation("\nCommunity Playlists:\n{readableResults}", readableResults);
     }
+
+    /// <summary>
+    /// Get songs
+    /// </summary>
+    [Test]
+    public void Songs()
+    {
+        IEnumerable<LibrarySong>? songs = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            songs = await client.GetLibrarySongsAsync();
+        });
+        Assert.That(songs, Is.Not.Null);
+        Assert.That(songs, Is.Not.Empty);
+
+        // Output
+        string readableResults = JsonConvert.SerializeObject(songs, Formatting.Indented);
+        logger.LogInformation("\nSongs:\n{readableResults}", readableResults);
+    }
 }

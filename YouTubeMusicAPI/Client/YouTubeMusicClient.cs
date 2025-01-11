@@ -586,7 +586,7 @@ public class YouTubeMusicClient
     }
 
     /// <summary>
-    /// Gets all artists who have saved songs for the currently authenticated user on YouTube Music
+    /// Gets all artists with saved songs for the currently authenticated user on YouTube Music
     /// </summary>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>The artists</returns>
@@ -617,7 +617,7 @@ public class YouTubeMusicClient
     }
 
     /// <summary>
-    /// Gets all artists who are subscribed for the currently authenticated user on YouTube Music
+    /// Gets all subscribed artists for the currently authenticated user on YouTube Music
     /// </summary>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>The artists</returns>

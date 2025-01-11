@@ -25,12 +25,12 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageReleaseNotes>- Added support for getting saved community playlists from the authenticated user's library
-			- Added support for getting saved songs from the authenticated user's library
-			- Added support for getting saved albums from the authenticated user's library
-			- Added support for getting artists with saved songs from the authenticated user's library
-			- Added support for getting subscribed artists from the authenticated user's library
-			- Added support for getting saved podcasts from the authenticated user's library
-			- Added "IsEp" property to "AlbumSearchResult"</PackageReleaseNotes>
+- Added support for getting saved songs from the authenticated user's library
+- Added support for getting saved albums from the authenticated user's library
+- Added support for getting artists with saved songs from the authenticated user's library
+- Added support for getting subscribed artists from the authenticated user's library
+- Added support for getting saved podcasts from the authenticated user's library
+- Added "IsEp" property to "AlbumSearchResult"</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

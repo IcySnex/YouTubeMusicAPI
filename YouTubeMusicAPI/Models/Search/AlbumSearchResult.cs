@@ -10,6 +10,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// <param name="artists">The artists of this album</param>
 /// <param name="releaseYear">The release year of this album</param>
 /// <param name="isSingle">Weither this album is a single or not</param>
+/// <param name="isEp">Weither this album is an EP or not</param>
 /// <param name="radio">The radio channel of this album</param>
 /// <param name="thumbnails">The thumbnails of this album</param>
 public class AlbumSearchResult(
@@ -18,6 +19,7 @@ public class AlbumSearchResult(
     YouTubeMusicItem[] artists,
     int releaseYear,
     bool isSingle,
+    bool isEp,
     Radio radio,
     Thumbnail[] thumbnails) : IYouTubeMusicItem
 {
@@ -55,6 +57,11 @@ public class AlbumSearchResult(
     /// Weither this album is a single or not
     /// </summary>
     public bool IsSingle { get; } = isSingle;
+    
+    /// <summary>
+    /// Weither this album is an EP or not
+    /// </summary>
+    public bool IsEp { get; } = isEp;
 
     /// <summary>
     /// The radio channel of this album

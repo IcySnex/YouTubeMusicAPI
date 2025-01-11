@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Globalization;
+using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Library;
 using YouTubeMusicAPI.Types;
 
@@ -11,7 +12,7 @@ namespace YouTubeMusicAPI.Internal.Parsers;
 internal class LibraryParser
 {
     /// <summary>
-    /// Parses community playlist info data from the json token
+    /// Parses community playlist data from the json token
     /// </summary>
     /// <param name="jsonToken">The json token containing the item data</param>
     /// <returns>The community playlist</returns>
@@ -33,7 +34,7 @@ internal class LibraryParser
     }
 
     /// <summary>
-    /// Parses song info data from the json token
+    /// Parses song data from the json token
     /// </summary>
     /// <param name="jsonToken">The json token containing the item data</param>
     /// <returns>The song</returns>
@@ -50,5 +51,28 @@ internal class LibraryParser
             isExplicit: jsonToken.SelectIsExplicit("musicResponsiveListItemRenderer.badges"),
             radio: jsonToken.SelectRadio("musicResponsiveListItemRenderer.menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.playlistId", "musicResponsiveListItemRenderer.menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.videoId"),
             thumbnails: jsonToken.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails"));
+    }
+
+    /// <summary>
+    /// Parses album data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the item data</param>
+    /// <returns>The album</returns>
+    /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
+    public static LibraryAlbum GetAlbum(
+        JObject jsonToken)
+    {
+        YouTubeMusicItem[] artists = jsonToken.SelectArtists("musicTwoRowItemRenderer.subtitle.runs", 2, 1);
+        int yearIndex = artists[0].Id is null ? 4 : artists.Length * 2 + 2;
+
+        return new(
+            name: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
+            id: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId"),
+            artists: artists,
+            releaseYear: jsonToken.SelectObject<int>($"musicTwoRowItemRenderer.subtitle.runs[{yearIndex}].text"),
+            isSingle: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text") == "Single",
+            isEp: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text") == "EP",
+            radio: jsonToken.SelectRadio("musicTwoRowItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
+            thumbnails: jsonToken.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails"));
     }
 }

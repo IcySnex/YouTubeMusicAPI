@@ -1,6 +1,6 @@
 # <img src="https://github.com/IcySnex/YouTubeMusicAPI/blob/main/icon.png" alt="YouTube Music Icon" width="40" height="40"> YouTubeMusicAPI
 
-YouTubeMusicAPI is a simple and efficient C# wrapper for the YouTube Music Web API, enabling easy search and retrieval of songs, videos, albums, artists, podcasts, and more. It also provides streaming data and URLs, all with minimal effort.
+YouTubeMusicAPI is a simple and efficient C# wrapper for the YouTube Music Web API, enabling easy search and retrieval of songs, videos, albums, artists, podcasts, and more. It also provides streaming data and access to an authenticated user's library, all with minimal effort.
 
 ---
 
@@ -123,6 +123,53 @@ Stream stream = await highestAudioStreamInfo.GetStreamAsync();
 
 using FileStream fileStream = new("audio.m4a", FileMode.Create, FileAccess.Write);
 await stream.CopyToAsync(fileStream);
+```
+‎
+### Access to a user's library
+In order to access a user's library you first need to authenticate the user by using pre-authenticated cookies.
+
+To obtain the necessary cookies, you'll need to present the official [YouTube Music login page](https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com) to your users. You could use an embedded browser like [WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/) in your application and then extract the cookies for the site ".youtube.com".
+```cs
+// Get saved/created community playlists
+IEnumerable<LibraryCommunityPlaylist> communityPlaylists = await client.GetLibraryCommunityPlaylistsAsync();
+
+foreach (LibraryCommunityPlaylist playlist in communityPlaylists)
+  Console.WriteLine($"{playlist.Name}, {playlist.SongCount} songs");
+```
+```cs
+// Get saved songs
+IEnumerable<LibrarySong> songs = await client.GetLibrarySongsAsync();
+
+foreach (LibrarySong song in songs)
+  Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album.Name}");
+```
+```cs
+// Get saved albums
+IEnumerable<LibraryAlbum> albums = await client.GetLibraryAlbumsAsync();
+
+foreach (LibraryAlbum album in albums)
+  Console.WriteLine($"{album.Name}, {album.ReleaseYear}");
+```
+```cs
+// Get artists with saved songs
+IEnumerable<LibraryArtist> artists = await client.GetLibraryArtistsAsync();
+
+foreach (LibraryArtist artist in artists)
+  Console.WriteLine($"{artist.Name}, {artist.SongCount} saved songs");
+```
+```cs
+// Get subscribed artists
+IEnumerable<LibrarySubscription> subscriptions = await client.GetLibrarySubscriptionsAsync();
+
+foreach (LibrarySubscription subscription in subscriptions)
+  Console.WriteLine($"{subscription.Name}, {subscription.SubscribersInfo}");
+```
+```cs
+// Get saved podcasts
+IEnumerable<LibraryPodcast> podcasts = await client.GetLibraryPodcastsAsync();
+
+foreach (LibraryPodcast podcast in podcasts)
+  Console.WriteLine($"{podcast.Name}, {podcast.Host.Name}");
 ```
 
 ---

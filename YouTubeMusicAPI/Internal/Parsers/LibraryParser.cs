@@ -75,4 +75,23 @@ internal class LibraryParser
             radio: jsonToken.SelectRadio("musicTwoRowItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
             thumbnails: jsonToken.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails"));
     }
+
+    /// <summary>
+    /// Parses artist data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the item data</param>
+    /// <returns>The artist</returns>
+    /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
+    public static LibraryArtist GetArtist(
+        JObject jsonToken)
+    {
+        string? radioPlaylistId = jsonToken.SelectObjectOptional<string>("musicResponsiveListItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId");
+
+        return new(
+            name: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
+            id: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.navigationEndpoint.browseEndpoint.browseId").Substring(4),
+            songCount: int.Parse(jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
+            radio: radioPlaylistId is null ? null : new(radioPlaylistId, null),
+            thumbnails: jsonToken.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails"));
+    }
 }

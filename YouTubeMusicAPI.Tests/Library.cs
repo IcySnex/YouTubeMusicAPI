@@ -78,7 +78,7 @@ internal class Library
     }
 
     /// <summary>
-    /// Get songs
+    /// Get albums
     /// </summary>
     [Test]
     public void Albums()
@@ -95,5 +95,25 @@ internal class Library
         // Output
         string readableResults = JsonConvert.SerializeObject(albums, Formatting.Indented);
         logger.LogInformation("\nAlbums:\n{readableResults}", readableResults);
+    }
+
+    /// <summary>
+    /// Get artists
+    /// </summary>
+    [Test]
+    public void Artists()
+    {
+        IEnumerable<LibraryArtist>? artists = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            artists = await client.GetLibraryArtistsAsync();
+        });
+        Assert.That(artists, Is.Not.Null);
+        Assert.That(artists, Is.Not.Empty);
+
+        // Output
+        string readableResults = JsonConvert.SerializeObject(artists, Formatting.Indented);
+        logger.LogInformation("\nArtists:\n{readableResults}", readableResults);
     }
 }

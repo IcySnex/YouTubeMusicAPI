@@ -612,6 +612,37 @@ public class YouTubeMusicClient
         return items;
     }
 
+    /// <summary>
+    /// Gets all artists who are subscribed for the currently authenticated user on YouTube Music
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>The artists</returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task<IEnumerable<LibrarySubscription>> GetLibrarySubscriptionsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        // Send request
+        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            [
+                ("browseId", "FEmusic_library_corpus_artists")
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
+
+        // Get items
+        JObject[] itemTokens = requestResponse.SelectObjectOptional<JObject[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicShelfRenderer.contents") ?? [];
+
+        // Parse request response
+        List<LibrarySubscription> items = [];
+        foreach (JObject itemToken in itemTokens)
+            items.Add(LibraryParser.GetSubscription(itemToken));
+
+        return items;
+    }
+
 
     /// <summary>
     /// Gets the streaming data of a song or video on YouTube Music

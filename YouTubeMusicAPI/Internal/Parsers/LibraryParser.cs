@@ -94,4 +94,23 @@ internal class LibraryParser
             radio: radioPlaylistId is null ? null : new(radioPlaylistId, null),
             thumbnails: jsonToken.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails"));
     }
+
+    /// <summary>
+    /// Parses subscription data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the item data</param>
+    /// <returns>The subscription</returns>
+    /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
+    public static LibrarySubscription GetSubscription(
+        JObject jsonToken)
+    {
+        string? radioPlaylistId = jsonToken.SelectObjectOptional<string>("musicResponsiveListItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId");
+
+        return new(
+            name: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
+            id: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.navigationEndpoint.browseEndpoint.browseId"),
+            subscribersInfo: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
+            radio: radioPlaylistId is null ? null : new(radioPlaylistId, null),
+            thumbnails: jsonToken.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails"));
+    }
 }

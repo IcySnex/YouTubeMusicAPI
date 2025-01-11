@@ -675,7 +675,7 @@ public class YouTubeMusicClient
         foreach (JObject itemToken in itemTokens)
         {
             JToken[]? menuItems = itemToken.SelectObjectOptional<JToken[]>("musicTwoRowItemRenderer.menu.menuRenderer.items");
-            if (menuItems is null || menuItems.Length > 2)
+            if (menuItems is null || menuItems.Length != 2)
                 continue;
 
             items.Add(LibraryParser.GetPodcast(itemToken));

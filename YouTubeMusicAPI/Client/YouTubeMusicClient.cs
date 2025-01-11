@@ -505,14 +505,18 @@ public class YouTubeMusicClient
         JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
 
         // Get items
-        JObject[]? itemTokens = requestResponse.SelectObjectOptional<JObject[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].gridRenderer.items");
-        if (itemTokens is null || itemTokens.Length < 4)
-            return [];
+        JObject[] itemTokens = requestResponse.SelectObjectOptional<JObject[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].gridRenderer.items") ?? [];
 
         // Parse request response
         List<LibraryCommunityPlaylist> items = [];
-        for (int i = 2; i < itemTokens.Length - 1; i++)
-            items.Add(LibraryParser.GetCommunityPlaylist(itemTokens[i]));
+        foreach (JObject itemToken in itemTokens)
+        {
+            JToken[]? menuItems = itemToken.SelectObjectOptional<JToken[]>("musicTwoRowItemRenderer.menu.menuRenderer.items");
+            if (menuItems is null || menuItems.Length < 6)
+                continue;
+
+            items.Add(LibraryParser.GetCommunityPlaylist(itemToken));
+        }
 
         return items;
     }

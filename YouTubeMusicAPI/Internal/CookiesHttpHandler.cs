@@ -25,7 +25,7 @@ internal class CookiesHttpHandler : DelegatingHandler
             foreach (var cookie in cookies)
                 cookieContainer.Add(cookie);
 
-        cookieContainer.Add(new Cookie("SOCS", "CAISEwgDEgk2NzM5OTg2ODUaAmVuIAEaBgiA6p23Bg") { Domain = ".youtube.com" });
+        cookieContainer.Add(new Cookie("SOCS", "CAI") { Domain = ".youtube.com" });
     }
 
 

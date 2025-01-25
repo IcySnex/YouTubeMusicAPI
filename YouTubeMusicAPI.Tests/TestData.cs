@@ -77,5 +77,5 @@ internal abstract class TestData
     /// <summary>
     /// File path to download test media stream
     /// </summary>
-    public const string FilePath = @"C:\Users\User69\Desktop\test.mp4";
+    public static string FilePath = @$"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\test.mp4";
 }

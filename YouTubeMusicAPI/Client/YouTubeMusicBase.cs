@@ -2,6 +2,8 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Specialized;
 using System.Net;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web;
 using YouTubeMusicAPI.Internal;
 
@@ -67,7 +69,6 @@ public class YouTubeMusicBase
 
         // Send request
         string response = await requestHelper.GetAndValidateAsync(url, parameters.ToString(), cancellationToken);
-
         return response;
     }
 
@@ -98,91 +99,26 @@ public class YouTubeMusicBase
     }
 
 
-    // FOR SOME REASON YOUTUBE DOESNT WANT TO ACCEPT MY DECYPHERED SIGNATURE
-    // 403 FORBIDDEN ???
-    //
-    ///// <summary>
-    ///// Parses a player for decyphering signatures
-    ///// </summary>
-    ///// <param name="cancellationToken">The token to cancel this action</param>
-    ///// <returns>The player signature timestamp and operations list</returns>
-    ///// <exception cref="Exception"></exception>
-    //public async Task<(string signatureTimestamp, List<Func<string, string>> operations)> ParsePlayerAsync(
-    //    CancellationToken cancellationToken = default)
-    //{
-    //    // iframe
-    //    string iframeUrl = Endpoints.YouTubeWebUrl + Endpoints.Iframe;
-    //    string iframe = await requestHelper.GetAndValidateAsync(iframeUrl, null, cancellationToken);
+    /// <summary>
+    /// Gets the current visitor data from the YouTube web page
+    /// </summary>
+    /// <param name="cancellationToken">The token to cancel this action</param>
+    /// <returns>The visitor data</returns>
+    /// <exception cref="Exception">Occurrs when the visitor data could not be extracted because no Regex matches were found</exception>
+    public async Task<string> GetVisitorDataAsync(
+        CancellationToken cancellationToken = default)
+    {
+        string url = Endpoints.YouTubeWebUrl + Endpoints.Embed("um0ETkJABmI");
 
-    //    // Player
-    //    string playerVersion = Regex.Match(iframe, @"player\\?/([0-9a-fA-F]{8})\\?/").Groups[1].Value;
-    //    string playerSourceUrl = Endpoints.YouTubeWebUrl + Endpoints.PlayerSource(playerVersion);
-    //    string playerSource = await requestHelper.GetAndValidateAsync(playerSourceUrl, null, cancellationToken);
+        // Send request
+        string response = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
 
-    //    // Signature
-    //    string signatureTimestamp = Regex.Match(playerSource, @"(?:signatureTimestamp|sts):(\d{5})").Groups[1].Value;
+        // Extracting visitor data
+        logger?.LogInformation($"[YouTubeMusicBase-GetVisitorDataAsync] Extracting visitor data from html.");
+        Match match = Regex.Match(response, "\"visitorData\":\"([^\"]+)");
+        if (match.Success)
+            throw new Exception("Visitor data could not be extracted from the html: Found no Regex match");
 
-    //    if (string.IsNullOrWhiteSpace(signatureTimestamp))
-    //        throw new Exception("Failed to find signature timestamp in player source");
-
-    //    // Cipher
-    //    string cipherCallsite = Regex.Match(playerSource,
-    //        """
-    //        [$_\w]+=function\([$_\w]+\){([$_\w]+)=\1\.split\(['"]{2}\);.*?return \1\.join\(['"]{2}\)}
-    //        """,
-    //                RegexOptions.Singleline).Groups[0].Value;
-    //    if (string.IsNullOrWhiteSpace(cipherCallsite))
-    //        throw new Exception("Failed to find cipher callsite in player source");
-
-    //    string cipherContainerName = Regex.Match(cipherCallsite, @"([$_\w]+)\.[$_\w]+\([$_\w]+,\d+\);").Groups[1].Value;
-    //    if (string.IsNullOrWhiteSpace(cipherContainerName))
-    //        throw new Exception("Failed to find cipher container name in player source");
-
-    //    string cipherDefinition = Regex.Match(playerSource,
-    //        $$"""
-    //        var {{Regex.Escape(cipherContainerName)}}={.*?};
-    //        """,
-    //        RegexOptions.Singleline).Groups[0].Value;
-    //    if (string.IsNullOrWhiteSpace(cipherDefinition))
-    //        throw new Exception("Failed to find cipher definition in player source");
-
-    //    // Functions
-    //    string swapFuncName = Regex.Match(cipherDefinition, @"([$_\w]+):function\([$_\w]+,[$_\w]+\){+[^}]*?%[^}]*?}", RegexOptions.Singleline).Groups[1].Value;
-    //    string spliceFuncName = Regex.Match(cipherDefinition, @"([$_\w]+):function\([$_\w]+,[$_\w]+\){+[^}]*?splice[^}]*?}", RegexOptions.Singleline).Groups[1].Value;
-    //    string reverseFuncName = Regex.Match(cipherDefinition, @"([$_\w]+):function\([$_\w]+\){+[^}]*?reverse[^}]*?}", RegexOptions.Singleline).Groups[1].Value;
-
-    //    // Operations
-    //    List<Func<string, string>> operations = new();
-    //    foreach (string statement in cipherCallsite.Split(';'))
-    //    {
-    //        string calledFuncName = Regex.Match(statement, @"[$_\w]+\.([$_\w]+)\([$_\w]+,\d+\)").Groups[1].Value;
-    //        if (string.IsNullOrWhiteSpace(calledFuncName))
-    //            continue;
-
-    //        if (string.Equals(calledFuncName, swapFuncName, StringComparison.Ordinal))
-    //        {
-    //            int index = int.Parse(Regex.Match(statement, @"\([$_\w]+,(\d+)\)").Groups[1].Value);
-    //            operations.Add(s => new StringBuilder(s)
-    //                {
-    //                    [0] = s[index],
-    //                    [index] = s[0],
-    //                }.ToString());
-    //        }
-    //        else if (string.Equals(calledFuncName, spliceFuncName, StringComparison.Ordinal))
-    //        {
-    //            int index = int.Parse(Regex.Match(statement, @"\([$_\w]+,(\d+)\)").Groups[1].Value);
-    //            operations.Add(s => s.Substring(index));
-    //        }
-    //        else if (string.Equals(calledFuncName, reverseFuncName, StringComparison.Ordinal))
-    //        {
-    //            operations.Add(s =>
-    //            {
-    //                s.Reverse();
-    //                return s;
-    //            });
-    //        }
-    //    }
-
-    //    return (signatureTimestamp, operations);
-    //}
+        return match.Groups[1].Value;
+    }
 }

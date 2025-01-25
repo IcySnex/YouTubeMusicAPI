@@ -56,16 +56,23 @@ internal abstract class Endpoints
     /// </summary>
     public const string Save = "/save";
 
-    ///// <summary>
-    ///// The path the iframe api
-    ///// </summary>
-    //public const string Iframe = "/iframe_api";
+    /// <summary>
+    /// The path the iframe api
+    /// </summary>
+    public const string Iframe = "/iframe_api";
 
 
-    ///// <summary>
-    ///// The path to the player source for a specific version
-    ///// </summary>
-    //public static string PlayerSource(
-    //    string version) =>
-    //    $"/s/player/{version}/player_ias.vflset/en_US/base.js";
+    /// <summary>
+    /// The path to the embed player
+    /// </summary>
+    public static string Embed(
+        string videoId) =>
+        $"/embed/{videoId}";
+
+    /// <summary>
+    /// The path to the player source for a specific version
+    /// </summary>
+    public static string PlayerSource(
+        string version) =>
+        $"/s/player/{version}/player_ias.vflset/en_US/base.js";
 }

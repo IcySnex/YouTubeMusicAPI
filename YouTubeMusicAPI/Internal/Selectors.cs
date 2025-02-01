@@ -265,6 +265,10 @@ internal static class Selectors
     {
         List<AlbumSongInfo> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
+        {
+            if (content.SelectObjectOptional<JToken>("continuationItemRenderer") is not null)
+                continue;
+
             result.Add(new(
                 name: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
                 id: content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId"),
@@ -272,6 +276,7 @@ internal static class Selectors
                 playsInfo: content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
                 duration: content.SelectObject<string>("musicResponsiveListItemRenderer.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text").ToTimeSpan(),
                 songNumber: content.SelectObjectOptional<int>("musicResponsiveListItemRenderer.index.runs[0].text")));
+        }
 
         return [.. result];
     }
@@ -290,6 +295,9 @@ internal static class Selectors
         List<CommunityPlaylistSongInfo> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
         {
+            if (content.SelectObjectOptional<JToken>("continuationItemRenderer") is not null)
+                continue;
+
             int albumIndex = content.SelectObject<JToken[]>("musicResponsiveListItemRenderer.flexColumns").Length - 1;
 
             result.Add(new(

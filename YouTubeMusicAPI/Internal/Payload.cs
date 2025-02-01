@@ -9,10 +9,16 @@ public static class Payload
     /// Creates a new payload which mimics a YouTube Music web client
     /// </summary>
     /// <param name="geographicalLocation">The region for the payload</param>
+    /// <param name="visitorData">The visitor data</param>
+    /// <param name="poToken">The proof of origin token</param>
+    /// <param name="signatureTimestamp">The player signature timestamp (required when deciphering stream urls)</param>
     /// <param name="items">The items to add to the request payload</param>
     /// <returns>The new payload</returns>
-    public static Dictionary<string, object> Web(
+    public static Dictionary<string, object> WebRemix(
         string geographicalLocation,
+        string? visitorData,
+        string? poToken,
+        string? signatureTimestamp,
         (string key, object? value)[] items)
     {
         Dictionary<string, object> payload = new()
@@ -22,7 +28,7 @@ public static class Payload
                 client = new
                 {
                     clientName = "WEB_REMIX",
-                    clientVersion = "1.20240918.01.00",
+                    clientVersion = "1.20211213.00.00",
                     browserName = "Chrome",
                     browserVersion = "130.0.0.0",
                     osName = "Windows",
@@ -32,44 +38,19 @@ public static class Payload
                     utcOffsetMinutes = 0,
                     hl = "en",
                     gl = geographicalLocation,
+                    visitorData
                 }
-            }
-        };
-        foreach ((string key, object? value) in items)
-            if (value is not null)
-                payload[key] = value;
-
-        return payload;
-    }
-
-    /// <summary>
-    /// Creates a new payload which mimics a YouTube Music mobile client
-    /// </summary>
-    /// <param name="geographicalLocation">The region for the payload</param>
-    /// <param name="items">The items to add to the request payload</param>
-    /// <returns>The new payload</returns>
-    public static Dictionary<string, object> Mobile(
-        string geographicalLocation,
-        (string key, object? value)[] items)
-    {
-        Dictionary<string, object> payload = new()
-        {
-            ["context"] = new
+            },
+            ["playbackContext"] = new
             {
-                client = new
+                contentPlaybackContext = new
                 {
-                    clientName = "IOS",
-                    clientVersion = "19.29.1",
-                    deviceMake = "Apple",
-                    deviceModel = "iPhone16,2",
-                    osName = "iPhone",
-                    osVersion = "17.5.1.21F90",
-                    userAgent = "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)",
-                    timeZone = "UTC",
-                    utcOffsetMinutes = 0,
-                    hl = "en",
-                    gl = geographicalLocation,
+                    signatureTimestamp
                 }
+            },
+            ["serviceIntegrityDimensions"] = new
+            {
+                poToken
             }
         };
         foreach ((string key, object? value) in items)

@@ -190,7 +190,7 @@ public class YouTubeMusicClient
         }
 
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("query", query),
                 ("params", kind.ToParams()),
@@ -349,7 +349,7 @@ public class YouTubeMusicClient
         }
 
         // Send requests
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("videoId", id)
             ]);
@@ -385,7 +385,7 @@ public class YouTubeMusicClient
         }
 
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("browseId", browseId)
             ]);
@@ -421,7 +421,7 @@ public class YouTubeMusicClient
         try
         {
             // Send request
-            Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
                 [
                     ("browseId", browseId)
                 ]);
@@ -437,7 +437,7 @@ public class YouTubeMusicClient
                 throw;
 
             // Send request
-            Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+            Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
                 [
                     ("playlistId", browseId.StartsWith("VL") ? browseId.Substring(2) : browseId)
                 ]);
@@ -472,7 +472,7 @@ public class YouTubeMusicClient
         }
 
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("browseId", browseId)
             ]);
@@ -498,7 +498,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("browseId", "FEmusic_liked_playlists")
             ]);
@@ -535,7 +535,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("browseId", "FEmusic_liked_videos")
             ]);
@@ -568,7 +568,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("browseId", "FEmusic_liked_albums")
             ]);
@@ -599,7 +599,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("browseId", "FEmusic_library_corpus_track_artists")
             ]);
@@ -630,7 +630,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("browseId", "FEmusic_library_corpus_artists")
             ]);
@@ -661,7 +661,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.Web(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("browseId", "FEmusic_library_non_music_audio_list")
             ]);
@@ -708,7 +708,7 @@ public class YouTubeMusicClient
         }
 
         // Send requests
-        Dictionary<string, object> payload = Payload.Mobile(geographicalLocation,
+        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, null, null, null,
             [
                 ("videoId", id)
             ]);

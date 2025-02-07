@@ -21,10 +21,6 @@ public class YouTubeMusicClient
     readonly ILogger? logger;
     readonly YouTubeMusicBase baseClient;
 
-    readonly string geographicalLocation;
-    readonly string? visitorData;
-    readonly string? poToken;
-
     /// <summary>
     /// Creates a new search client
     /// </summary>
@@ -38,9 +34,9 @@ public class YouTubeMusicClient
         string? poToken = null,
         IEnumerable<Cookie>? cookies = null)
     {
-        this.geographicalLocation = geographicalLocation;
-        this.visitorData = visitorData;
-        this.poToken = poToken;
+        GeographicalLocation = geographicalLocation;
+        VisitorData = visitorData;
+        PoToken = poToken;
 
         this.baseClient = new(cookies);
 
@@ -62,15 +58,31 @@ public class YouTubeMusicClient
         string? poToken = null,
         IEnumerable<Cookie>? cookies = null)
     {
-        this.geographicalLocation = geographicalLocation;
-        this.visitorData = visitorData;
-        this.poToken = poToken;
+        GeographicalLocation = geographicalLocation;
+        VisitorData = visitorData;
+        PoToken = poToken;
 
         this.logger = logger;
         this.baseClient = new(logger, cookies);
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient with extendended logging functions has been initialized.");
     }
+
+
+    /// <summary>
+    /// The geographical location
+    /// </summary>
+    public string GeographicalLocation { get; set; }
+
+    /// <summary>
+    /// The persistent visitor data used for session tailoring
+    /// </summary>
+    public string? VisitorData { get; set; }
+
+    /// <summary>
+    /// The Proof of Origin Token for attestation (may be required for streaming)
+    /// </summary>
+    public string? PoToken { get; set; }
 
 
     /// <summary>
@@ -91,7 +103,6 @@ public class YouTubeMusicClient
             Type type when type == typeof(ProfileSearchResult) => YouTubeMusicItemKind.Profiles,
             _ => YouTubeMusicItemKind.Unknown
         };
-
 
     /// <summary>
     /// Parses a search request response into shelf results
@@ -204,7 +215,7 @@ public class YouTubeMusicClient
         }
 
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("query", query),
                 ("params", kind.ToParams()),
@@ -363,7 +374,7 @@ public class YouTubeMusicClient
         }
 
         // Send requests
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("videoId", id)
             ]);
@@ -399,7 +410,7 @@ public class YouTubeMusicClient
         }
 
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("browseId", browseId)
             ]);
@@ -435,7 +446,7 @@ public class YouTubeMusicClient
         try
         {
             // Send request
-            Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+            Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
                 [
                     ("browseId", browseId)
                 ]);
@@ -451,7 +462,7 @@ public class YouTubeMusicClient
                 throw;
 
             // Send request
-            Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+            Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
                 [
                     ("playlistId", browseId.StartsWith("VL") ? browseId.Substring(2) : browseId)
                 ]);
@@ -486,7 +497,7 @@ public class YouTubeMusicClient
         }
 
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("browseId", browseId)
             ]);
@@ -512,7 +523,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("browseId", "FEmusic_liked_playlists")
             ]);
@@ -549,7 +560,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("browseId", "FEmusic_liked_videos")
             ]);
@@ -582,7 +593,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("browseId", "FEmusic_liked_albums")
             ]);
@@ -613,7 +624,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("browseId", "FEmusic_library_corpus_track_artists")
             ]);
@@ -644,7 +655,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("browseId", "FEmusic_library_corpus_artists")
             ]);
@@ -675,7 +686,7 @@ public class YouTubeMusicClient
         CancellationToken cancellationToken = default)
     {
         // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(geographicalLocation, visitorData, poToken, null,
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("browseId", "FEmusic_library_non_music_audio_list")
             ]);
@@ -722,7 +733,7 @@ public class YouTubeMusicClient
         }
 
         // Send requests
-        Dictionary<string, object> payload = Payload.Mobile(geographicalLocation, visitorData, poToken,
+        Dictionary<string, object> payload = Payload.Mobile(GeographicalLocation, VisitorData, PoToken,
             [
                 ("videoId", id)
             ]);

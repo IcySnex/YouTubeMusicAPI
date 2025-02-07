@@ -29,16 +29,15 @@ internal abstract class TestData
     {
         get
         {
-            bool useCookies = false;
-            string cookies = "COOKIES HEADER STRING";
+            string? cookies = null;
 
-            return useCookies ? cookies
+            return cookies?
                 .Split(';')
                 .Select(cookieString =>
                 {
                     string[] parts = cookieString.Split("=");
                     return new Cookie(parts[0], parts[1]) { Domain = ".youtube.com" };
-                }) : null;
+                }) ?? null;
         }
     }
 

@@ -12,7 +12,7 @@ namespace YouTubeMusicAPI.Client;
 /// <summary>
 /// Client for all low level YouTube Music API calls
 /// </summary>
-public class YouTubeMusicBase
+internal class YouTubeMusicBase
 {
     readonly ILogger? logger;
     readonly RequestHelper requestHelper;
@@ -20,24 +20,24 @@ public class YouTubeMusicBase
     /// <summary>
     /// Creates a new base client
     /// </summary>
-    /// <param name="cookies">Initial cookies used for authentication</param>
+    /// <param name="requestHelper">The HTTP request helper</param>
     public YouTubeMusicBase(
-        IEnumerable<Cookie>? cookies = null)
+        RequestHelper requestHelper)
     {
-        this.requestHelper = new(cookies);
+        this.requestHelper = requestHelper;
     }
 
     /// <summary>
     /// Creates a new base client with extendended logging functions
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
-    /// <param name="cookies">Initial cookies used for authentication</param>
+    /// <param name="requestHelper">The HTTP request helper</param>
     public YouTubeMusicBase(
         ILogger logger,
-        IEnumerable<Cookie>? cookies = null)
+        RequestHelper requestHelper)
     {
         this.logger = logger;
-        this.requestHelper = new(cookies);
+        this.requestHelper = requestHelper;
 
         logger.LogInformation($"[BaseClient-.ctor] BaseClient with with extendended logging functions has been initialized.");
     }

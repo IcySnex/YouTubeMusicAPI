@@ -19,7 +19,10 @@ namespace YouTubeMusicAPI.Client;
 public class YouTubeMusicClient
 {
     readonly ILogger? logger;
+    readonly RequestHelper requestHelper;
     readonly YouTubeMusicBase baseClient;
+
+    Player? player = null;
 
     /// <summary>
     /// Creates a new search client
@@ -38,7 +41,8 @@ public class YouTubeMusicClient
         VisitorData = visitorData;
         PoToken = poToken;
 
-        this.baseClient = new(cookies);
+        this.requestHelper = new(cookies);
+        this.baseClient = new(requestHelper);
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient has been initialized.");
     }
@@ -63,7 +67,8 @@ public class YouTubeMusicClient
         PoToken = poToken;
 
         this.logger = logger;
-        this.baseClient = new(logger, cookies);
+        this.requestHelper = new(logger, cookies);
+        this.baseClient = new(logger, requestHelper);
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient with extendended logging functions has been initialized.");
     }
@@ -82,7 +87,18 @@ public class YouTubeMusicClient
     /// <summary>
     /// The Proof of Origin Token for attestation (may be required for streaming)
     /// </summary>
-    public string? PoToken { get; set; }
+    public string? PoToken
+    {
+        get => poToken;
+        set
+        {
+            poToken = value;
+            
+            if (player is not null)
+                player.PoToken = value;
+        }
+    }
+    string? poToken = null;
 
 
     /// <summary>
@@ -456,11 +472,8 @@ public class YouTubeMusicClient
             CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylist(requestResponse);
             return info;
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
-            if (ex.Message != "HTTP request failed. StatusCode: NotFound.")
-                throw;
-
             // Send request
             Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
                 [
@@ -739,15 +752,38 @@ public class YouTubeMusicClient
             VisitorData = await baseClient.GetVisitorDataAsync(cancellationToken);
         }
 
-        // Send requests
-        Dictionary<string, object> payload = Payload.Mobile(GeographicalLocation, VisitorData, PoToken,
-            [
-                ("videoId", id)
-            ]);
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, cancellationToken);
+        try
+        {
+            // Send requests
+            Dictionary<string, object> payload = Payload.Mobile(GeographicalLocation, VisitorData, PoToken,
+                [
+                    ("videoId", id)
+                ]);
+            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, cancellationToken);
 
-        // Parse request response
-        StreamingData streamingData = StreamingParser.GetData(requestResponse);
-        return streamingData;
+            // Parse request response
+            StreamingData streamingData = StreamingParser.GetData(requestResponse);
+            return streamingData;
+        }
+        catch (HttpRequestException)
+        {
+            // Create player if necessary
+            if (player is null)
+            {
+                logger?.LogInformation("[YouTubeMusicClient-GetStreamingDataAsync] Creating required player for streaming...");
+                player = await Player.CreateAsync(requestHelper, PoToken, cancellationToken);
+            }
+
+            // Send request
+            Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, player.SigTimestamp,
+                [
+                    ("videoId", id)
+                ]);
+            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, cancellationToken);
+
+            // Parse request response
+            StreamingData streamingData = StreamingParser.GetData(requestResponse, player);
+            return streamingData;
+        }
     }
 }

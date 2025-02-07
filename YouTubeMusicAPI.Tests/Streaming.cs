@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions.Interfaces;
 using Newtonsoft.Json;
-using System.IO;
 using YouTubeMusicAPI.Client;
 using YouTubeMusicAPI.Models.Streaming;
 

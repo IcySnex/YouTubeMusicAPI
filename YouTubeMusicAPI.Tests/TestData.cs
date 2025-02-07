@@ -1,10 +1,48 @@
-﻿namespace YouTubeMusicAPI.Tests;
+﻿using System.Net;
+
+namespace YouTubeMusicAPI.Tests;
 
 /// <summary>
 /// Contains test data for tests
 /// </summary>
 internal abstract class TestData
 {
+    /// <summary>
+    /// Test geographical location for requests
+    /// </summary>
+    public const string GeographicalLocation = "US";
+
+    /// <summary>
+    /// Test visitor data for requests
+    /// </summary>
+    public const string? VisitorData = null;
+
+    /// <summary>
+    /// Test po token for requests
+    /// </summary>
+    public const string? PoToken = null;
+
+    /// <summary>
+    /// Test cookies for authentication
+    /// </summary>
+    public static IEnumerable<Cookie>? Cookies
+    {
+        get
+        {
+            bool useCookies = false;
+            string cookies = "COOKIES HEADER STRING";
+
+            return useCookies ? cookies
+                .Split(';')
+                .Select(cookieString =>
+                {
+                    string[] parts = cookieString.Split("=");
+                    return new Cookie(parts[0], parts[1]) { Domain = ".youtube.com" };
+                }) : null;
+        }
+    }
+
+
     /// <summary>
     /// Test query for search requests
     /// </summary>
@@ -52,37 +90,6 @@ internal abstract class TestData
     /// </summary>
     public const string ArtistBrowseId = "UCESdnJ-8tBDMqqkPpjHOuMg";
     
-
-    /// <summary>
-    /// Test geographical location for requests
-    /// </summary>
-    public const string GeographicalLocation = "US";
-
-    /// <summary>
-    /// Test visitor data for requests
-    /// </summary>
-    public const string? VisitorData = null;
-
-    /// <summary>
-    /// Test po token for requests
-    /// </summary>
-    public const string? PoToken = null;
-
-    /// <summary>
-    /// Test cookies for authentication
-    /// 
-    /// To parse, use:
-    /// IEnumerable<Cookie> parsedCookies = cookiesString
-    ///     .Split(';')
-    ///     .Select(cookieString =>
-    ///     {
-    ///         string[] parts = cookieString.Split("=");
-    ///         return new Cookie(parts[0], parts[1]) { Domain = ".youtube.com" };
-    ///     });
-    /// 
-    /// </summary>
-    public const string CookiesString = "wide=...;SOCS=...;_gcl_au=...;PREF=...;LOGIN_INFO=...;__Secure-1PSIDTS=...;__Secure-3PSIDTS=...;__Secure-1PSID=...;__Secure-3PSID=...;HSID=...;SSID=...;APISID=...;SAPISID=...;__Secure-1PAPISID=...;__Secure-3PAPISID=...;__Secure-YEC=...;SIDCC=...;__Secure-1PSIDCC=...;__Secure-3PSIDCC=...";
-
 
     /// <summary>
     /// File path to download test media stream

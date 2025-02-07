@@ -59,6 +59,16 @@ internal abstract class TestData
     public const string GeographicalLocation = "US";
 
     /// <summary>
+    /// Test visitor data for requests
+    /// </summary>
+    public const string? VisitorData = null;
+
+    /// <summary>
+    /// Test po token for requests
+    /// </summary>
+    public const string? PoToken = null;
+
+    /// <summary>
     /// Test cookies for authentication
     /// 
     /// To parse, use:

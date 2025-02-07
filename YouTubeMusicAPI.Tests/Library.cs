@@ -24,16 +24,7 @@ internal class Library
         });
 
         logger = factory.CreateLogger<Search>();
-        //client = new(logger, TestData.GeographicalLocation);
-
-        IEnumerable<Cookie> parsedCookies = TestData.CookiesString
-            .Split(';')
-            .Select(cookieString =>
-            {
-                string[] parts = cookieString.Split("=");
-                return new Cookie(parts[0], parts[1]) { Domain = ".youtube.com" };
-            });
-        client = new(logger, TestData.GeographicalLocation, parsedCookies);
+        client = new(logger, TestData.GeographicalLocation, TestData.VisitorData, TestData.PoToken, TestData.Cookies);
     }
 
 

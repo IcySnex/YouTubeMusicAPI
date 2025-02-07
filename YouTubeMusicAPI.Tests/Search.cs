@@ -23,7 +23,7 @@ internal class Search
         });
 
         logger = factory.CreateLogger<Search>();
-        client = new(logger, TestData.GeographicalLocation);
+        client = new(logger, TestData.GeographicalLocation, TestData.VisitorData, TestData.PoToken, TestData.Cookies);
     }
 
 

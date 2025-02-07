@@ -59,4 +59,53 @@ public static class Payload
 
         return payload;
     }
+    
+    /// <summary>
+    /// Creates a new payload which mimics a YouTube mobile client
+    /// </summary>
+    /// <param name="geographicalLocation">The region for the payload</param>
+    /// <param name="visitorData">The visitor data</param>
+    /// <param name="poToken">The proof of origin token</param>
+    /// <param name="items">The items to add to the request payload</param>
+    /// <returns>The new payload</returns>
+    public static Dictionary<string, object> Mobile(
+        string geographicalLocation,
+        string? visitorData,
+        string? poToken,
+        (string key, object? value)[] items)
+    {
+        Dictionary<string, object> payload = new()
+        {
+            ["context"] = new
+            {
+                client = new
+                {
+                    clientName = "iOS",
+                    clientVersion = "19.45.4",
+                    deviceMake = "Apple",
+                    deviceModel = "iPhone16,2",
+                    osName = "IOS",
+                    platform = "MOBILE",
+                    osVersion = "18.1.0.22B83",
+                    userAgent = "com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; US)",
+                    timeZone = "UTC",
+                    utcOffsetMinutes = 0,
+                    hl = "en",
+                    gl = geographicalLocation,
+                    visitorData
+                }
+            },
+            ["serviceIntegrityDimensions"] = new
+            {
+                poToken
+            }
+        };
+        foreach ((string key, object? value) in items)
+            if (value is not null)
+                payload[key] = value;
+
+        return payload;
+    }
+
+    
 }

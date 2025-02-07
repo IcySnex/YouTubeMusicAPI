@@ -472,13 +472,13 @@ internal static class Selectors
     /// Selects and casts media stream info from a json token
     /// </summary>
     /// <param name="value">The json token containing the item data</param>
-    /// <param name="path">The json token path</param>
+    /// <param name="getUrl">The function to retrieve a formats stream url</param>
     /// <returns>An array of media stream info</returns>
     public static MediaStreamInfo[] SelectStreamInfo(
         this JToken value,
-        string path = "streamingData.adaptiveFormats")
+        Func<JToken, string> getUrl)
     {
-        JToken[]? adaptiveFormats = value.SelectObjectOptional<JToken[]>(path);
+        JToken[]? adaptiveFormats = value.SelectObjectOptional<JToken[]>("streamingData.adaptiveFormats");
         if (adaptiveFormats is null)
             return [];
 
@@ -490,7 +490,7 @@ internal static class Selectors
             string codecs = mimeType.Split('"')[1];
 
             int itag = content.SelectObject<int>("itag");
-            string url = content.SelectObject<string>("url");
+            string url = getUrl(content);
             DateTime lastModifiedAt = content["lastModifed"] is null ? DateTime.Now : DateTimeOffset.FromUnixTimeMilliseconds(content.SelectObjectOptional<long>("lastModified") / 1000).DateTime;
             TimeSpan duration = content["approxDurationMs"] is null ? TimeSpan.MaxValue : TimeSpan.FromMilliseconds(content.SelectObject<long>("approxDurationMs"));
             long contentLength = content["contentLength"] is null ? long.MaxValue : content.SelectObject<long>("contentLength");

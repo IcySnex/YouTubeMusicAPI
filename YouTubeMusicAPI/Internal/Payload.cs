@@ -18,7 +18,7 @@ public static class Payload
         string geographicalLocation,
         string? visitorData,
         string? poToken,
-        string? signatureTimestamp,
+        int? signatureTimestamp,
         (string key, object? value)[] items)
     {
         Dictionary<string, object> payload = new()

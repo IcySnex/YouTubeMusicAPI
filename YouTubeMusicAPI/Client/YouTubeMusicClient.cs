@@ -732,6 +732,13 @@ public class YouTubeMusicClient
             throw new ArgumentNullException(nameof(id), "Getting streaming data failed. Id parameter is null or whitespace.");
         }
 
+        // Get VisitorData if necessary
+        if (VisitorData is null)
+        {
+            logger?.LogInformation("[YouTubeMusicClient-GetStreamingDataAsync] Getting required visitor data for streaming...");
+            VisitorData = await baseClient.GetVisitorDataAsync(cancellationToken);
+        }
+
         // Send requests
         Dictionary<string, object> payload = Payload.Mobile(GeographicalLocation, VisitorData, PoToken,
             [

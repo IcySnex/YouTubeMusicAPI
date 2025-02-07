@@ -116,7 +116,7 @@ public class YouTubeMusicBase
         // Extracting visitor data
         logger?.LogInformation($"[YouTubeMusicBase-GetVisitorDataAsync] Extracting visitor data from html.");
         Match match = Regex.Match(response, "\"visitorData\":\"([^\"]+)");
-        if (match.Success)
+        if (!match.Success)
             throw new Exception("Visitor data could not be extracted from the html: Found no Regex match");
 
         return match.Groups[1].Value;

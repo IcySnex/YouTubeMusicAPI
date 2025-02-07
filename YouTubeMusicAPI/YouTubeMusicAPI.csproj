@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>2.2.0</Version>
-		<AssemblyVersion>2.2.0</AssemblyVersion>
-		<FileVersion>2.2.0</FileVersion>
+		<Version>2.2.1</Version>
+		<AssemblyVersion>2.2.1</AssemblyVersion>
+		<FileVersion>2.2.1</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,13 +24,10 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>- Added support for getting saved community playlists from the authenticated user's library
-- Added support for getting saved songs from the authenticated user's library
-- Added support for getting saved albums from the authenticated user's library
-- Added support for getting artists with saved songs from the authenticated user's library
-- Added support for getting subscribed artists from the authenticated user's library
-- Added support for getting saved podcasts from the authenticated user's library
-- Added "IsEp" property to "AlbumSearchResult"</PackageReleaseNotes>
+		<PackageReleaseNotes>- Fixed crash when community playlist/album has over 100 songs
+- Introduced ability to provide custom visitorData &amp; poToken
+- Introduced ability to change geographicalLocation, visitorData &amp; poToken without having to recreate client
+- Fixed all kind of streaming issues</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

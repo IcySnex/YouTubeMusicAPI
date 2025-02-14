@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>2.2.1</Version>
-		<AssemblyVersion>2.2.1</AssemblyVersion>
-		<FileVersion>2.2.1</FileVersion>
+		<Version>2.2.2</Version>
+		<AssemblyVersion>2.2.2</AssemblyVersion>
+		<FileVersion>2.2.2</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,10 +24,9 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>- Fixed crash when community playlist/album has over 100 songs
-- Introduced ability to provide custom visitorData &amp; poToken
-- Introduced ability to change geographicalLocation, visitorData &amp; poToken without having to recreate client
-- Fixed all kind of streaming issues</PackageReleaseNotes>
+		<PackageReleaseNotes>- Fixed Streaming URL's n-signature deciphering
+- Fixed parsing issues for Library Community Playlists when authenticated has YT Premium
+		</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

@@ -549,8 +549,8 @@ public class YouTubeMusicClient
         List<LibraryCommunityPlaylist> items = [];
         foreach (JObject itemToken in itemTokens)
         {
-            JToken[]? menuItems = itemToken.SelectObjectOptional<JToken[]>("musicTwoRowItemRenderer.menu.menuRenderer.items");
-            if (menuItems is null || menuItems.Length < 6)
+            JToken[]? runs = itemToken.SelectObjectOptional<JToken[]>("musicTwoRowItemRenderer.subtitle.runs");
+            if (runs is null || runs.Length < 3)
                 continue;
 
             items.Add(LibraryParser.GetCommunityPlaylist(itemToken));
@@ -713,7 +713,7 @@ public class YouTubeMusicClient
         foreach (JObject itemToken in itemTokens)
         {
             JToken[]? menuItems = itemToken.SelectObjectOptional<JToken[]>("musicTwoRowItemRenderer.menu.menuRenderer.items");
-            if (menuItems is null || menuItems.Length != 2)
+            if (menuItems is null || menuItems.Length == 1)
                 continue;
 
             items.Add(LibraryParser.GetPodcast(itemToken));

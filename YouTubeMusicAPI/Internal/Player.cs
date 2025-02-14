@@ -83,7 +83,7 @@ internal class Player
                 !code.Contains("1969"))
                 continue;
 
-            string fixedCode = Regex.Replace(code, @"if\s*?\(typeof\s*? [a-zA-Z]*\s*?===\s*?""undefined""\)\s*?return\s*?[a-zA-Z]*;", "");
+            string fixedCode = Regex.Replace(code, @"if\s*\(\s*typeof\s*[a-zA-Z0-9_$]*\s*===\s*""*undefined""*\s*\)\s*return\s+[a-zA-Z0-9_$]*;", "");
             return $"{fixedCode} {identifier.Name}(nsig);";
         }
 

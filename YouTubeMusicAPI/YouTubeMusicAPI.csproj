@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>2.2.2</Version>
-		<AssemblyVersion>2.2.2</AssemblyVersion>
-		<FileVersion>2.2.2</FileVersion>
+		<Version>2.2.3</Version>
+		<AssemblyVersion>2.2.3</AssemblyVersion>
+		<FileVersion>2.2.3</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,8 +24,8 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>- Fixed Streaming URL's n-signature deciphering
-- Fixed parsing issues for Library Community Playlists when authenticated has YT Premium
+		<PackageReleaseNotes>- Fixed parsing issues when authenticated user has YT Premium
+- Fixed album info parsing
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	

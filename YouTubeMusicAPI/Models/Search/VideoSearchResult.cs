@@ -18,7 +18,7 @@ public class VideoSearchResult(
     YouTubeMusicItem artist,
     TimeSpan duration,
     string viewsInfo,
-    Radio radio,
+    Radio? radio,
     Thumbnail[] thumbnails) : IYouTubeMusicItem
 {
     /// <summary>
@@ -59,7 +59,7 @@ public class VideoSearchResult(
     /// <summary>
     /// The radio of this video
     /// </summary>
-    public Radio Radio { get; } = radio;
+    public Radio? Radio { get; } = radio;
 
     /// <summary>
     /// The thumbnails of this video

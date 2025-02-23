@@ -22,7 +22,7 @@ public class SongSearchResult(
     TimeSpan duration,
     bool isExplicit,
     string playsInfo,
-    Radio radio,
+    Radio? radio,
     Thumbnail[] thumbnails) : IYouTubeMusicItem
 {
     /// <summary>
@@ -73,7 +73,7 @@ public class SongSearchResult(
     /// <summary>
     /// The radio of this song
     /// </summary>
-    public Radio Radio { get; } = radio;
+    public Radio? Radio { get; } = radio;
 
     /// <summary>
     /// The thumbnails of this song

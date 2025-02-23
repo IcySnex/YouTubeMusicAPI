@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>2.2.3</Version>
-		<AssemblyVersion>2.2.3</AssemblyVersion>
-		<FileVersion>2.2.3</FileVersion>
+		<Version>2.2.4</Version>
+		<AssemblyVersion>2.2.4</AssemblyVersion>
+		<FileVersion>2.2.4</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -24,9 +24,9 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>- Fixed parsing issues when authenticated user has YT Premium
-- Fixed album info parsing
-		</PackageReleaseNotes>
+		<PackageReleaseNotes>- Fixed parsing issue when album has no release year specified
+- Fixed parsing issue when song doesn't contain album
+- Fixed parsing issue when song/video doesn't contain radio</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

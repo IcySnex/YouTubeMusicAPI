@@ -45,7 +45,7 @@ internal abstract class TestData
     /// <summary>
     /// Test query for search requests
     /// </summary>
-    public const string SearchQuery = "Edelstein, Pt. 1 Reaf, Saibou";
+    public const string SearchQuery = "\"The Hits\" by \"REO Speedwagon\"";
 
     /// <summary>
     /// Test search query continuation token to get further elemnts from a pervious search

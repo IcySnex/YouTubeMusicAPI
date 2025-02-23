@@ -71,14 +71,16 @@ internal static class SearchParser
     public static AlbumSearchResult GetAlbums(
         JToken jsonToken)
     {
-        YouTubeMusicItem[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 2, 1);
+        JToken[] runs = jsonToken.SelectObject<JToken[]>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs");
+
+        YouTubeMusicItem[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 2, jsonToken.SelectObjectOptional<JToken>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runs.Length - 1}].navigationEndpoint") is null ? 1 : 0);
         int yearIndex = artists[0].Id is null ? 4 : artists.Length * 2 + 2;
 
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             jsonToken.SelectObjectOptional<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId") ?? jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.playlistId"),
             artists: artists,
-            releaseYear: jsonToken.SelectObject<int>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{yearIndex}].text"),
+            releaseYear: yearIndex == runs.Length - 1 ? jsonToken.SelectObject<int>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{yearIndex}].text") : 1970,
             isSingle: jsonToken.SelectObject<string>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text") == "Single",
             isEp: jsonToken.SelectObject<string>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text") == "EP",
             radio: jsonToken.SelectRadio("menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),

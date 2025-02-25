@@ -62,14 +62,16 @@ internal class LibraryParser
     public static LibraryAlbum GetAlbum(
         JObject jsonToken)
     {
-        YouTubeMusicItem[] artists = jsonToken.SelectArtists("musicTwoRowItemRenderer.subtitle.runs", 2, 1);
+        JToken[] runs = jsonToken.SelectObject<JToken[]>("musicTwoRowItemRenderer.subtitle.runs");
+
+        YouTubeMusicItem[] artists = jsonToken.SelectArtists("musicTwoRowItemRenderer.subtitle.runs", 2, jsonToken.SelectObjectOptional<JToken>($"musicTwoRowItemRenderer.subtitle.runs[{runs.Length - 1}].navigationEndpoint") is null ? 1 : 0);
         int yearIndex = artists[0].Id is null ? 4 : artists.Length * 2 + 2;
 
         return new(
             name: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
             id: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId"),
             artists: artists,
-            releaseYear: jsonToken.SelectObject<int>($"musicTwoRowItemRenderer.subtitle.runs[{yearIndex}].text"),
+            releaseYear: yearIndex == runs.Length - 1 ? jsonToken.SelectObject<int>($"musicTwoRowItemRenderer.subtitle.runs[{yearIndex}].text") : 1970,
             isSingle: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text") == "Single",
             isEp: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text") == "EP",
             radio: jsonToken.SelectRadio("musicTwoRowItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),

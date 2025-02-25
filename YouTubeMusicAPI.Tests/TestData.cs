@@ -61,7 +61,7 @@ internal abstract class TestData
     /// <summary>
     /// Test song or video id
     /// </summary>
-    public const string SongVideoId = "Waaa9VBoVpI";
+    public const string SongVideoId = "MLKBxET5Lzg";
     
     /// <summary>
     /// Test album id
@@ -77,7 +77,7 @@ internal abstract class TestData
     /// <summary>
     /// Test album browse id
     /// </summary>
-    public const string AlbumBrowseId = "MPREb_6NKg8kkJLf7";
+    public const string AlbumBrowseId = "MPREb_mAJBln9BXc5";
 
     /// <summary>
     /// Test playlist browse id

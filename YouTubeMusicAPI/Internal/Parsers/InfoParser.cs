@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Types;
@@ -25,7 +26,9 @@ internal static class InfoParser
         JToken nextItem = nextTabContainer.SelectToken("[0].tabRenderer.content.musicQueueRenderer.content.playlistPanelRenderer.contents[0].playlistPanelVideoRenderer")
             ?? nextTabContainer.SelectRequieredToken("[0].tabRenderer.content.musicQueueRenderer.content.playlistPanelRenderer.contents[0].playlistPanelVideoWrapperRenderer.primaryRenderer.playlistPanelVideoRenderer");
 
-        int albumIndex = nextItem.SelectObject<JToken[]>("longBylineText.runs").Length - 3;
+        JToken[] runs = nextItem.SelectObject<JToken[]>("longBylineText.runs");
+
+        int albumIndex = runs.Length - (nextItem.SelectObjectOptional<JToken>($"longBylineText.runs[{runs.Length - 1}].navigationEndpoint") is null ? 3 : 1);
         string? albumId = albumIndex > -1 ? nextItem.SelectObjectOptional<string>($"longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId") : null;
 
         bool isLive = playerJsonToken.SelectObject<bool>("videoDetails.isLiveContent");
@@ -35,7 +38,7 @@ internal static class InfoParser
             id: playerJsonToken.SelectObject<string>("videoDetails.videoId"),
             browseId: nextTabContainer.SelectObject<string>("[2].tabRenderer.endpoint.browseEndpoint.browseId"),
             description: playerJsonToken.SelectObject<string>("microformat.microformatDataRenderer.description"),
-            artists: nextItem.SelectArtists("longBylineText.runs", 0, 3),
+            artists: nextItem.SelectArtists("longBylineText.runs", 0, albumIndex),
             album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId, YouTubeMusicItemKind.Albums) : null,
             duration: TimeSpan.FromSeconds(playerJsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
             radio: isLive ? null : nextItem.SelectRadio(),
@@ -64,17 +67,19 @@ internal static class InfoParser
     {
         JToken innerJsonToken = jsonToken.SelectRequieredToken("contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicResponsiveHeaderRenderer");
 
+        JToken[] runs = innerJsonToken.SelectObject<JToken[]>("subtitle.runs");
+
         return new(
-            innerJsonToken.SelectObject<string>("title.runs[0].text"),
-            innerJsonToken.SelectObjectOptional<string>("buttons[1].musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId") ?? innerJsonToken.SelectObject<string>("buttons[2].musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId"),
-            innerJsonToken.SelectObjectOptional<JToken[]>("description.musicDescriptionShelfRenderer.description.runs")?.Aggregate("", (desc, run) => desc + run.SelectObjectOptional<string>("text")),
-            innerJsonToken.SelectArtists("straplineTextOne.runs"),
-            innerJsonToken.SelectObject<string>("secondSubtitle.runs[2].text").ToTimeSpanLong(),
-            int.Parse(innerJsonToken.SelectObject<string>("secondSubtitle.runs[0].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
-            innerJsonToken.SelectObject<int>("subtitle.runs[2].text"),
-            innerJsonToken.SelectObject<string>("subtitle.runs[0].text") == "Single",
-            innerJsonToken.SelectObject<string>("subtitle.runs[0].text") == "EP",
-            innerJsonToken.SelectThumbnails(),
+            name: innerJsonToken.SelectObject<string>("title.runs[0].text"),
+            id: innerJsonToken.SelectObjectOptional<string>("buttons[1].musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId") ?? innerJsonToken.SelectObject<string>("buttons[2].musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId"),
+            description: innerJsonToken.SelectObjectOptional<JToken[]>("description.musicDescriptionShelfRenderer.description.runs")?.Aggregate("", (desc, run) => desc + run.SelectObjectOptional<string>("text")),
+            artists: innerJsonToken.SelectArtists("straplineTextOne.runs"),
+            duration: innerJsonToken.SelectObject<string>("secondSubtitle.runs[2].text").ToTimeSpanLong(),
+            songCount: int.Parse(innerJsonToken.SelectObject<string>("secondSubtitle.runs[0].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
+            releaseYear: runs.Length > 1 ? innerJsonToken.SelectObject<int>("subtitle.runs[2].text") : 1970,
+            isSingle: innerJsonToken.SelectObject<string>("subtitle.runs[0].text") == "Single",
+            isEp: innerJsonToken.SelectObject<string>("subtitle.runs[0].text") == "EP",
+            thumbnails: innerJsonToken.SelectThumbnails(),
             jsonToken.SelectAlbumSongs("contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer.contents[0].musicShelfRenderer.contents"));
     }
 

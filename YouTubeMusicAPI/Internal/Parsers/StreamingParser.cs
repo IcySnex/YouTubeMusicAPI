@@ -43,7 +43,14 @@ internal static class StreamingParser
             throw new InvalidOperationException($"This media stream is not playable: {jsonToken.SelectObjectOptional<string>("playabilityStatus.reason") ?? "Unknown reason"}");
 
         return new(
-            streamInfo: jsonToken.SelectStreamInfo(content => player.Decipher(content.SelectObject<string>("signatureCipher"))),
+            streamInfo: jsonToken.SelectStreamInfo(content =>
+            {
+                string? url = content.SelectObjectOptional<string>("url");
+                string? signatureCipher = content.SelectObjectOptional<string>("signatureCipher");
+                string? cipher = content.SelectObjectOptional<string>("cipher");
+
+                return player.Decipher(url, signatureCipher, cipher);
+            }),
             isLiveContent: jsonToken.SelectObject<bool>("videoDetails.isLiveContent"),
             expiresIn: TimeSpan.FromSeconds(jsonToken.SelectObject<int>("streamingData.expiresInSeconds")),
             hlsManifestUrl: jsonToken.SelectObjectOptional<string>("streamingData.hlsManifestUrl"));

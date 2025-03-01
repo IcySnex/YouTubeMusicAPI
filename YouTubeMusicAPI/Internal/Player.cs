@@ -163,30 +163,41 @@ internal class Player
     /// <summary>
     /// Deciphers the signature cipher
     /// </summary>
+    /// <param name="url">The url</param>
     /// <param name="signatureCipher">The signature cipher</param>
+    /// <param name="cipher">The cipher</param>
     /// <returns>The deciphered url</returns>
     public string Decipher(
-        string signatureCipher)
+        string? url,
+        string? signatureCipher,
+        string? cipher)
     {
+        string actualUrl = url ?? signatureCipher ?? cipher ?? throw new Exception("No url, signature cipher or cipher provided");
+
         // Parse
-        NameValueCollection query = HttpUtility.ParseQueryString(signatureCipher);
-        string url = query["url"] ?? throw new Exception("Signature cipher does not contain url parameter");
-        string sig = query["s"] ?? throw new Exception("Signature cipher does not contain s parameter");
+        NameValueCollection query = HttpUtility.ParseQueryString(actualUrl);
+        string extractedUrl = query["url"] ?? actualUrl;
+        string? sig = query["s"];
         string sp = query["sp"] ?? "signature";
 
-        NameValueCollection urlQuery = HttpUtility.ParseQueryString(url);
+        NameValueCollection urlQuery = HttpUtility.ParseQueryString(extractedUrl);
         string? nsig = urlQuery["n"];
         string? sabr = urlQuery["sabr"];
         string? client = urlQuery["c"];
+
+        if ((signatureCipher is not null || cipher is not null) && sig is null)
+            throw new Exception("Signature cipher does not contain s parameter.");
 
         // Signatures
         Engine jsEngine = new Engine()
             .SetValue("sig", sig)
             .SetValue("nsig", nsig);
 
-        string decipheredSig = jsEngine.Evaluate(sigDecipherAlgorithm).AsString();
-        urlQuery[sp] = decipheredSig;
-
+        if (sig is not null)
+        {
+            string decipheredSig = jsEngine.Evaluate(sigDecipherAlgorithm).AsString();
+            urlQuery[sp] = decipheredSig;
+        }
         if (nsig is not null)
         {
             string decipheredNsig = jsEngine.Evaluate(nSigDecipherAlgorithm).AsString();

@@ -17,6 +17,7 @@ internal class RequestHelper
     readonly ILogger? logger;
 
     readonly HttpClient httpClient;
+    readonly JsonSerializerSettings jsonSettings = new() { NullValueHandling = NullValueHandling.Ignore };
 
     /// <summary>
     /// Creates a new request helper
@@ -131,7 +132,7 @@ internal class RequestHelper
             RequestUri = new UriBuilder(url) { Query = parameters }.Uri,
         };
         if (body is not null)
-            request.Content = new StringContent(JsonConvert.SerializeObject(body, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(body, jsonSettings), Encoding.UTF8, "application/json");
 
         // Send HTTP request
         logger?.LogInformation($"[RequestHelper-PostBodyAsync] Sending HTTP reuqest. POST: {url}.");

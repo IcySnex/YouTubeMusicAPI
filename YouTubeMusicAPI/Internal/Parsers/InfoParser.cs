@@ -49,7 +49,7 @@ internal static class InfoParser
             isLiveContent: isLive,
             isFamiliyFriendly: playerJsonToken.SelectObject<bool>("microformat.microformatDataRenderer.familySafe"),
             isExplicit: nextItem.SelectIsExplicit("badges"),
-            viewsCount: playerJsonToken.SelectObject<int>("videoDetails.viewCount"),
+            viewsCount: playerJsonToken.SelectObject<long>("videoDetails.viewCount"),
             publishedAt: playerJsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.publishDate"),
             uploadedAt: playerJsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.uploadDate"),
             thumbnails: playerJsonToken.SelectThumbnails("videoDetails.thumbnail.thumbnails"),

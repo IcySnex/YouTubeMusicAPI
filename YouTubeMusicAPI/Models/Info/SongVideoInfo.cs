@@ -39,7 +39,7 @@ public class SongVideoInfo(
     bool isLiveContent,
     bool isFamiliyFriendly,
     bool isExplicit,
-    int viewsCount,
+    long viewsCount,
     DateTime publishedAt,
     DateTime uploadedAt,
     Thumbnail[] thumbnails,
@@ -123,7 +123,7 @@ public class SongVideoInfo(
     /// <summary>
     /// The views count of the song or video
     /// </summary>
-    public int ViewsCount { get; } = viewsCount;
+    public long ViewsCount { get; } = viewsCount;
 
     /// <summary>
     /// The date when the song or video was published

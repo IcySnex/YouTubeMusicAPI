@@ -61,18 +61,18 @@ internal abstract class TestData
     /// <summary>
     /// Test song or video id
     /// </summary>
-    public const string SongVideoId = "MLKBxET5Lzg";
-    
+    public const string SongVideoId = "kffacxfA7G4";
+
     /// <summary>
     /// Test album id
     /// </summary>
     public const string AlbumId = "OLAK5uy_muEnh0WPCqRdkgV3Qg24ttvmZTP1_RBTo";
-    
+
     /// <summary>
     /// Test playlist id
     /// </summary>
     public const string PlaylistId = "PLuvXOFt0CoEbwWSQj5LmzPhIVKS0SvJ-1";
-    
+
 
     /// <summary>
     /// Test album browse id
@@ -83,12 +83,12 @@ internal abstract class TestData
     /// Test playlist browse id
     /// </summary>
     public const string PlaylistBrowseId = "VLPLuvXOFt0CoEbwWSQj5LmzPhIVKS0SvJ-1";
-    
+
     /// <summary>
     /// Test artist browse id
     /// </summary>
     public const string ArtistBrowseId = "UCESdnJ-8tBDMqqkPpjHOuMg";
-    
+
 
     /// <summary>
     /// File path to download test media stream

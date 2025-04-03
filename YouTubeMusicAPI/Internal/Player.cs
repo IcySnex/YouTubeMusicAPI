@@ -4,6 +4,7 @@ using Jint;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Xml.Serialization;
 
 namespace YouTubeMusicAPI.Internal;
 
@@ -33,20 +34,51 @@ internal class Player
     }
 
 
+
+    /// <summary>
+    /// Extracts the global variable from the player
+    /// </summary>
+    /// <param name="playerJs">The player javascript source</param>
+    /// <returns>The global variable</returns>
+    static (string Source, string Name)? ExtractGlobalVariable(
+        string playerJs)
+    {
+        Parser parser = new();
+        Script ast = parser.ParseScript(playerJs);
+
+        string[] patterns = ["-_w8_", "Untrusted URL{", "1969", "1970", "playerfallback"];
+
+        foreach (Node node in ast.DescendantNodesAndSelf())
+        {
+            if (node is not VariableDeclaration variable ||
+                variable.Declarations.FirstOrDefault()?.Id is not Identifier identifier ||
+                variable.Declarations.FirstOrDefault()?.Init is null)
+                continue;
+
+            string code = playerJs.Substring(node.Start, node.End - node.Start);
+            if (patterns.Any(marker => code.Contains(marker)))
+                return (code, identifier.Name);
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Extracts the signature deciphering algorithm from the player
     /// </summary>
     /// <param name="playerJs">The player javascript source</param>
+    /// <param name="globalVariable">The player global variable, if available</param>
     /// <returns>The signature deciphering algorithm</returns>
     static string ExtractSigDecipherAlgorithm(
-        string playerJs)
+        string playerJs,
+        (string Source, string Name)? globalVariable)
     {
-        Match match = Regex.Match(playerJs, @"function\((\w+)\)\{(\1=\1\.split\([\'""]{2}\);(.*?)return\s*?\1\.join\([\'""]{2}\))};");
+        Match match = Regex.Match(playerJs, @"function\(([A-Za-z_0-9]+)\){([A-Za-z_0-9]+=[A-Za-z_0-9]+\.split\((?:[^)]+)\)(.+?)\.join\((?:[^)]+)\))}");
         if (!match.Success)
             throw new Exception("Failed to extract signature deciphering algorithm");
 
         string varName = match.Groups[1].Value;
-        string? objName = match.Groups[3].Value.Split('.').FirstOrDefault();
+        string? objName = match.Groups[3].Value.Split(['.', '['], StringSplitOptions.RemoveEmptyEntries) is { Length: > 0 } parts ? parts[0].Replace(";", "").Trim() : null;
         string? functions = GetStringBetween(playerJs, $"var {objName}={{", "};");
 
         if (string.IsNullOrEmpty(varName) ||
@@ -54,7 +86,7 @@ internal class Player
             string.IsNullOrEmpty(functions))
             throw new Exception("Failed to extract signature deciphering algorithm");
 
-        return $"function descramble_sig({varName}) {{ let {objName}={{{functions}}}; {match.Groups[2].Value} }} descramble_sig(sig);";
+        return $"{globalVariable?.Source ?? ""} function descramble_sig({varName}) {{ let {objName}={{{functions}}}; {match.Groups[2].Value} }} descramble_sig(sig);";
 
     }
 
@@ -62,12 +94,18 @@ internal class Player
     /// Extracts the n-signature deciphering algorithm from the player
     /// </summary>
     /// <param name="playerJs">The player javascript source</param>
+    /// <param name="globalVariable">The player global variable, if available</param>
     /// <returns>The n-signature deciphering algorithm</returns>
     static string ExtractNSigDecipherAlgorithm(
-        string playerJs)
+        string playerJs,
+        (string Source, string Name)? globalVariable)
     {
         Parser parser = new();
         Script ast = parser.ParseScript(playerJs);
+
+        string[] patterns = globalVariable is null
+            ? ["-_w8_", "1969", "enhanced_except"]
+            : [$"new Date({globalVariable.Value.Name}", ".push(String.fromCharCode(", ".reverse().forEach(function"];
 
         foreach (Node node in ast.DescendantNodesAndSelf())
         {
@@ -77,14 +115,25 @@ internal class Player
                 assignment.Right is not FunctionExpression)
                 continue;
 
-            string code = playerJs.Substring(node.Start, node.End - node.Start);
-            if (!code.Contains("enhanced_except") &&
-                !code.Contains("-_w8_") &&
-                !code.Contains("1969"))
-                continue;
+            string? functionCode = null;
+            string? functionName = null;
 
-            string fixedCode = Regex.Replace(code, @"if\s*\(\s*typeof\s*[a-zA-Z0-9_$]*\s*===\s*""*undefined""*\s*\)\s*return\s+[a-zA-Z0-9_$]*;", "");
-            return $"{fixedCode} {identifier.Name}(nsig);";
+            string code = playerJs.Substring(node.Start, node.End - node.Start);
+            foreach (string pattern in patterns)
+                if (code.Contains(pattern))
+                {
+                    functionCode = code;
+                    functionName = identifier.Name;
+                    break;
+                }
+
+            if (functionCode is not null && functionName is not null)
+            {
+                string fixedCode = Regex.Replace(code, @"if\s*\(\s*typeof\s*[a-zA-Z0-9_$]*\s*===\s*""*undefined""*\s*\)\s*return\s+[a-zA-Z0-9_$]*;", "");
+                return globalVariable is null
+                    ? $"let {fixedCode} {functionName}(nsig);"
+                    : $"{globalVariable.Value.Source} var {fixedCode} {fixedCode}(nsig);";
+            }
         }
 
         throw new Exception("Could not find n-signature deciphering algorithm");
@@ -152,8 +201,9 @@ internal class Player
         string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
         string playerJs = await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
 
-        string sigDecipherAlgorithm = ExtractSigDecipherAlgorithm(playerJs);
-        string nSigDecipherAlgorithm = ExtractNSigDecipherAlgorithm(playerJs);
+        (string Source, string Name)? gloablVariable = ExtractGlobalVariable(playerJs);
+        string sigDecipherAlgorithm = ExtractSigDecipherAlgorithm(playerJs, gloablVariable);
+        string nSigDecipherAlgorithm = ExtractNSigDecipherAlgorithm(playerJs, gloablVariable);
         int sigTimestamp = ExtractSigTimestamp(playerJs);
 
         return new(sigDecipherAlgorithm, nSigDecipherAlgorithm, sigTimestamp, poToken);
@@ -215,7 +265,7 @@ internal class Player
         // Client Version
         urlQuery["cver"] = client switch
         {
-            "WEB_REMIX" => "1.20211213.00.00",
+            "WEB_REMIX" => "1.20250331.01.00",
             _ => throw new Exception("This client is not supported"),
         };
 

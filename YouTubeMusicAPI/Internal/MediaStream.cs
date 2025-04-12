@@ -18,7 +18,7 @@ namespace YouTubeMusicAPI.Internal;
 /// </summary>
 /// <param name="streamInfo">The info about this media stream</param>
 internal sealed class MediaStream(
-    MediaStreamInfo streamInfo) : Stream
+    StreamInfo streamInfo) : Stream
 {
     static readonly HttpClient Client = new();
 

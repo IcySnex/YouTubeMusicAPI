@@ -456,12 +456,12 @@ internal static class Selectors
 
 
     /// <summary>
-    /// Selects and casts media stream info from a json token
+    /// Selects and casts stream info from a json token
     /// </summary>
     /// <param name="value">The json token containing the item data</param>
     /// <param name="getUrl">The function to retrieve a formats stream url</param>
-    /// <returns>An array of media stream info</returns>
-    public static MediaStreamInfo[] SelectStreamInfo(
+    /// <returns>An array of stream info</returns>
+    public static StreamInfo[] SelectStreamInfo(
         this JToken value,
         Func<JToken, string> getUrl)
     {
@@ -469,7 +469,7 @@ internal static class Selectors
         if (adaptiveFormats is null)
             return [];
 
-        List<MediaStreamInfo> result = [];
+        List<StreamInfo> result = [];
         foreach (JToken content in adaptiveFormats)
         {
             string mimeType = content.SelectObject<string>("mimeType");

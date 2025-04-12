@@ -105,6 +105,7 @@ internal static class InfoParser
             duration: innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 1}].text").ToTimeSpanLong(),
             songCount: int.Parse(innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 3}].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
             creationYear: innerJsonToken.SelectObject<int>($"subtitle.runs[{runs.Length - 1}].text"),
+            isInfinite: false,
             thumbnails: innerJsonToken.SelectThumbnails());
     }
     /// <summary>
@@ -163,6 +164,7 @@ internal static class InfoParser
             duration: TimeSpan.MaxValue,
             songCount: int.MaxValue,
             creationYear: DateTime.Now.Year,
+            isInfinite: innerJsonToken.SelectObject<bool>("content.playlistPanelRenderer.isInfinite"),
             thumbnails: jsonToken.SelectThumbnails("playerOverlays.playerOverlayRenderer.browserMediaSession.browserMediaSessionRenderer.thumbnailDetails.thumbnails"));
     }
     /// <summary>

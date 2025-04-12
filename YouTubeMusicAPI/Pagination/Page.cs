@@ -7,13 +7,13 @@
 /// <param name="items">The list of items on the current page</param>
 /// <param name="continuationToken">The continuation token used to fetch the next page (null if there are no more pages)</param>
 public class Page<T>(
-    List<T> items,
+    IReadOnlyList<T> items,
     string? continuationToken)
 {
     /// <summary>
     /// The list of items on the current page
     /// </summary>
-    public List<T> Items { get; } = items;
+    public IReadOnlyList<T> Items { get; } = items;
 
     /// <summary>
     /// The continuation token used to fetch the next page

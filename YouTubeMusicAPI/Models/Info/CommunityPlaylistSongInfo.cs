@@ -53,5 +53,4 @@ public class CommunityPlaylistSongInfo(
     /// The thumbnails of the community playlist song
     /// </summary>
     public Thumbnail[] Thumbnails { get; } = thumbnails;
-
 }

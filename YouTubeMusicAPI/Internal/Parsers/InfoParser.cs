@@ -1,8 +1,7 @@
 ﻿using System.Globalization;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using YouTubeMusicAPI.Models.Info;
-using YouTubeMusicAPI.Types;
+using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Internal.Parsers;
 
@@ -106,9 +105,44 @@ internal static class InfoParser
             duration: innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 1}].text").ToTimeSpanLong(),
             songCount: int.Parse(innerJsonToken.SelectObject<string>($"secondSubtitle.runs[{secondRuns.Length - 3}].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
             creationYear: innerJsonToken.SelectObject<int>($"subtitle.runs[{runs.Length - 1}].text"),
-            thumbnails: innerJsonToken.SelectThumbnails(),
-            songs: jsonToken.SelectCommunityPlaylistSongs("contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer.contents[0].musicPlaylistShelfRenderer.contents"));
+            thumbnails: innerJsonToken.SelectThumbnails());
     }
+    /// <summary>
+    /// Parses community playlist songs page data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the page data</param>
+    /// <returns>A page containing the CommunityPlaylistSongInfo</returns>
+    public static Page<CommunityPlaylistSongInfo> GetCommunityPlaylistSongsPage(
+        JToken jsonToken)
+    {
+        JToken contentsToken = jsonToken.SelectToken("onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems") ?? jsonToken.SelectRequieredToken("contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer.contents[0].musicPlaylistShelfRenderer.contents");
+
+        List<CommunityPlaylistSongInfo> result = [];
+        string? nextContinuationToken = null;
+        
+        foreach (JToken content in contentsToken)
+        {
+            if (content.SelectObjectOptional<string>("continuationItemRenderer.continuationEndpoint.continuationCommand.token") is string continuationToken)
+            {
+                nextContinuationToken = continuationToken;
+                continue;
+            }
+
+            int albumIndex = content.SelectObject<JToken[]>("musicResponsiveListItemRenderer.flexColumns").Length - 1;
+
+            result.Add(new(
+                name: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
+                id: content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId"),
+                artists: content.SelectArtists("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs"),
+                album: content.SelectSehlfItemOptional($"musicResponsiveListItemRenderer.flexColumns[{albumIndex}].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text", $"musicResponsiveListItemRenderer.flexColumns[{albumIndex}].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.browseEndpoint.browseId"),
+                isExplicit: content.SelectIsExplicit("musicResponsiveListItemRenderer.badges"),
+                duration: content.SelectObject<string>("musicResponsiveListItemRenderer.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text").ToTimeSpan(),
+                thumbnails: content.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails")));
+        }
+
+        return new(result, nextContinuationToken);
+    }
+
     /// <summary>
     /// Parses simple community playlist info data from the json token
     /// </summary>
@@ -120,19 +154,49 @@ internal static class InfoParser
     {
         JToken innerJsonToken = jsonToken.SelectRequieredToken("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content.musicQueueRenderer");
 
-        CommunityPlaylistSongInfo[] songs = innerJsonToken.SelectCommunityPlaylistSimpleSongs("content.playlistPanelRenderer.contents");
-
         return new CommunityPlaylistInfo(
             name: innerJsonToken.SelectObject<string>("header.musicQueueHeaderRenderer.subtitle.runs[0].text"),
             id: innerJsonToken.SelectObject<string>("content.playlistPanelRenderer.playlistId"),
             description: null,
             creator: new("YouTube Music", null),
             viewsInfo: null,
-            duration: TimeSpan.FromSeconds(songs.Sum(song => song.Duration.Seconds)),
-            songCount: songs.Length,
+            duration: TimeSpan.MaxValue,
+            songCount: int.MaxValue,
             creationYear: DateTime.Now.Year,
-            thumbnails: jsonToken.SelectThumbnails("playerOverlays.playerOverlayRenderer.browserMediaSession.browserMediaSessionRenderer.thumbnailDetails.thumbnails"),
-            songs: songs);
+            thumbnails: jsonToken.SelectThumbnails("playerOverlays.playerOverlayRenderer.browserMediaSession.browserMediaSessionRenderer.thumbnailDetails.thumbnails"));
+    }
+    /// <summary>
+    /// Parses simple community playlist songs page data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the page data</param>
+    /// <returns>A page containing the CommunityPlaylistSongInfo</returns>
+    public static Page<CommunityPlaylistSongInfo> GetCommunityPlaylistSimpleSongsPage(
+        JToken jsonToken)
+    {
+        JToken innerJsonToken = jsonToken.SelectToken("continuationContents.playlistPanelContinuation") ?? jsonToken.SelectRequieredToken("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content.musicQueueRenderer.content.playlistPanelRenderer");
+
+        List<CommunityPlaylistSongInfo> result = [];
+        string? nextContinuationToken = innerJsonToken.SelectObjectOptional<string>("continuations[0].nextRadioContinuationData.continuation") ?? innerJsonToken.SelectObjectOptional<string>("continuations[0].nextContinuationData.continuation");
+
+        foreach (JToken content in innerJsonToken.SelectRequieredToken("contents"))
+        {
+            if (content.SelectToken("playlistPanelVideoRenderer.longBylineText.runs") is null)
+                continue;
+
+            int albumIndex = content.SelectObject<JToken[]>("playlistPanelVideoRenderer.longBylineText.runs").Length - 3;
+            string? albumId = content.SelectObjectOptional<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId");
+
+            result.Add(new(
+                name: content.SelectObject<string>("playlistPanelVideoRenderer.title.runs[0].text"),
+                id: content.SelectObjectOptional<string>("playlistPanelVideoRenderer.navigationEndpoint.watchEndpoint.videoId"),
+                artists: content.SelectArtists("playlistPanelVideoRenderer.longBylineText.runs", 0, 3),
+                album: albumId is not null ? new(content.SelectObject<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].text"), albumId) : null,
+                isExplicit: content.SelectIsExplicit("playlistPanelVideoRenderer.badges"),
+                duration: content.SelectObject<string>("playlistPanelVideoRenderer.lengthText.runs[0].text").ToTimeSpan(),
+                thumbnails: content.SelectThumbnails("playlistPanelVideoRenderer.thumbnail.thumbnails")));
+        }
+
+        return new(result, nextContinuationToken);
     }
 
     /// <summary>

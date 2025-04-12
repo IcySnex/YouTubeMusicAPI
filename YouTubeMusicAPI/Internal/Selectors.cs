@@ -270,66 +270,6 @@ internal static class Selectors
 
 
     /// <summary>
-    /// Selects and casts community playlists songs from a json token
-    /// </summary>
-    /// <param name="value">The json token containing the item data</param>
-    /// <param name="path">The json token path</param>
-    /// <returns>An array of album songs</returns>
-    public static CommunityPlaylistSongInfo[] SelectCommunityPlaylistSongs(
-        this JToken value,
-        string path)
-    {
-        List<CommunityPlaylistSongInfo> result = [];
-        foreach (JToken content in value.SelectObject<JToken[]>(path))
-        {
-            if (content.SelectObjectOptional<JToken>("continuationItemRenderer") is not null)
-                continue;
-
-            int albumIndex = content.SelectObject<JToken[]>("musicResponsiveListItemRenderer.flexColumns").Length - 1;
-
-            result.Add(new(
-                name: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
-                id: content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId"),
-                artists: content.SelectArtists("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs"),
-                album: content.SelectSehlfItemOptional($"musicResponsiveListItemRenderer.flexColumns[{albumIndex}].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text", $"musicResponsiveListItemRenderer.flexColumns[{albumIndex}].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.browseEndpoint.browseId"),
-                isExplicit: content.SelectIsExplicit("musicResponsiveListItemRenderer.badges"),
-                duration: content.SelectObject<string>("musicResponsiveListItemRenderer.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text").ToTimeSpan(),
-                thumbnails: content.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails")));
-        }
-
-        return [.. result];
-    }
-    /// <summary>
-    /// Selects and casts simple community playlists songs from a json token
-    /// </summary>
-    /// <param name="value">The json token containing the item data</param>
-    /// <param name="path">The json token path</param>
-    /// <returns>An array of album songs</returns>
-    public static CommunityPlaylistSongInfo[] SelectCommunityPlaylistSimpleSongs(
-        this JToken value,
-        string path)
-    {
-        List<CommunityPlaylistSongInfo> result = [];
-        foreach (JToken content in value.SelectObject<JToken[]>(path))
-        {
-            int albumIndex = content.SelectObject<JToken[]>("playlistPanelVideoRenderer.longBylineText.runs").Length - 3;
-            string? albumId = content.SelectObjectOptional<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId");
-
-            result.Add(new(
-                name: content.SelectObject<string>("playlistPanelVideoRenderer.title.runs[0].text"),
-                id: content.SelectObjectOptional<string>("playlistPanelVideoRenderer.navigationEndpoint.watchEndpoint.videoId"),
-                artists: content.SelectArtists("playlistPanelVideoRenderer.longBylineText.runs", 0, 3),
-                album: albumId is not null ? new(content.SelectObject<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].text"), albumId) : null,
-                isExplicit: content.SelectIsExplicit("playlistPanelVideoRenderer.badges"),
-                duration: content.SelectObject<string>("playlistPanelVideoRenderer.lengthText.runs[0].text").ToTimeSpan(),
-                thumbnails: content.SelectThumbnails("playlistPanelVideoRenderer.thumbnail.thumbnails")));
-        }
-
-        return [.. result];
-    }
-
-
-    /// <summary>
     /// Selects and casts artist songs from a json token
     /// </summary>
     /// <param name="value">The json token containing the item data</param>

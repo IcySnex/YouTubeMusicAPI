@@ -20,9 +20,7 @@ internal class Sample
         IReadOnlyList<SearchResult> bufferedSearchResults = await searchResults.FetchItemsAsync(0, 20);
 
         foreach (SearchResult item in bufferedSearchResults)
-        {
             Console.WriteLine($"{item.Category}: {item.Name} - {item.Id}");
-        }
     }
 
     public static async Task SearchSongsAsync(
@@ -33,10 +31,8 @@ internal class Sample
         PaginatedAsyncEnumerable<SearchResult> searchResults = client.SearchAsync(query, SearchCategory.Songs);
         IReadOnlyList<SearchResult> bufferedSearchResults = await searchResults.FetchItemsAsync(0, 20);
 
-        foreach (SongSearchResult song in bufferedSearchResults.Cast<SongSearchResult>())
-        {
-            Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album.Name}");
-        }
+        foreach (SongSearchResult song in bufferedSearchResults)
+            Console.WriteLine(song.Name);
     }
 
     public static async Task GetSongVideoInfoAsync(
@@ -44,20 +40,22 @@ internal class Sample
     {
         YouTubeMusicClient client = new();
 
-        SongVideoInfo info = await client.GetSongVideoInfoAsync(id);
-        Console.WriteLine($"{info.Name}, {string.Join(", ", info.Artists.Select(artist => artist.Name))} - {info.Description}");
+        SongVideoInfo song = await client.GetSongVideoInfoAsync(id);
+        Console.WriteLine(song.Name);
     }
 
-    public static async Task GetAlbumInfoAsync(
+    public static async Task GetAlbumAsync(
         string id)
     {
         YouTubeMusicClient client = new();
 
         string browseId = await client.GetAlbumBrowseIdAsync(id);
 
-        AlbumInfo info = await client.GetAlbumInfoAsync(browseId);
-        foreach (AlbumSongInfo song in info.Songs)
-            Console.WriteLine($"{song.Name}, {song.SongNumber}/{info.SongCount}");
+        AlbumInfo album = await client.GetAlbumInfoAsync(browseId);
+        Console.WriteLine("Album: " + album.Name);
+
+        foreach (AlbumSongInfo song in album.Songs)
+            Console.WriteLine(song.Name);
     }
 
     public static async Task GetCommunityPlaylistInfoAsync(
@@ -67,9 +65,14 @@ internal class Sample
 
         string browseId = client.GetCommunityPlaylistBrowseId(id);
 
-        CommunityPlaylistInfo info = await client.GetCommunityPlaylistInfoAsync(browseId);
-        foreach (CommunityPlaylistSongInfo song in info.Songs)
-            Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album?.Name}");
+        CommunityPlaylistInfo playlist = await client.GetCommunityPlaylistInfoAsync(browseId);
+        Console.WriteLine("Playlist: " + playlist.Name);
+
+        PaginatedAsyncEnumerable<CommunityPlaylistSongInfo> songs = client.GetCommunityPlaylistSongsAsync(browseId);
+        IReadOnlyList<CommunityPlaylistSongInfo> bufferedSongs = await songs.FetchItemsAsync(0, 100);
+
+        foreach (CommunityPlaylistSongInfo song in bufferedSongs)
+            Console.WriteLine(song.Name);
     }
 
     public static async Task GetArtistInfoAsync(
@@ -77,8 +80,10 @@ internal class Sample
     {
         YouTubeMusicClient client = new();
 
-        ArtistInfo info = await client.GetArtistInfoAsync(id);
-        foreach (ArtistSongInfo song in info.Songs)
-            Console.WriteLine($"{song.Name}, {string.Join(", ", song.Artists.Select(artist => artist.Name))} - {song.Album?.Name}");
+        ArtistInfo artist = await client.GetArtistInfoAsync(id);
+        Console.WriteLine("Artist: " + artist.Name);
+
+        foreach (ArtistSongInfo song in artist.Songs)
+            Console.WriteLine(song.Name);
     }
 }

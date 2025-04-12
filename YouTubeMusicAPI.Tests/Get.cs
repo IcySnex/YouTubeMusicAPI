@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
 using YouTubeMusicAPI.Models.Info;
+using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Tests;
 
@@ -116,6 +117,26 @@ internal class Get
         // Output
         string readableResults = JsonConvert.SerializeObject(communityPlaylist, Formatting.Indented);
         logger.LogInformation("\nPlaylist Info:\n{readableResults}", readableResults);
+    }
+    /// <summary>
+    /// Get community playlist information
+    /// </summary>
+    [Test]
+    public void CommunityPlaylistSongs()
+    {
+        IReadOnlyList<CommunityPlaylistSongInfo>? bufferedSongs = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<CommunityPlaylistSongInfo> songs = client.GetCommunityPlaylistSongsAsync(TestData.PlaylistBrowseId);
+            bufferedSongs = await songs.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+        Assert.That(bufferedSongs, Is.Not.Null);
+        Assert.That(bufferedSongs, Is.Not.Empty);
+
+        // Output
+        string readableResults = JsonConvert.SerializeObject(bufferedSongs, Formatting.Indented);
+        logger.LogInformation("\nPlaylist Songs ({resultsCount}):\n{readableResults}", bufferedSongs.Count, readableResults);
     }
 
     /// <summary>

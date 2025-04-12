@@ -127,7 +127,7 @@ public class YouTubeMusicClient
             string? nextContinuationToken,
             CancellationToken cancelToken = default)
         {
-            // Send the request and parse the response
+            // Send request
             Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("query", query),
@@ -311,12 +311,16 @@ public class YouTubeMusicClient
                 ]);
             JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
 
+            string s = requestResponse.ToString();
+
             // Parse request response
             CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylist(requestResponse);
             return info;
         }
-        catch (HttpRequestException)
+        catch
         {
+            logger?.LogWarning($"[YouTubeMusicClient-GetCommunityPlaylistInfoAsync] Primary Browse endpoint failed. Falling back to Next endpoint.");
+
             // Send request
             Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
                 [
@@ -328,6 +332,67 @@ public class YouTubeMusicClient
             CommunityPlaylistInfo info = InfoParser.GetCommunityPlaylistSimple(requestResponse);
             return info;
         }
+    }
+    /// <summary>
+    /// Gets the songs of a community playlist on YouTube Music
+    /// </summary>
+    /// <param name="browseId">The brwose id of the community playlist</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public PaginatedAsyncEnumerable<CommunityPlaylistSongInfo> GetCommunityPlaylistSongsAsync(
+        string browseId)
+    {
+        // Prepare request
+        if (string.IsNullOrWhiteSpace(browseId))
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetCommunityPlaylistInfoAsync] Getting info failed. Browse id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(browseId), "Getting info failed. Browse id parameter is null or whitespace.");
+        }
+
+        bool useFallback = false;
+
+        async Task<Page<CommunityPlaylistSongInfo>> FetchPageDelegate(
+            string? continuationToken,
+            CancellationToken cancelToken = default)
+        {
+            if (!useFallback)
+                try
+                {
+                    // Send request
+                    Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
+                        [
+                            ("browseId", browseId),
+                            ("continuation", continuationToken)
+                        ]);
+                    JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancelToken);
+
+                    // Parse request response
+                    Page<CommunityPlaylistSongInfo> page = InfoParser.GetCommunityPlaylistSongsPage(requestResponse);
+                    return page;
+                }
+                catch // Use fallback path (shits prob an infinite auto generated playlist)
+                {
+                    logger?.LogWarning($"[YouTubeMusicClient-GetCommunityPlaylistSongsAsync] Primary Browse endpoint failed. Falling back to Next endpoint.");
+                    useFallback = true;
+                }
+
+            // Send request
+            Dictionary<string, object> fallbackPayload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
+                [
+                    ("playlistId", browseId.StartsWith("VL") ? browseId.Substring(2) : browseId),
+                    ("continuation", continuationToken)
+                ]);
+            JObject fallbackRequestResponse = await baseClient.SendRequestAsync(Endpoints.Next, fallbackPayload, cancelToken);
+
+            // Parse request response
+            Page<CommunityPlaylistSongInfo> fallbackPage = InfoParser.GetCommunityPlaylistSimpleSongsPage(fallbackRequestResponse);
+            return fallbackPage;
+        }
+        return new(FetchPageDelegate);
     }
 
     /// <summary>

@@ -12,8 +12,8 @@
 public class ArtistSongInfo(
     string name,
     string id,
-    YouTubeMusicItem[] artists,
-    YouTubeMusicItem album,
+    NamedEntity[] artists,
+    NamedEntity album,
     string playsinfo,
     Thumbnail[] thumbnails)
 {
@@ -30,12 +30,12 @@ public class ArtistSongInfo(
     /// <summary>
     /// The artist of this song of an artist
     /// </summary>
-    public YouTubeMusicItem[] Artists { get; } = artists;
+    public NamedEntity[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of this song of an artist
     /// </summary>
-    public YouTubeMusicItem Album { get; } = album;
+    public NamedEntity Album { get; } = album;
 
     /// <summary>
     /// The plays info of this song of an artist

@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using YouTubeMusicAPI.Models.Search;
+using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Internal;
 
@@ -7,6 +9,65 @@ namespace YouTubeMusicAPI.Internal;
 /// </summary>
 internal static class Extensions
 {
+    /// <summary>
+    /// Converts search category to YouTube Music request payload params
+    /// </summary>
+    /// <param name="value">The YouTube Music item kind to convert</param>
+    /// <returns>A YouTube Music request payload params</returns>
+    public static string? ToParams(
+        this SearchCategory? value) =>
+        value switch
+        {
+            SearchCategory.Songs => "EgWKAQIIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            SearchCategory.Albums => "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            SearchCategory.CommunityPlaylists => "EgeKAQQoAEABahAQAxAKEAkQBBAFEBEQEBAV",
+            SearchCategory.Artists => "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            SearchCategory.Podcasts => "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            SearchCategory.Episodes => "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            SearchCategory.Profiles => "EgWKAQJYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            _ => null
+        };
+
+    /// <summary>
+    /// Converts a string to YouTube Music search category
+    /// </summary>
+    /// <param name="value">The string to convert</param>
+    /// <returns>A SearchCategory</returns>
+    public static SearchCategory? ToSearchCategory(
+        this string? value) =>
+        value switch
+        {
+            "Songs" => SearchCategory.Songs,
+            "Videos" => SearchCategory.Videos,
+            "Albums" => SearchCategory.Albums,
+            "Community playlists" => SearchCategory.CommunityPlaylists,
+            "Artists" => SearchCategory.Artists,
+            "Podcasts" => SearchCategory.Podcasts,
+            "Episodes" => SearchCategory.Episodes,
+            "Profiles" => SearchCategory.Profiles,
+            _ => null
+        };
+
+    /// <summary>
+    /// Converts a type to YouTube Music search category
+    /// </summary>
+    /// <param name="value">The string to convert</param>
+    /// <returns>A SearchCategory</returns>
+    public static SearchCategory? ToSearchCategory(
+        this Type value) =>
+        value switch
+        {
+            _ when value == typeof(SongSearchResult) => SearchCategory.Songs,
+            _ when value == typeof(VideoSearchResult) => SearchCategory.Videos,
+            _ when value == typeof(CommunityPlaylistSearchResult) => SearchCategory.CommunityPlaylists,
+            _ when value == typeof(ArtistSearchResult) => SearchCategory.Artists,
+            _ when value == typeof(PodcastSearchResult) => SearchCategory.Podcasts,
+            _ when value == typeof(EpisodeSearchResult) => SearchCategory.Episodes,
+            _ when value == typeof(ProfileSearchResult) => SearchCategory.Profiles,
+            _ => null
+        };
+
+
     /// <summary>
     /// Parses an exact string into a TimeSpan
     /// </summary>

@@ -17,7 +17,7 @@ public class CommunityPlaylistInfo(
     string name,
     string id,
     string? description,
-    YouTubeMusicItem creator,
+    NamedEntity creator,
     string? viewsInfo,
     TimeSpan duration,
     int songCount,
@@ -43,7 +43,7 @@ public class CommunityPlaylistInfo(
     /// <summary>
     /// The artist of the community playlist
     /// </summary>
-    public YouTubeMusicItem Creator { get; } = creator;
+    public NamedEntity Creator { get; } = creator;
 
     /// <summary>
     /// The views info of the community playlist

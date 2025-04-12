@@ -57,41 +57,31 @@ internal static class Selectors
 
 
     /// <summary>
-    /// Selects and casts a YouTube Music item from a json token
+    /// Selects and casts a named entity from a json token
     /// </summary>
     /// <param name="value">The json token containing the item data</param>
     /// <param name="namePath">The json token name path</param>
     /// <param name="idPath">The json token name id</param>
-    /// <param name="kind">The kind of the YouTube Music item</param>
     /// <exception cref="ArgumentNullException">Occurrs when the specified path could not be found</exception>
     /// <returns>A new shelf item</returns>
-    public static YouTubeMusicItem SelectYouTubeMusicItem(
+    public static NamedEntity SelectNamedEntity(
         this JToken value,
         string namePath,
-        string idPath,
-        YouTubeMusicItemKind kind) =>
-        new(
-            value.SelectObject<string>(namePath),
-            value.SelectObjectOptional<string>(idPath),
-            kind);
+        string idPath) =>
+        new(value.SelectObject<string>(namePath), value.SelectObjectOptional<string>(idPath));
 
     /// <summary>
-    /// Selects and casts an optional shelf item from a json token
+    /// Selects and casts an optional named entity from a json token
     /// </summary>
     /// <param name="value">The json token containing the item data</param>
     /// <param name="namePath">The json token name path</param>
     /// <param name="idPath">The json token name id</param>
-    /// <param name="kind">The kind of the shelf item</param>
     /// <returns>A new shelf item</returns>
-    public static YouTubeMusicItem? SelectSehlfItemOptional(
+    public static NamedEntity? SelectSehlfItemOptional(
         this JToken value,
         string namePath,
-        string idPath,
-        YouTubeMusicItemKind kind) =>
-        value.SelectObjectOptional<string>(namePath) is string name ? new(
-            name,
-            value.SelectObjectOptional<string>(idPath),
-            kind) : null;
+        string idPath) =>
+        value.SelectObjectOptional<string>(namePath) is string name ? new(name, value.SelectObjectOptional<string>(idPath)) : null;
 
 
     /// <summary>
@@ -198,7 +188,7 @@ internal static class Selectors
     /// <param name="trimBy">Trim the last items of runs container</param>
     /// <exception cref="ArgumentNullException">Occurrs when the specified path could not be found</exception>
     /// <returns>An array of artists</returns>
-    public static YouTubeMusicItem[] SelectArtists(
+    public static NamedEntity[] SelectArtists(
         this JToken value,
         string path,
         int startIndex = 0,
@@ -207,7 +197,7 @@ internal static class Selectors
         // Parse container from json token
         JToken[] runs = value.SelectObject<JToken[]>(path);
 
-        List<YouTubeMusicItem> result = [];
+        List<NamedEntity> result = [];
         for (int i = startIndex; i < runs.Length - trimBy; i++)
         {
             JToken run = runs[i];
@@ -219,10 +209,7 @@ internal static class Selectors
             if (artist is null || artist == "," || artist == "&" || artist == "•")
                 continue;
 
-            result.Add(new(
-                artist,
-                artistId,
-                YouTubeMusicItemKind.Artists));
+            result.Add(new(artist, artistId));
         }
 
         return [.. result];
@@ -233,7 +220,7 @@ internal static class Selectors
     /// </summary>
     /// <param name="value">The json token containing the item data</param>
     /// <returns>An array of artists</returns>
-    public static YouTubeMusicItem[] SelectArtistsSimple(
+    public static NamedEntity[] SelectArtistsSimple(
         this JToken value)
     {
         // Parse artist names from json token
@@ -243,10 +230,10 @@ internal static class Selectors
         // Add artists to result
         IEnumerable<string> artists = artistNames.Split(',', '&', '•').Where(artistName => !string.IsNullOrWhiteSpace(artistName)).Select(artistName => artistName.Trim());
 
-        List<YouTubeMusicItem> result = [];
-        result.Add(new(artists.First(), primaryArtistId, YouTubeMusicItemKind.Artists));
+        List<NamedEntity> result = [];
+        result.Add(new(artists.First(), primaryArtistId));
         foreach (string artist in artists.Skip(1))
-            result.Add(new(artist, null, YouTubeMusicItemKind.Artists));
+            result.Add(new(artist, null));
 
         // Return result
         return [.. result];
@@ -304,7 +291,7 @@ internal static class Selectors
                 name: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
                 id: content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId"),
                 artists: content.SelectArtists("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs"),
-                album: content.SelectSehlfItemOptional($"musicResponsiveListItemRenderer.flexColumns[{albumIndex}].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text", $"musicResponsiveListItemRenderer.flexColumns[{albumIndex}].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Albums),
+                album: content.SelectSehlfItemOptional($"musicResponsiveListItemRenderer.flexColumns[{albumIndex}].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text", $"musicResponsiveListItemRenderer.flexColumns[{albumIndex}].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.browseEndpoint.browseId"),
                 isExplicit: content.SelectIsExplicit("musicResponsiveListItemRenderer.badges"),
                 duration: content.SelectObject<string>("musicResponsiveListItemRenderer.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text").ToTimeSpan(),
                 thumbnails: content.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails")));
@@ -332,7 +319,7 @@ internal static class Selectors
                 name: content.SelectObject<string>("playlistPanelVideoRenderer.title.runs[0].text"),
                 id: content.SelectObjectOptional<string>("playlistPanelVideoRenderer.navigationEndpoint.watchEndpoint.videoId"),
                 artists: content.SelectArtists("playlistPanelVideoRenderer.longBylineText.runs", 0, 3),
-                album: albumId is not null ? new(content.SelectObject<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].text"), albumId, YouTubeMusicItemKind.Albums) : null,
+                album: albumId is not null ? new(content.SelectObject<string>($"playlistPanelVideoRenderer.longBylineText.runs[{albumIndex}].text"), albumId) : null,
                 isExplicit: content.SelectIsExplicit("playlistPanelVideoRenderer.badges"),
                 duration: content.SelectObject<string>("playlistPanelVideoRenderer.lengthText.runs[0].text").ToTimeSpan(),
                 thumbnails: content.SelectThumbnails("playlistPanelVideoRenderer.thumbnail.thumbnails")));
@@ -358,7 +345,7 @@ internal static class Selectors
                 name: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
                 id: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId"),
                 artists: content.SelectArtists("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs"),
-                album: content.SelectYouTubeMusicItem("musicResponsiveListItemRenderer.flexColumns[3].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text", "musicResponsiveListItemRenderer.flexColumns[3].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Albums),
+                album: content.SelectNamedEntity("musicResponsiveListItemRenderer.flexColumns[3].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text", "musicResponsiveListItemRenderer.flexColumns[3].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.browseEndpoint.browseId"),
                 playsinfo: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
                 thumbnails: content.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails")));
 
@@ -408,7 +395,7 @@ internal static class Selectors
         List<ArtistVideoInfo> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
         {
-            YouTubeMusicItem[] artists = content.SelectArtists("musicTwoRowItemRenderer.subtitle.runs", 0, 2);
+            NamedEntity[] artists = content.SelectArtists("musicTwoRowItemRenderer.subtitle.runs", 0, 2);
 
             result.Add(new(
                 name: content.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
@@ -437,7 +424,7 @@ internal static class Selectors
             result.Add(new(
                 name: content.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
                 id: content.SelectObject<string>("musicTwoRowItemRenderer.navigationEndpoint.browseEndpoint.browseId"),
-                creator: content.SelectYouTubeMusicItem("musicTwoRowItemRenderer.subtitle.runs[2].text", "musicTwoRowItemRenderer.subtitle.runs[2].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Profiles),
+                creator: content.SelectNamedEntity("musicTwoRowItemRenderer.subtitle.runs[2].text", "musicTwoRowItemRenderer.subtitle.runs[2].navigationEndpoint.browseEndpoint.browseId"),
                 thumbnails: content.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails")));
         }
 

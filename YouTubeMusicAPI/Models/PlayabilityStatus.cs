@@ -3,29 +3,20 @@
 /// <summary>
 /// Contains information about a YouTube Music song/video playability status
 /// </summary>
-public class PlayabilityStatus
+/// <param name="isOkay">Whether the playability status is okay</param>
+/// <param name="reasonForNotOkay">The reason why the playability status is not okay (null if 'IsOkay' is true)</param>
+public class PlayabilityStatus(
+    bool isOkay,
+    string? reasonForNotOkay)
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="isOkay">Whether the playability status is okay</param>
-    /// <param name="reasonForNotOkay">The reason why the playability status is not okay (null if 'IsOkay' is true)</param>
-    public PlayabilityStatus(
-        bool isOkay,
-        string? reasonForNotOkay)
-    {
-        IsOkay = isOkay;
-        ReasonForNotOkay = reasonForNotOkay;
-    }
-
     /// <summary>
     /// Whether the playability status is okay
     /// </summary>
-    public bool IsOkay { get; }
+    public bool IsOkay { get; } = isOkay;
 
     /// <summary>
     /// The reason why the playability status is not okay
     /// (null if 'IsOkay' is true)
     /// </summary>
-    public string? ReasonForNotOkay { get; }
+    public string? ReasonForNotOkay { get; } = reasonForNotOkay;
 }

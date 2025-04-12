@@ -1,5 +1,5 @@
-﻿using Jint.Native;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using YouTubeMusicAPI.Common;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Types;
@@ -12,6 +12,83 @@ namespace YouTubeMusicAPI.Internal.Parsers;
 internal static class SearchParser
 {
     /// <summary>
+    /// Parses page data from the json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the page data</param>
+    /// <returns>A shelf song</returns>
+    /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
+    public static Page<SearchResult> GetPage(
+        JObject jsonToken)
+    {
+        // Get shelves
+        bool isContinued = jsonToken.ContainsKey("continuationContents");
+
+        JToken?[]? shelves = isContinued
+            ? jsonToken
+                .SelectToken("continuationContents")
+                ?.ToArray()
+            : jsonToken
+                .SelectToken("contents.tabbedSearchResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents")
+                ?.Where(token => token["musicShelfRenderer"] is not null)
+                ?.Select(token => token.First)
+                ?.ToArray();
+
+        if (shelves is null || shelves.Length == 0)
+            return new([], null);
+
+        // Parse shelves
+        List<SearchResult> items = [];
+        string? nextContinuationToken = null;
+
+        foreach (JToken? shelf in shelves)
+        {
+            if (shelf?.First is not JToken shelfToken)
+                continue;
+
+            nextContinuationToken = shelfToken.SelectObjectOptional<string>("continuations[0].nextContinuationData.continuation");
+
+            string? category = isContinued
+                ? jsonToken
+                    .SelectToken("header.musicHeaderRenderer.header.chipCloudRenderer.chips")
+                    ?.FirstOrDefault(token => token.SelectObjectOptional<bool>("chipCloudChipRenderer.isSelected"))
+                    ?.SelectObjectOptional<string>("chipCloudChipRenderer.uniqueId")
+                : shelfToken
+                    .SelectObjectOptional<string>("title.runs[0].text");
+            JToken[] shelfItems = shelfToken.SelectObjectOptional<JToken[]>("contents") ?? [];
+
+            // Shelf item parse function
+            Func<JToken, SearchResult>? getShelfItem = category.ToSearchCategory() switch
+            {
+                SearchCategory.Songs => GetSong,
+                SearchCategory.Videos => GetVideo,
+                SearchCategory.Albums => GetAlbums,
+                SearchCategory.CommunityPlaylists => GetCommunityPlaylist,
+                SearchCategory.Artists => GetArtist,
+                SearchCategory.Podcasts => GetPodcast,
+                SearchCategory.Episodes => GetEpisode,
+                SearchCategory.Profiles => GetProfile,
+                _ => null
+            };
+            if (getShelfItem is null)
+                continue;
+
+            foreach (JToken shelfItem in shelfItems)
+            {
+                // Parse shelf item
+                JToken? itemObject = shelfItem.First?.First;
+
+                if (itemObject is null)
+                    continue;
+
+                items.Add(getShelfItem(itemObject));
+            }
+        }
+
+        return new(items, nextContinuationToken);
+    }
+
+
+    /// <summary>
     /// Parses song data from the json token
     /// </summary>
     /// <param name="jsonToken">The json token containing the item data</param>
@@ -22,7 +99,7 @@ internal static class SearchParser
     {
         JToken[] runs = jsonToken.SelectObject<JToken[]>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs");
 
-        YouTubeMusicItem[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 0, jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[1].text") != " & " && runs.Length == 3 ? 1 : 3);
+        NamedEntity[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 0, jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[1].text") != " & " && runs.Length == 3 ? 1 : 3);
         int albumIndex = artists[0].Id is null ? 2 : artists.Length * 2;
 
         string? radioPlaylistId = jsonToken.SelectObjectOptional<string>("menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.playlistId");
@@ -31,7 +108,7 @@ internal static class SearchParser
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId"),
             artists: artists,
-            album: albumIndex == runs.Length - 1 ? new(jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"), null, YouTubeMusicItemKind.Albums) : jsonToken.SelectYouTubeMusicItem($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Albums),
+            album: albumIndex == runs.Length - 1 ? new(jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"), null) : jsonToken.SelectNamedEntity($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId"),
             duration: jsonToken.SelectObject<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runs.Length - 1}].text").ToTimeSpan(),
             isExplicit: jsonToken.SelectIsExplicit("badges"),
             playsInfo: jsonToken.SelectObject<string>("flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
@@ -56,7 +133,7 @@ internal static class SearchParser
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId"),
-            artist: jsonToken.SelectYouTubeMusicItem($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Artists),
+            artist: jsonToken.SelectNamedEntity($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].navigationEndpoint.browseEndpoint.browseId"),
             duration: (jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 4}].text") ?? "00:00").ToTimeSpanLong(),
             viewsInfo: jsonToken.SelectObjectOptional<string?>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 2}].text") ?? "0 views",
             radio: runsCount == 3 ? radioPlaylistId is null ? null : new(radioPlaylistId, null) : jsonToken.SelectRadio(),
@@ -74,7 +151,7 @@ internal static class SearchParser
     {
         JToken[] runs = jsonToken.SelectObject<JToken[]>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs");
 
-        YouTubeMusicItem[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 2, jsonToken.SelectObjectOptional<JToken>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runs.Length - 1}].navigationEndpoint") is null ? 1 : 0);
+        NamedEntity[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 2, jsonToken.SelectObjectOptional<JToken>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runs.Length - 1}].navigationEndpoint") is null ? 1 : 0);
         int yearIndex = artists[0].Id is null ? 4 : artists.Length * 2 + 2;
 
         return new(
@@ -103,7 +180,7 @@ internal static class SearchParser
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("navigationEndpoint.browseEndpoint.browseId").Substring(2),
-            creator: jsonToken.SelectYouTubeMusicItem($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Profiles),
+            creator: jsonToken.SelectNamedEntity($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].navigationEndpoint.browseEndpoint.browseId"),
             viewsInfo: jsonToken.SelectObject<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 2}].text"),
             radio: jsonToken.SelectObjectOptional<string>("menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId") is string radioPlaylistId ? new(radioPlaylistId, null) : null,
             thumbnails: jsonToken.SelectThumbnails());
@@ -142,7 +219,7 @@ internal static class SearchParser
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId"),
-            host: jsonToken.SelectYouTubeMusicItem($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Profiles),
+            host: jsonToken.SelectNamedEntity($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].navigationEndpoint.browseEndpoint.browseId"),
             thumbnails: jsonToken.SelectThumbnails());
     }
 
@@ -161,7 +238,7 @@ internal static class SearchParser
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId"),
-            podcast: jsonToken.SelectYouTubeMusicItem($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 2}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 2}].navigationEndpoint.browseEndpoint.browseId", YouTubeMusicItemKind.Podcasts),
+            podcast: jsonToken.SelectNamedEntity($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 2}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex + 2}].navigationEndpoint.browseEndpoint.browseId"),
             releasedAt: jsonToken.SelectDateTime($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runsIndex}].text"),
             isLikesAllowed: jsonToken.SelectObject<bool>("menu.menuRenderer.topLevelButtons[0].likeButtonRenderer.likesAllowed"),
             thumbnails: jsonToken.SelectThumbnails());

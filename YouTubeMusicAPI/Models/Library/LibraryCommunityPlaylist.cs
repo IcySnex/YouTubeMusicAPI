@@ -12,7 +12,7 @@
 public class LibraryCommunityPlaylist(
     string name,
     string id,
-    YouTubeMusicItem creator,
+    NamedEntity creator,
     int songCount,
     Radio? radio,
     Thumbnail[] thumbnails)
@@ -30,7 +30,7 @@ public class LibraryCommunityPlaylist(
     /// <summary>
     /// The creator of this community playlist
     /// </summary>
-    public YouTubeMusicItem Creator { get; } = creator;
+    public NamedEntity Creator { get; } = creator;
 
     /// <summary>
     /// The count of songs in the community playlist

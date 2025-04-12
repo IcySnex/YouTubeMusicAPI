@@ -13,8 +13,8 @@
 public class CommunityPlaylistSongInfo(
     string name,
     string? id,
-    YouTubeMusicItem[] artists,
-    YouTubeMusicItem? album,
+    NamedEntity[] artists,
+    NamedEntity? album,
     bool isExplicit,
     TimeSpan duration,
     Thumbnail[] thumbnails)
@@ -32,12 +32,12 @@ public class CommunityPlaylistSongInfo(
     /// <summary>
     /// The artist of this community playlist song
     /// </summary>
-    public YouTubeMusicItem[] Artists { get; } = artists;
+    public NamedEntity[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of this community playlist song
     /// </summary>
-    public YouTubeMusicItem? Album { get; } = album;
+    public NamedEntity? Album { get; } = album;
 
     /// <summary>
     /// Weither the community playlist song is explicit or not

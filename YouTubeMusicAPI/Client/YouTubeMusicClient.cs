@@ -2,10 +2,9 @@
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using YouTubeMusicAPI.Common;
+using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Internal.Parsers;
-using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Library;
 using YouTubeMusicAPI.Models.Search;
@@ -246,7 +245,6 @@ public class YouTubeMusicClient
         SongVideoInfo info = InfoParser.GetSongVideo(playerRequestResponse, nextRequestResponse);
         return info;
     }
-
 
     /// <summary>
     /// Gets the information about an album on YouTube Music

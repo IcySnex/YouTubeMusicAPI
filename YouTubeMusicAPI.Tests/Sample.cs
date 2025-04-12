@@ -1,5 +1,5 @@
 ﻿using YouTubeMusicAPI.Client;
-using YouTubeMusicAPI.Common;
+using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Types;

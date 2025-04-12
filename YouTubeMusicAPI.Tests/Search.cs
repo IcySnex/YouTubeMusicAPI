@@ -1,8 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
-using YouTubeMusicAPI.Common;
-using YouTubeMusicAPI.Models;
+using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Types;
 

@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using YouTubeMusicAPI.Common;
+using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Types;

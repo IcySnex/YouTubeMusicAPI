@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Common;
+﻿namespace YouTubeMusicAPI.Pagination;
 
 /// <summary>
 /// A single page of results items along with a continuation token for pagination

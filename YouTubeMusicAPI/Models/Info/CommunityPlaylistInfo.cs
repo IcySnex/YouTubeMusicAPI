@@ -11,6 +11,7 @@
 /// <param name="duration">The total duration of all tracks in the community playlist</param>
 /// <param name="songCount">The count of songs in the community playlist</param>
 /// <param name="creationYear">The creation year of the community playlist</param>
+/// <param name="isInfinite">Weither the community playlist has an infinite amount of songs</param>
 /// <param name="thumbnails">The thumbnails of the community playlist</param>
 public class CommunityPlaylistInfo(
     string name,
@@ -21,6 +22,7 @@ public class CommunityPlaylistInfo(
     TimeSpan duration,
     int songCount,
     int creationYear,
+    bool isInfinite,
     Thumbnail[] thumbnails)
 {
     /// <summary>
@@ -62,6 +64,11 @@ public class CommunityPlaylistInfo(
     /// The creation year of the community playlist
     /// </summary>
     public int CreationYear { get; } = creationYear;
+
+    /// <summary>
+    /// Weither the community playlist has an infinite amount of songs
+    /// </summary>
+    public bool IsInfinite { get; } = isInfinite;
 
     /// <summary>
     /// The thumbnails of the community playlist

@@ -6,12 +6,12 @@
 /// <remarks>
 /// Creates a new AudioStreamInfo
 /// </remarks>
-/// <param name="itag">The encoding identifier for the media stream</param>
-/// <param name="url">The URL to access the media stream</param>
-/// <param name="container">The container details for the media stream</param>
-/// <param name="lastModifedAt">The last modified date of the media stream</param>
+/// <param name="itag">The encoding identifier for the stream</param>
+/// <param name="url">The URL to access the stream</param>
+/// <param name="container">The container details for the stream</param>
+/// <param name="lastModifedAt">The last modified date of the stream</param>
 /// <param name="duration">The approximated duration of the stream</param>
-/// <param name="contentLenght">The content length of the media stream in bytes</param>
+/// <param name="contentLenght">The content length of the stream in bytes</param>
 /// <param name="bitrate">The bitrate of the stream</param>
 /// <param name="quality">The quality of the audio stream</param>
 /// <param name="sampleRate">The sample rate of the audio stream</param>
@@ -28,7 +28,7 @@ public class AudioStreamInfo(
     string quality,
     int sampleRate,
     int channels,
-    double loudnessDb) : MediaStreamInfo(itag, url, container, lastModifedAt, duration, contentLenght, bitrate)
+    double loudnessDb) : StreamInfo(itag, url, container, lastModifedAt, duration, contentLenght, bitrate)
 {
     /// <summary>
     /// The quality of the audio stream

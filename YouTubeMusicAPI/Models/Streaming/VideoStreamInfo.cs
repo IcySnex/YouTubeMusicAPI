@@ -6,12 +6,12 @@
 /// <remarks>
 /// Creates a new VideoStreamInfo
 /// </remarks>
-/// <param name="itag">The encoding identifier for the media stream</param>
-/// <param name="url">The URL to access the media stream</param>
-/// <param name="container">The container details for the media stream</param>
-/// <param name="lastModifedAt">The last modified date of the media stream</param>
+/// <param name="itag">The encoding identifier for the stream</param>
+/// <param name="url">The URL to access the stream</param>
+/// <param name="container">The container details for the stream</param>
+/// <param name="lastModifedAt">The last modified date of the stream</param>
 /// <param name="duration">The approximated duration of the stream</param>
-/// <param name="contentLenght">The content length of the media stream in bytes</param>
+/// <param name="contentLenght">The content length of the stream in bytes</param>
 /// <param name="bitrate">The bitrate of the stream</param>
 /// <param name="framerate">The framerate of the video stream</param>
 /// <param name="quality">The quality of the video stream</param>
@@ -30,7 +30,7 @@ public class VideoStreamInfo(
     string quality,
     string qualityLabel,
     int width,
-    int height) : MediaStreamInfo(itag, url, container, lastModifedAt, duration, contentLenght, bitrate)
+    int height) : StreamInfo(itag, url, container, lastModifedAt, duration, contentLenght, bitrate)
 {
     /// <summary>
     /// The framerate of the video stream

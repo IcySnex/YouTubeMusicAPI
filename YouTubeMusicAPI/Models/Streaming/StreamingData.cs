@@ -11,7 +11,7 @@
 /// <param name="expiresIn">The amount of time the streams expire in</param>
 /// <param name="hlsManifestUrl">The url to the HLS manifest</param>
 public class StreamingData(
-    MediaStreamInfo[] streamInfo,
+    StreamInfo[] streamInfo,
     bool isLiveContent,
     TimeSpan expiresIn,
     string? hlsManifestUrl)
@@ -19,7 +19,7 @@ public class StreamingData(
     /// <summary>
     /// The media stream info
     /// </summary>
-    public MediaStreamInfo[] StreamInfo { get; } = streamInfo;
+    public StreamInfo[] StreamInfo { get; } = streamInfo;
 
     /// <summary>
     /// Whether the song or video is live content or not

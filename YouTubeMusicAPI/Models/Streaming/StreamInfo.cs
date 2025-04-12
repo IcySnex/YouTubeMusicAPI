@@ -3,19 +3,19 @@
 namespace YouTubeMusicAPI.Models.Streaming;
 
 /// <summary>
-/// Represents YouTube Music media stream info
+/// Represents YouTube Music stream info
 /// </summary>
 /// <remarks>
-/// Creates a new MediaStreamInfo
+/// Creates a new StreamInfo
 /// </remarks>
-/// <param name="itag">The encoding identifier for the media stream</param>
-/// <param name="url">The URL to access the media stream</param>
-/// <param name="container">The container details for the media stream</param>
-/// <param name="lastModifedAt">The last modified date of the media stream</param>
+/// <param name="itag">The encoding identifier for the stream</param>
+/// <param name="url">The URL to access the stream</param>
+/// <param name="container">The container details for the stream</param>
+/// <param name="lastModifedAt">The last modified date of the stream</param>
 /// <param name="duration">The approximated duration of the stream</param>
-/// <param name="contentLenght">The content length of the media stream in bytes</param>
+/// <param name="contentLenght">The content length of the stream in bytes</param>
 /// <param name="bitrate">The bitrate of the stream</param>
-public abstract class MediaStreamInfo(
+public abstract class StreamInfo(
     int itag,
     string url,
     MediaContainer container,
@@ -25,22 +25,22 @@ public abstract class MediaStreamInfo(
     int bitrate)
 {
     /// <summary>
-    /// The encoding identifier for the media stream
+    /// The encoding identifier for the stream
     /// </summary>
     public int Itag { get; } = itag;
 
     /// <summary>
-    /// The URL to access the media stream
+    /// The URL to access the stream
     /// </summary>
     public string Url { get; } = url;
 
     /// <summary>
-    /// The container details for the media stream
+    /// The container details for the stream
     /// </summary>
     public MediaContainer Container { get; } = container;
 
     /// <summary>
-    /// The last modified date of the media stream
+    /// The last modified date of the stream
     /// </summary>
     public DateTime LastModifedAt { get; } = lastModifedAt;
 
@@ -50,7 +50,7 @@ public abstract class MediaStreamInfo(
     public TimeSpan Duration { get; } = duration;
 
     /// <summary>
-    /// The content length of the media stream in bytes
+    /// The content length of the stream in bytes
     /// </summary>
     public long ContentLenght { get; } = contentLenght;
 

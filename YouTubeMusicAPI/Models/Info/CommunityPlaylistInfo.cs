@@ -12,7 +12,6 @@
 /// <param name="songCount">The count of songs in the community playlist</param>
 /// <param name="creationYear">The creation year of the community playlist</param>
 /// <param name="thumbnails">The thumbnails of the community playlist</param>
-/// <param name="songs">The info of all songs in community playlist</param>
 public class CommunityPlaylistInfo(
     string name,
     string id,
@@ -22,8 +21,7 @@ public class CommunityPlaylistInfo(
     TimeSpan duration,
     int songCount,
     int creationYear,
-    Thumbnail[] thumbnails,
-    CommunityPlaylistSongInfo[] songs)
+    Thumbnail[] thumbnails)
 {
     /// <summary>
     /// The name of the community playlist
@@ -69,9 +67,4 @@ public class CommunityPlaylistInfo(
     /// The thumbnails of the community playlist
     /// </summary>
     public Thumbnail[] Thumbnails { get; } = thumbnails;
-
-    /// <summary>
-    /// The info of all songs in community playlist
-    /// </summary>
-    public CommunityPlaylistSongInfo[] Songs { get; } = songs;
 }

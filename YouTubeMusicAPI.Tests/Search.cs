@@ -35,7 +35,7 @@ internal class Search
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            PaginatedAsyncEnumerable<SearchResult>  searchResults = client.SearchAsync(TestData.SearchQuery, category);
+            PaginatedAsyncEnumerable<SearchResult> searchResults = client.SearchAsync(TestData.SearchQuery, category);
             bufferedSearchResults = await searchResults.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
         });
         Assert.That(bufferedSearchResults, Is.Not.Null);

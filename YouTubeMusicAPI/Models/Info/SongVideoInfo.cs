@@ -28,8 +28,8 @@ public class SongVideoInfo(
     string id,
     string browseId,
     string description,
-    YouTubeMusicItem[] artists,
-    YouTubeMusicItem? album,
+    NamedEntity[] artists,
+    NamedEntity? album,
     TimeSpan duration,
     Radio? radio,
     PlayabilityStatus playabilityStatus,
@@ -68,12 +68,12 @@ public class SongVideoInfo(
     /// <summary>
     /// The artist of the song or video
     /// </summary>
-    public YouTubeMusicItem[] Artists { get; } = artists;
+    public NamedEntity[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of the song or video
     /// </summary>
-    public YouTubeMusicItem? Album { get; } = album;
+    public NamedEntity? Album { get; } = album;
 
     /// <summary>
     /// The duration of the song or video

@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using YouTubeMusicAPI.Common;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Internal.Parsers;
 using YouTubeMusicAPI.Models;
@@ -102,126 +103,19 @@ public class YouTubeMusicClient
 
 
     /// <summary>
-    /// Gets the YouTube Music item kind based on the type of the item
-    /// </summary>
-    /// <typeparam name="T">The requested YouTube Music Item type</typeparam>
-    /// <returns>The shelf kind</returns>
-    YouTubeMusicItemKind GetSearchResultKind<T>() where T : IYouTubeMusicItem =>
-        typeof(T) switch
-        {
-            Type type when type == typeof(SongSearchResult) => YouTubeMusicItemKind.Songs,
-            Type type when type == typeof(VideoSearchResult) => YouTubeMusicItemKind.Videos,
-            Type type when type == typeof(AlbumSearchResult) => YouTubeMusicItemKind.Albums,
-            Type type when type == typeof(CommunityPlaylistSearchResult) => YouTubeMusicItemKind.CommunityPlaylists,
-            Type type when type == typeof(ArtistSearchResult) => YouTubeMusicItemKind.Artists,
-            Type type when type == typeof(PodcastSearchResult) => YouTubeMusicItemKind.Podcasts,
-            Type type when type == typeof(EpisodeSearchResult) => YouTubeMusicItemKind.Episodes,
-            Type type when type == typeof(ProfileSearchResult) => YouTubeMusicItemKind.Profiles,
-            _ => YouTubeMusicItemKind.Unknown
-        };
-
-    /// <summary>
-    /// Parses a search request response into shelf results
-    /// </summary>
-    /// <param name="requestResponse">The request response to parse</param>
-    /// <returns>An array of shelves containing all items</returns>
-    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
-    IEnumerable<Shelf> ParseSearchResponse(
-        JObject requestResponse)
-    {
-        List<Shelf> results = [];
-
-        // Get shelves
-        logger?.LogInformation($"[YouTubeMusicClient-ParseSearchResponse] Getting shelves from search response.");
-        bool isContinued = requestResponse.ContainsKey("continuationContents");
-
-        IEnumerable<JToken>? shelvesData = isContinued
-            ? requestResponse
-                .SelectToken("continuationContents")
-            : requestResponse
-                .SelectToken("contents.tabbedSearchResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents")
-                ?.Where(token => token["musicShelfRenderer"] is not null)
-                ?.Select(token => token.First!);
-
-        if (shelvesData is null || !shelvesData.Any())
-        {
-            logger?.LogWarning($"[YouTubeMusicClient-ParseSearchResponse] Parsing search failed. Request response does not contain any shelves.");
-            return [];
-        }
-
-        foreach (JToken? shelfData in shelvesData)
-        {
-            JToken? shelfDataObject = shelfData.First;
-            if (shelfDataObject is null)
-                continue;
-
-            // Parse info from shelf data
-            string? nextContinuationToken = shelfDataObject.SelectObjectOptional<string>("continuations[0].nextContinuationData.continuation");
-
-            string? category = isContinued
-                ? requestResponse
-                    .SelectToken("header.musicHeaderRenderer.header.chipCloudRenderer.chips")
-                    ?.FirstOrDefault(token => token.SelectObjectOptional<bool>("chipCloudChipRenderer.isSelected"))
-                    ?.SelectObjectOptional<string>("chipCloudChipRenderer.uniqueId")
-                : shelfDataObject
-                    .SelectObjectOptional<string>("title.runs[0].text");
-            JToken[] shelfItems = shelfDataObject.SelectObjectOptional<JToken[]>("contents") ?? [];
-
-            YouTubeMusicItemKind kind = category.ToShelfKind();
-            Func<JToken, IYouTubeMusicItem>? getShelfItem = kind switch
-            {
-                YouTubeMusicItemKind.Songs => SearchParser.GetSong,
-                YouTubeMusicItemKind.Videos => SearchParser.GetVideo,
-                YouTubeMusicItemKind.Albums => SearchParser.GetAlbums,
-                YouTubeMusicItemKind.CommunityPlaylists => SearchParser.GetCommunityPlaylist,
-                YouTubeMusicItemKind.Artists => SearchParser.GetArtist,
-                YouTubeMusicItemKind.Podcasts => SearchParser.GetPodcast,
-                YouTubeMusicItemKind.Episodes => SearchParser.GetEpisode,
-                YouTubeMusicItemKind.Profiles => SearchParser.GetProfile,
-                _ => null
-            };
-
-            List<IYouTubeMusicItem> items = [];
-            if (getShelfItem is not null)
-                foreach (JToken shelfItem in shelfItems)
-                {
-                    // Parse shelf item
-                    JToken? itemObject = shelfItem.First?.First;
-
-                    if (itemObject is null)
-                        continue;
-
-                    items.Add(getShelfItem(itemObject));
-                }
-
-            // Create shelf
-            Shelf shelf = new(nextContinuationToken, [.. items], kind);
-            results.Add(shelf);
-        }
-
-        return results;
-    }
-
-
-
-    /// <summary>
     /// Searches for a query on YouTube Music
     /// </summary>
     /// <param name="query">The query to search for</param>
-    /// <param name="continuationToken">The continuation token to get further elemnts from a pervious search</param>
-    /// <param name="kind">The kind of items to search for</param>
-    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <param name="category">The category of items to search for</param>
     /// <returns>An array of shelves containing all search results</returns>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
     /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
     /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
     /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
-    public async Task<IEnumerable<Shelf>> SearchAsync(
+    public PaginatedAsyncEnumerable<SearchResult> SearchAsync(
         string query,
-        string? continuationToken = null,
-        YouTubeMusicItemKind? kind = null,
-        CancellationToken cancellationToken = default)
+        SearchCategory? category = null)
     {
         // Prepare request
         if (string.IsNullOrWhiteSpace(query))
@@ -230,74 +124,25 @@ public class YouTubeMusicClient
             throw new ArgumentNullException(nameof(query), "Search failed. Query parameter is null or whitespace.");
         }
 
-        // Send request
-        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
+        async Task<Page<SearchResult>> FetchPageDelegate(
+            string? nextContinuationToken,
+            CancellationToken cancelToken = default)
+        {
+            // Send the request and parse the response
+            Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
             [
                 ("query", query),
-                ("params", kind.ToParams()),
-                ("continuation", continuationToken)
+                ("params", category.ToParams()),
+                ("continuation", nextContinuationToken)
             ]);
-        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Search, payload, cancellationToken);
 
-        // Parse request response
-        IEnumerable<Shelf> searchResults = ParseSearchResponse(requestResponse);
-        return kind is null || kind == YouTubeMusicItemKind.Unknown ? searchResults : searchResults.Where(searchResult => searchResult.Kind == kind);
-    }
+            JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Search, payload, cancelToken);
 
-    /// <summary>
-    /// Searches for a specfic shelf for a query on YouTube Music
-    /// </summary>
-    /// <param name="query">The query to search for</param>
-    /// <param name="limit">The limit of items to return</param>
-    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
-    /// <returns>An array of the specific shelf items</returns>
-    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
-    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
-    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
-    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
-    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
-    public async Task<IEnumerable<T>> SearchAsync<T>(
-        string query,
-        int limit = 20,
-        CancellationToken cancellationToken = default) where T : IYouTubeMusicItem
-    {
-        YouTubeMusicItemKind kind = GetSearchResultKind<T>();
-
-        // All items requested (does not support continuation)
-        if (kind == YouTubeMusicItemKind.Unknown)
-        {
-            IEnumerable<Shelf> allShelves = await SearchAsync(query, null, kind, cancellationToken);
-
-            return allShelves
-                .SelectMany(shelf => shelf.Items)
-                .Take(limit)
-                .Cast<T>();
+            // Parse request response
+            Page<SearchResult> page = SearchParser.GetPage(requestResponse);
+            return page;
         }
-
-        // Special items requested
-        List<T> searchResults = [];
-
-        string? nextContinuationToken = null;
-        bool hasMoreResults = true;
-
-        while (searchResults.Count < limit && hasMoreResults)
-        {
-            IEnumerable<Shelf> currentShelf = await SearchAsync(query, nextContinuationToken, kind, cancellationToken);
-
-            Shelf? requestedShelf = currentShelf.FirstOrDefault(shelf => shelf.Kind == kind);
-            if (requestedShelf is null)
-            {
-                logger?.LogWarning($"[YouTubeMusicClient-SearchAsync] Search results do not cotain requested filtered shelf.");
-                break;
-            }
-
-            searchResults.AddRange(requestedShelf.Items.Cast<T>());
-
-            nextContinuationToken = requestedShelf.NextContinuationToken;
-            hasMoreResults = !string.IsNullOrEmpty(nextContinuationToken);
-        }
-
-        return searchResults.Take(limit);
+        return new(FetchPageDelegate);
     }
 
 

@@ -11,7 +11,7 @@
 public class ArtistVideoInfo(
     string name,
     string id,
-    YouTubeMusicItem[] artists,
+    NamedEntity[] artists,
     string viewsInfo,
     Thumbnail[] thumbnails)
 {
@@ -28,7 +28,7 @@ public class ArtistVideoInfo(
     /// <summary>
     /// The artist of this video of an artist
     /// </summary>
-    public YouTubeMusicItem[] Artists { get; } = artists;
+    public NamedEntity[] Artists { get; } = artists;
 
     /// <summary>
     /// The views info of this video of an artist

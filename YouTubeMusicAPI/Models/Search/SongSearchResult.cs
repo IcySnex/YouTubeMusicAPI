@@ -5,55 +5,35 @@ namespace YouTubeMusicAPI.Models.Search;
 /// <summary>
 /// Represents a YouTube Music song search result
 /// </summary>
-/// <param name="name">The name of this song</param>
-/// <param name="id">The id of this song</param>
+/// <param name="name">The name of this search result</param>
+/// <param name="id">The id of this search result</param>
 /// <param name="artists">The artists of this song</param>
 /// <param name="album">The album of this song</param>
 /// <param name="duration">The duration of this song</param>
 /// <param name="isExplicit">Weither this song is explicit or not</param>
 /// <param name="playsInfo">The plays Info of this song</param>
 /// <param name="radio">The radio channel of this song</param>
-/// <param name="thumbnails">The thumbnails of this song</param>
+/// <param name="thumbnails">The thumbnails of this search result</param>
 public class SongSearchResult(
     string name,
     string id,
-    YouTubeMusicItem[] artists,
-    YouTubeMusicItem album,
+    NamedEntity[] artists,
+    NamedEntity album,
     TimeSpan duration,
     bool isExplicit,
     string playsInfo,
     Radio? radio,
-    Thumbnail[] thumbnails) : IYouTubeMusicItem
+    Thumbnail[] thumbnails) : SearchResult(name, id, thumbnails, SearchCategory.Songs)
 {
-    /// <summary>
-    /// Gets the url of this song which leads to YouTube music
-    /// </summary>
-    /// <param name="song">The song to get the url for </param>
-    /// <returns>An url of this song which leads to YouTube music</returns>
-    public static string GetUrl(
-        SongSearchResult song) =>
-        $"https://music.youtube.com/watch?v={song.Id}";
-
-
-    /// <summary>
-    /// The name of this song
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of this song
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The artist of this song
     /// </summary>
-    public YouTubeMusicItem[] Artists { get; } = artists;
+    public NamedEntity[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of this song
     /// </summary>
-    public YouTubeMusicItem Album { get; } = album;
+    public NamedEntity Album { get; } = album;
 
     /// <summary>
     /// The duration of this song
@@ -74,15 +54,4 @@ public class SongSearchResult(
     /// The radio of this song
     /// </summary>
     public Radio? Radio { get; } = radio;
-
-    /// <summary>
-    /// The thumbnails of this song
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
-
-
-    /// <summary>
-    /// The kind of this YouTube Music item
-    /// </summary>
-    public YouTubeMusicItemKind Kind => YouTubeMusicItemKind.Songs;
 }

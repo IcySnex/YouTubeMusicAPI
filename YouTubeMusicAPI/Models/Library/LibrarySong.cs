@@ -14,8 +14,8 @@
 public class LibrarySong(
     string name,
     string id,
-    YouTubeMusicItem[] artists,
-    YouTubeMusicItem album,
+    NamedEntity[] artists,
+    NamedEntity album,
     TimeSpan duration,
     bool isExplicit,
     Radio radio,
@@ -34,12 +34,12 @@ public class LibrarySong(
     /// <summary>
     /// The artist of this song
     /// </summary>
-    public YouTubeMusicItem[] Artists { get; } = artists;
+    public NamedEntity[] Artists { get; } = artists;
 
     /// <summary>
     /// The album of this song
     /// </summary>
-    public YouTubeMusicItem Album { get; } = album;
+    public NamedEntity Album { get; } = album;
 
     /// <summary>
     /// The duration of this song

@@ -18,7 +18,7 @@ public class AlbumInfo(
     string name,
     string id,
     string? description,
-    YouTubeMusicItem[] artists,
+    NamedEntity[] artists,
     TimeSpan duration,
     int songCount,
     int releaseYear,
@@ -45,7 +45,7 @@ public class AlbumInfo(
     /// <summary>
     /// The artist of the album
     /// </summary>
-    public YouTubeMusicItem[] Artists { get; } = artists;
+    public NamedEntity[] Artists { get; } = artists;
 
     /// <summary>
     /// The total duration of all tracks in the album

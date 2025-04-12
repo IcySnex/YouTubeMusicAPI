@@ -10,7 +10,7 @@
 public class ArtistFeaturedOnInfo(
     string name,
     string id,
-    YouTubeMusicItem creator,
+    NamedEntity creator,
     Thumbnail[] thumbnails)
 {
     /// <summary>
@@ -26,7 +26,7 @@ public class ArtistFeaturedOnInfo(
     /// <summary>
     /// The creator of the artist featured on playlist
     /// </summary>
-    public YouTubeMusicItem Creator { get; } = creator;
+    public NamedEntity Creator { get; } = creator;
 
     /// <summary>
     /// The thumbnails of the artist featured on playlist

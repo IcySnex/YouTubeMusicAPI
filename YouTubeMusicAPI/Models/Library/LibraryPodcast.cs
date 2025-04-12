@@ -10,7 +10,7 @@
 public class LibraryPodcast(
     string name,
     string id,
-    YouTubeMusicItem host,
+    NamedEntity host,
     Thumbnail[] thumbnails)
 {
     /// <summary>
@@ -26,7 +26,7 @@ public class LibraryPodcast(
     /// <summary>
     /// The host of this podcast
     /// </summary>
-    public YouTubeMusicItem Host { get; } = host;
+    public NamedEntity Host { get; } = host;
 
     /// <summary>
     /// The thumbnails of this podcast

@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
+using YouTubeMusicAPI.Common;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Search;
+using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Tests;
 
@@ -27,24 +29,22 @@ internal class Search
     }
 
 
-    /// <summary>
-    /// Search for shelf items
-    /// </summary>
-    /// <typeparam name="T">The type of shelf items to search for</typeparam>
-    void Test<T>() where T : IYouTubeMusicItem
+    void Test(
+        SearchCategory? category)
     {
-        IEnumerable<T>? searchResults = null;
+        IReadOnlyList<SearchResult>? bufferedSearchResults = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            searchResults = await client.SearchAsync<T>(TestData.SearchQuery, TestData.SearchQueryLimit);
+            PaginatedAsyncEnumerable<SearchResult>  searchResults = client.SearchAsync(TestData.SearchQuery, category);
+            bufferedSearchResults = await searchResults.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
         });
-        Assert.That(searchResults, Is.Not.Null);
-        Assert.That(searchResults, Is.Not.Empty);
+        Assert.That(bufferedSearchResults, Is.Not.Null);
+        Assert.That(bufferedSearchResults, Is.Not.Empty);
 
         // Output
-        string readableResults = JsonConvert.SerializeObject(searchResults, Formatting.Indented);
-        logger.LogInformation("\nSearch Results ({resultsCount}):\n{readableResults}", searchResults.Count(), readableResults);
+        string readableResults = JsonConvert.SerializeObject(bufferedSearchResults, Formatting.Indented);
+        logger.LogInformation("\nSearch Results ({resultsCount}):\n{readableResults}", bufferedSearchResults.Count, readableResults);
     }
 
 
@@ -53,7 +53,7 @@ internal class Search
     /// </summary>
     [Test]
     public void All() =>
-        Test<IYouTubeMusicItem>();
+        Test(null);
 
 
     /// <summary>
@@ -61,54 +61,54 @@ internal class Search
     /// </summary>
     [Test]
     public void Songs() =>
-        Test<SongSearchResult>();
+        Test(SearchCategory.Songs);
 
     /// <summary>
     /// Search for videos 
     /// </summary>
     [Test]
     public void Videos() =>
-        Test<VideoSearchResult>();
+        Test(SearchCategory.Videos);
 
     /// <summary>
     /// Search for albums 
     /// </summary>
     [Test]
     public void Albums() =>
-        Test<AlbumSearchResult>();
+        Test(SearchCategory.Albums);
 
     /// <summary>
     /// Search for community playlists 
     /// </summary>
     [Test]
     public void CommunityPlaylists() =>
-        Test<CommunityPlaylistSearchResult>();
+        Test(SearchCategory.CommunityPlaylists);
 
     /// <summary>
     /// Search for artists 
     /// </summary>
     [Test]
     public void Artists() =>
-        Test<ArtistSearchResult>();
+        Test(SearchCategory.Artists);
 
     /// <summary>
     /// Search for songs 
     /// </summary>
     [Test]
     public void Podcasts() =>
-        Test<PodcastSearchResult>();
+        Test(SearchCategory.Podcasts);
 
     /// <summary>
     /// Search for podcasts episodes 
     /// </summary>
     [Test]
     public void Episodes() =>
-        Test<EpisodeSearchResult>();
+        Test(SearchCategory.Episodes);
 
     /// <summary>
     /// Search for profiles 
     /// </summary>
     [Test]
     public void Profiles() =>
-        Test<ProfileSearchResult>();
+        Test(SearchCategory.Profiles);
 }

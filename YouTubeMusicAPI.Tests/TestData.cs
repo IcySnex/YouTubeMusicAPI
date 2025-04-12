@@ -45,17 +45,18 @@ internal abstract class TestData
     /// <summary>
     /// Test query for search requests
     /// </summary>
-    public const string SearchQuery = "Südsyndrom Polarise";
+    public const string SearchQuery = "Pashanim";
+
 
     /// <summary>
-    /// Test search query continuation token to get further elemnts from a pervious search
+    /// Test offset from which items should be retruened for fetch requests
     /// </summary>
-    public const string SearchQueryContinuationToken = null;
+    public const int FetchOffset = 0;
 
     /// <summary>
-    /// Test search query limit of items to return
+    /// Test maximum items of items which should be retruened for fetch requests
     /// </summary>
-    public const int SearchQueryLimit = 200;
+    public const int FetchLimit = 20;
 
 
     /// <summary>

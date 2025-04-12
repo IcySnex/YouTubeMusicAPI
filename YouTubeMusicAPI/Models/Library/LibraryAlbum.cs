@@ -14,7 +14,7 @@
 public class LibraryAlbum(
     string name,
     string id,
-    YouTubeMusicItem[] artists,
+    NamedEntity[] artists,
     int releaseYear,
     bool isSingle,
     bool isEp,
@@ -34,7 +34,7 @@ public class LibraryAlbum(
     /// <summary>
     /// The artists of this album
     /// </summary>
-    public YouTubeMusicItem[] Artists { get; } = artists;
+    public NamedEntity[] Artists { get; } = artists;
 
     /// <summary>
     /// The release year of this album

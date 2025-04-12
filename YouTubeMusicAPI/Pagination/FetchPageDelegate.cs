@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Common;
+﻿namespace YouTubeMusicAPI.Pagination;
 
 /// <summary>
 /// Delegate for fetching a page of results using an optional continuation token

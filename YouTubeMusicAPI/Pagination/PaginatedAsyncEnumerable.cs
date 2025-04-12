@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Common;
+﻿namespace YouTubeMusicAPI.Pagination;
 
 /// <summary>
 /// Provides an asynchronous way to iterate through paginated results

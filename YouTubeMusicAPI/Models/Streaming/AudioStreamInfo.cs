@@ -20,7 +20,7 @@
 public class AudioStreamInfo(
     int itag,
     string url,
-    MediaContainer container,
+    StreamContainer container,
     DateTime lastModifedAt,
     TimeSpan duration,
     long contentLenght,

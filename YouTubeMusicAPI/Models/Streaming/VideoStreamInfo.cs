@@ -21,7 +21,7 @@
 public class VideoStreamInfo(
     int itag,
     string url,
-    MediaContainer container,
+    StreamContainer container,
     DateTime lastModifedAt,
     TimeSpan duration,
     long contentLenght,

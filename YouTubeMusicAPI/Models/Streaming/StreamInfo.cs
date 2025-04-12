@@ -18,7 +18,7 @@ namespace YouTubeMusicAPI.Models.Streaming;
 public abstract class StreamInfo(
     int itag,
     string url,
-    MediaContainer container,
+    StreamContainer container,
     DateTime lastModifedAt,
     TimeSpan duration,
     long contentLenght,
@@ -37,7 +37,7 @@ public abstract class StreamInfo(
     /// <summary>
     /// The container details for the stream
     /// </summary>
-    public MediaContainer Container { get; } = container;
+    public StreamContainer Container { get; } = container;
 
     /// <summary>
     /// The last modified date of the stream

@@ -9,23 +9,19 @@
 /// <param name="album">The album of this song of an artist</param>
 /// <param name="playsinfo">The plays info of this song of an artist</param>
 /// <param name="thumbnails">The thumbnails of the song of an artist</param>
-public class ArtistSongInfo(
+public class ArtistSong(
     string name,
     string id,
     NamedEntity[] artists,
     NamedEntity album,
     string playsinfo,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : NamedEntity(name, id)
 {
     /// <summary>
-    /// The name of the song of an artist
+    /// The id of this entity
     /// </summary>
-    public string Name { get; } = name;
+    public override string Id { get; } = id;
 
-    /// <summary>
-    /// The id of the song of an artist
-    /// </summary>
-    public string Id { get; } = id;
 
     /// <summary>
     /// The artist of this song of an artist

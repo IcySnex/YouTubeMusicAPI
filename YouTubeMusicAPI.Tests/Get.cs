@@ -124,11 +124,11 @@ internal class Get
     [Test]
     public void CommunityPlaylistSongs()
     {
-        IReadOnlyList<CommunityPlaylistSongInfo>? bufferedSongs = null;
+        IReadOnlyList<CommunityPlaylistSong>? bufferedSongs = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            PaginatedAsyncEnumerable<CommunityPlaylistSongInfo> songs = client.GetCommunityPlaylistSongsAsync(TestData.PlaylistBrowseId);
+            PaginatedAsyncEnumerable<CommunityPlaylistSong> songs = client.GetCommunityPlaylistSongsAsync(TestData.PlaylistBrowseId);
             bufferedSongs = await songs.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
         });
         Assert.That(bufferedSongs, Is.Not.Null);

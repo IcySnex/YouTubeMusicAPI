@@ -2,7 +2,6 @@
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Streaming;
-using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Internal;
 
@@ -275,11 +274,11 @@ internal static class Selectors
     /// <param name="value">The json token containing the item data</param>
     /// <param name="path">The json token path</param>
     /// <returns>An array of artist songs</returns>
-    public static ArtistSongInfo[] SelectArtistSongs(
+    public static ArtistSong[] SelectArtistSongs(
         this JToken value,
         string path)
     {
-        List<ArtistSongInfo> result = [];
+        List<ArtistSong> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
             result.Add(new(
                 name: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
@@ -298,11 +297,11 @@ internal static class Selectors
     /// <param name="value">The json token containing the item data</param>
     /// <param name="path">The json token path</param>
     /// <returns>An array of artist albums</returns>
-    public static ArtistAlbumInfo[] SelectArtistAlbums(
+    public static ArtistAlbum[] SelectArtistAlbums(
         this JToken value,
         string path)
     {
-        List<ArtistAlbumInfo> result = [];
+        List<ArtistAlbum> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
         {
             string kind = content.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text");
@@ -328,11 +327,11 @@ internal static class Selectors
     /// <param name="value">The json token containing the item data</param>
     /// <param name="path">The json token path</param>
     /// <returns>An array of artist videos</returns>
-    public static ArtistVideoInfo[] SelectArtistVideos(
+    public static ArtistVideo[] SelectArtistVideos(
         this JToken value,
         string path)
     {
-        List<ArtistVideoInfo> result = [];
+        List<ArtistVideo> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
         {
             NamedEntity[] artists = content.SelectArtists("musicTwoRowItemRenderer.subtitle.runs", 0, 2);
@@ -354,11 +353,11 @@ internal static class Selectors
     /// <param name="value">The json token containing the item data</param>
     /// <param name="path">The json token path</param>
     /// <returns>An array of artist videos</returns>
-    public static ArtistFeaturedOnInfo[] SelectArtistFeaturedOn(
+    public static ArtistFeaturedOn[] SelectArtistFeaturedOn(
         this JToken value,
         string path)
     {
-        List<ArtistFeaturedOnInfo> result = [];
+        List<ArtistFeaturedOn> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
         {
             result.Add(new(
@@ -377,11 +376,11 @@ internal static class Selectors
     /// <param name="value">The json token containing the item data</param>
     /// <param name="path">The json token path</param>
     /// <returns>An array of artist videos</returns>
-    public static ArtistsRelatedInfo[] SelectArtistRelated(
+    public static ArtistsRelated[] SelectArtistRelated(
         this JToken value,
         string path)
     {
-        List<ArtistsRelatedInfo> result = [];
+        List<ArtistsRelated> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
         {
             result.Add(new(

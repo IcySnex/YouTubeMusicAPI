@@ -10,24 +10,20 @@
 /// <param name="isExplicit">Weither the community playlist song is explicit or not</param>
 /// <param name="duration">The duration of the community playlist song</param>
 /// <param name="thumbnails">The thumbnails of the community playlist song</param>
-public class CommunityPlaylistSongInfo(
+public class CommunityPlaylistSong(
     string name,
     string? id,
     NamedEntity[] artists,
     NamedEntity? album,
     bool isExplicit,
     TimeSpan duration,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : NamedEntity(name, id)
 {
     /// <summary>
-    /// The name of the community playlist song
+    /// The id of this entity
     /// </summary>
-    public string Name { get; } = name;
+    public override string Id { get; } = id;
 
-    /// <summary>
-    /// The id of the community playlist song
-    /// </summary>
-    public string? Id { get; } = id;
 
     /// <summary>
     /// The artist of this community playlist song

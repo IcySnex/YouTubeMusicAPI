@@ -343,7 +343,7 @@ public class YouTubeMusicClient
     /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
     /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
-    public PaginatedAsyncEnumerable<CommunityPlaylistSongInfo> GetCommunityPlaylistSongsAsync(
+    public PaginatedAsyncEnumerable<CommunityPlaylistSong> GetCommunityPlaylistSongsAsync(
         string browseId)
     {
         // Prepare request
@@ -355,7 +355,7 @@ public class YouTubeMusicClient
 
         bool useFallback = false;
 
-        async Task<Page<CommunityPlaylistSongInfo>> FetchPageDelegate(
+        async Task<Page<CommunityPlaylistSong>> FetchPageDelegate(
             string? continuationToken,
             CancellationToken cancelToken = default)
         {
@@ -371,7 +371,7 @@ public class YouTubeMusicClient
                     JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancelToken);
 
                     // Parse request response
-                    Page<CommunityPlaylistSongInfo> page = InfoParser.GetCommunityPlaylistSongsPage(requestResponse);
+                    Page<CommunityPlaylistSong> page = InfoParser.GetCommunityPlaylistSongsPage(requestResponse);
                     return page;
                 }
                 catch // Use fallback path (shits prob an infinite auto generated playlist)
@@ -389,7 +389,7 @@ public class YouTubeMusicClient
             JObject fallbackRequestResponse = await baseClient.SendRequestAsync(Endpoints.Next, fallbackPayload, cancelToken);
 
             // Parse request response
-            Page<CommunityPlaylistSongInfo> fallbackPage = InfoParser.GetCommunityPlaylistSimpleSongsPage(fallbackRequestResponse);
+            Page<CommunityPlaylistSong> fallbackPage = InfoParser.GetCommunityPlaylistSimpleSongsPage(fallbackRequestResponse);
             return fallbackPage;
         }
         return new(FetchPageDelegate);

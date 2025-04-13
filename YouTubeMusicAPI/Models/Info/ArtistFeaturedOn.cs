@@ -7,21 +7,17 @@
 /// <param name="id">The id of the artist featured on playlist</param>
 /// <param name="creator">The album of the artist featured on playlist</param>
 /// <param name="thumbnails">The thumbnails of the artist featured on playlist</param>
-public class ArtistFeaturedOnInfo(
+public class ArtistFeaturedOn(
     string name,
     string id,
     NamedEntity creator,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : NamedEntity(name, id)
 {
     /// <summary>
-    /// The name of the artist featured on playlist
+    /// The id of this entity
     /// </summary>
-    public string Name { get; } = name;
+    public override string Id { get; } = id;
 
-    /// <summary>
-    /// The id of the artist featured on playlist
-    /// </summary>
-    public string Id { get; } = id;
 
     /// <summary>
     /// The creator of the artist featured on playlist

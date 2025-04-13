@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Types;
-
-namespace YouTubeMusicAPI.Models.Search;
+﻿namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
 /// Represents a search result on YouTube Music

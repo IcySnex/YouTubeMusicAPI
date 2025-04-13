@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Internal;
 

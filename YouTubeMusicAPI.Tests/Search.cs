@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Tests;
 

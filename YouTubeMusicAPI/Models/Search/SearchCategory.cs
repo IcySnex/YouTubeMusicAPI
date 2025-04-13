@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Types;
+﻿namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
 /// Represents the category of a YouTube Music search result

@@ -9,7 +9,6 @@ using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Library;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Streaming;
-using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Client;
 

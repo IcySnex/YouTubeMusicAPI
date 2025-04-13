@@ -2,7 +2,6 @@
 using System.Globalization;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Library;
-using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Internal.Parsers;
 

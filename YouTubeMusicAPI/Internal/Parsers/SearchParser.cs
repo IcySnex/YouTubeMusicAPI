@@ -2,7 +2,6 @@
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Internal.Parsers;
 

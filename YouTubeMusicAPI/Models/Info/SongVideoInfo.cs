@@ -43,18 +43,8 @@ public class SongVideoInfo(
     DateTime publishedAt,
     DateTime uploadedAt,
     Thumbnail[] thumbnails,
-    string[] tags)
+    string[] tags) : EntityInfo(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of the song or video
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of the song or video
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The browse id of the song or video
     /// </summary>
@@ -134,11 +124,6 @@ public class SongVideoInfo(
     /// The date when the song or video was uploaded
     /// </summary>
     public DateTime UploadedAt { get; } = uploadedAt;
-
-    /// <summary>
-    /// The thumbnails of the song or video
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
 
     /// <summary>
     /// The tags of the song or video

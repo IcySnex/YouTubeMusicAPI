@@ -10,24 +10,20 @@
 /// <param name="isEp">Weither the album of an artist is an EP or not</param>
 /// <param name="isExplicit">Weither the album of an artist is a explicit or not</param>
 /// <param name="thumbnails">The thumbnails of the album of an artist</param>
-public class ArtistAlbumInfo(
+public class ArtistAlbum(
     string name,
     string id,
     int releaseYear,
     bool isSingle,
     bool isEp,
     bool isExplicit,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : NamedEntity(name, id)
 {
     /// <summary>
-    /// The name of the album of an artist
+    /// The id of this entity
     /// </summary>
-    public string Name { get; } = name;
+    public override string Id { get; } = id;
 
-    /// <summary>
-    /// The id of the album of an artist
-    /// </summary>
-    public string Id { get; } = id;
 
     /// <summary>
     /// The release year of the album of an artist

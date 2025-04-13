@@ -23,22 +23,12 @@ public class ArtistInfo(
     string? viewsInfo,
     Thumbnail[] thumbnails,
     string? allSongsPlaylistId,
-    ArtistSongInfo[] songs,
-    ArtistAlbumInfo[] albums,
-    ArtistVideoInfo[] videos,
-    ArtistFeaturedOnInfo[] featuredOns,
-    ArtistsRelatedInfo[] related)
+    ArtistSong[] songs,
+    ArtistAlbum[] albums,
+    ArtistVideo[] videos,
+    ArtistFeaturedOn[] featuredOns,
+    ArtistsRelated[] related) : EntityInfo(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of the artist
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of the artist
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The description of the artist
     /// </summary>
@@ -55,11 +45,6 @@ public class ArtistInfo(
     public string? ViewsInfo { get; } = viewsInfo;
 
     /// <summary>
-    /// The thumbnails of the artist
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
-
-    /// <summary>
     /// The id of the playlist containing all songs of the artist
     /// </summary>
     public string? AllSongsPlaylistId { get; } = allSongsPlaylistId;
@@ -67,26 +52,26 @@ public class ArtistInfo(
     /// <summary>
     /// The info of all songs of the artist
     /// </summary>
-    public ArtistSongInfo[] Songs { get; } = songs;
+    public ArtistSong[] Songs { get; } = songs;
 
     /// <summary>
     /// The info of all albums of the artist
     /// </summary>
-    public ArtistAlbumInfo[] Albums { get; } = albums;
+    public ArtistAlbum[] Albums { get; } = albums;
 
     /// <summary>
     /// The info of all videos of the artist
     /// </summary>
-    public ArtistVideoInfo[] Videos { get; } = videos;
+    public ArtistVideo[] Videos { get; } = videos;
 
     /// <summary>
     /// The info of all artist featured on playlists
     /// </summary>
-    public ArtistFeaturedOnInfo[] FeaturedOns { get; } = featuredOns;
+    public ArtistFeaturedOn[] FeaturedOns { get; } = featuredOns;
 
     /// <summary>
     /// The info of all related artists of the artist
     /// </summary>
-    public ArtistsRelatedInfo[] Related { get; } = related;
+    public ArtistsRelated[] Related { get; } = related;
 
 }

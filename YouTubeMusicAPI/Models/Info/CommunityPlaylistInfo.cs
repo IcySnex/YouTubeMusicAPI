@@ -23,18 +23,8 @@ public class CommunityPlaylistInfo(
     int songCount,
     int creationYear,
     bool isInfinite,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : EntityInfo(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of the community playlist
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of the community playlist
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The description of the community playlist
     /// </summary>
@@ -69,9 +59,4 @@ public class CommunityPlaylistInfo(
     /// Weither the community playlist has an infinite amount of songs
     /// </summary>
     public bool IsInfinite { get; } = isInfinite;
-
-    /// <summary>
-    /// The thumbnails of the community playlist
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
 }

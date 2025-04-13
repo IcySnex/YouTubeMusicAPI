@@ -113,12 +113,12 @@ internal static class InfoParser
     /// </summary>
     /// <param name="jsonToken">The json token containing the page data</param>
     /// <returns>A page containing the CommunityPlaylistSongInfo</returns>
-    public static Page<CommunityPlaylistSongInfo> GetCommunityPlaylistSongsPage(
+    public static Page<CommunityPlaylistSong> GetCommunityPlaylistSongsPage(
         JToken jsonToken)
     {
         JToken contentsToken = jsonToken.SelectToken("onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems") ?? jsonToken.SelectRequieredToken("contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer.contents[0].musicPlaylistShelfRenderer.contents");
 
-        List<CommunityPlaylistSongInfo> result = [];
+        List<CommunityPlaylistSong> result = [];
         string? nextContinuationToken = null;
         
         foreach (JToken content in contentsToken)
@@ -172,12 +172,12 @@ internal static class InfoParser
     /// </summary>
     /// <param name="jsonToken">The json token containing the page data</param>
     /// <returns>A page containing the CommunityPlaylistSongInfo</returns>
-    public static Page<CommunityPlaylistSongInfo> GetCommunityPlaylistSimpleSongsPage(
+    public static Page<CommunityPlaylistSong> GetCommunityPlaylistSimpleSongsPage(
         JToken jsonToken)
     {
         JToken innerJsonToken = jsonToken.SelectToken("continuationContents.playlistPanelContinuation") ?? jsonToken.SelectRequieredToken("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content.musicQueueRenderer.content.playlistPanelRenderer");
 
-        List<CommunityPlaylistSongInfo> result = [];
+        List<CommunityPlaylistSong> result = [];
         string? nextContinuationToken = innerJsonToken.SelectObjectOptional<string>("continuations[0].nextRadioContinuationData.continuation") ?? innerJsonToken.SelectObjectOptional<string>("continuations[0].nextContinuationData.continuation");
 
         foreach (JToken content in innerJsonToken.SelectRequieredToken("contents"))
@@ -217,11 +217,11 @@ internal static class InfoParser
         JToken[] contents = jsonToken.SelectObject<JToken[]>("contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents");
 
         string? allSongsPlaylistId = null;
-        ArtistSongInfo[] songs = [];
-        List<ArtistAlbumInfo> albums = [];
-        ArtistVideoInfo[] videos = [];
-        ArtistFeaturedOnInfo[] featuredOns = [];
-        ArtistsRelatedInfo[] related = [];
+        ArtistSong[] songs = [];
+        List<ArtistAlbum> albums = [];
+        ArtistVideo[] videos = [];
+        ArtistFeaturedOn[] featuredOns = [];
+        ArtistsRelated[] related = [];
 
         string? viewsInfo = null;
 

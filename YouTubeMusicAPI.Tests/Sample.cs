@@ -31,7 +31,7 @@ internal class Sample
         PaginatedAsyncEnumerable<SearchResult> searchResults = client.SearchAsync(query, SearchCategory.Songs);
         IReadOnlyList<SearchResult> bufferedSearchResults = await searchResults.FetchItemsAsync(0, 20);
 
-        foreach (SongSearchResult song in bufferedSearchResults)
+        foreach (SongSearchResult song in bufferedSearchResults.Cast<SongSearchResult>())
             Console.WriteLine(song.Name);
     }
 
@@ -68,10 +68,10 @@ internal class Sample
         CommunityPlaylistInfo playlist = await client.GetCommunityPlaylistInfoAsync(browseId);
         Console.WriteLine("Playlist: " + playlist.Name);
 
-        PaginatedAsyncEnumerable<CommunityPlaylistSongInfo> songs = client.GetCommunityPlaylistSongsAsync(browseId);
-        IReadOnlyList<CommunityPlaylistSongInfo> bufferedSongs = await songs.FetchItemsAsync(0, 100);
+        PaginatedAsyncEnumerable<CommunityPlaylistSong> songs = client.GetCommunityPlaylistSongsAsync(browseId);
+        IReadOnlyList<CommunityPlaylistSong> bufferedSongs = await songs.FetchItemsAsync(0, 100);
 
-        foreach (CommunityPlaylistSongInfo song in bufferedSongs)
+        foreach (CommunityPlaylistSong song in bufferedSongs)
             Console.WriteLine(song.Name);
     }
 
@@ -83,7 +83,7 @@ internal class Sample
         ArtistInfo artist = await client.GetArtistInfoAsync(id);
         Console.WriteLine("Artist: " + artist.Name);
 
-        foreach (ArtistSongInfo song in artist.Songs)
+        foreach (ArtistSong song in artist.Songs)
             Console.WriteLine(song.Name);
     }
 }

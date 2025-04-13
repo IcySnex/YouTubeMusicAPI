@@ -25,7 +25,7 @@ public class AlbumInfo(
     bool isSingle,
     bool isEp,
     Thumbnail[] thumbnails,
-    AlbumSongInfo[] songs)
+    AlbumSong[] songs)
 {
     /// <summary>
     /// The name of the album
@@ -80,5 +80,5 @@ public class AlbumInfo(
     /// <summary>
     /// The info of all songs in album
     /// </summary>
-    public AlbumSongInfo[] Songs { get; } = songs;
+    public AlbumSong[] Songs { get; } = songs;
 }

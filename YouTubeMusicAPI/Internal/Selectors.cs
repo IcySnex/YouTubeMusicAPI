@@ -245,11 +245,11 @@ internal static class Selectors
     /// <param name="value">The json token containing the item data</param>
     /// <param name="path">The json token path</param>
     /// <returns>An array of album songs</returns>
-    public static AlbumSongInfo[] SelectAlbumSongs(
+    public static AlbumSong[] SelectAlbumSongs(
         this JToken value,
         string path)
     {
-        List<AlbumSongInfo> result = [];
+        List<AlbumSong> result = [];
         foreach (JToken content in value.SelectObject<JToken[]>(path))
         {
             if (content.SelectObjectOptional<JToken>("continuationItemRenderer") is not null)

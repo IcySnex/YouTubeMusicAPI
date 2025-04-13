@@ -19,18 +19,8 @@ public class LibrarySong(
     TimeSpan duration,
     bool isExplicit,
     Radio radio,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : LibraryEntity(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of this song
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of this song
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The artist of this song
     /// </summary>
@@ -55,9 +45,4 @@ public class LibrarySong(
     /// The radio of this song
     /// </summary>
     public Radio Radio { get; } = radio;
-
-    /// <summary>
-    /// The thumbnails of this song
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
 }

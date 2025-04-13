@@ -15,18 +15,8 @@ public class LibraryCommunityPlaylist(
     NamedEntity creator,
     int songCount,
     Radio? radio,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : LibraryEntity(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of this community playlist
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of this community playlist
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The creator of this community playlist
     /// </summary>
@@ -41,9 +31,4 @@ public class LibraryCommunityPlaylist(
     /// The radio channel of this community playlist
     /// </summary>
     public Radio? Radio { get; } = radio;
-
-    /// <summary>
-    /// The thumbnails of this community playlist
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
 }

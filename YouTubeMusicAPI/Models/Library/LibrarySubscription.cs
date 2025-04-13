@@ -13,18 +13,8 @@ public class LibrarySubscription(
     string id,
     string? subscribersInfo,
     Radio? radio,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : LibraryEntity(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of this subscription
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of this subscription
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The subscribers info of the subscription
     /// </summary>
@@ -34,9 +24,4 @@ public class LibrarySubscription(
     /// The radio channel of this subscription
     /// </summary>
     public Radio? Radio { get; } = radio;
-
-    /// <summary>
-    /// The thumbnails of this subscription
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
 }

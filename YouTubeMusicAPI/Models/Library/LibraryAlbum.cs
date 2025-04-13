@@ -19,18 +19,8 @@ public class LibraryAlbum(
     bool isSingle,
     bool isEp,
     Radio radio,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : LibraryEntity(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of this album
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of this album
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The artists of this album
     /// </summary>
@@ -55,9 +45,4 @@ public class LibraryAlbum(
     /// The radio channel of this album
     /// </summary>
     public Radio Radio { get; } = radio;
-
-    /// <summary>
-    /// The thumbnails of this album
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
 }

@@ -11,25 +11,10 @@ public class LibraryPodcast(
     string name,
     string id,
     NamedEntity host,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : LibraryEntity(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of this podcast
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of this podcast
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The host of this podcast
     /// </summary>
     public NamedEntity Host { get; } = host;
-
-    /// <summary>
-    /// The thumbnails of this podcast
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
 }

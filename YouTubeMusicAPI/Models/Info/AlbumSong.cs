@@ -9,24 +9,14 @@
 /// <param name="playsInfo">The plays info of the song</param>
 /// <param name="duration">The duration of the song</param>
 /// <param name="songNumber">The song number of the song</param>
-public class AlbumSongInfo(
+public class AlbumSong(
     string name,
     string? id,
     bool isExplicit,
     string? playsInfo,
     TimeSpan duration,
-    int? songNumber)
+    int? songNumber) : NamedEntity(name, id)
 {
-    /// <summary>
-    /// The name of the song
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of the song
-    /// </summary>
-    public string? Id { get; } = id;
-
     /// <summary>
     /// Weither the song is explicit or not
     /// </summary>

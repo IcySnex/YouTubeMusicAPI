@@ -2,7 +2,6 @@
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Types;
 
 namespace YouTubeMusicAPI.Tests;
 
@@ -54,7 +53,7 @@ internal class Sample
         AlbumInfo album = await client.GetAlbumInfoAsync(browseId);
         Console.WriteLine("Album: " + album.Name);
 
-        foreach (AlbumSongInfo song in album.Songs)
+        foreach (AlbumSong song in album.Songs)
             Console.WriteLine(song.Name);
     }
 

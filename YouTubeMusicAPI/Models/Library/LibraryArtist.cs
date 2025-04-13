@@ -13,18 +13,8 @@ public class LibraryArtist(
     string id,
     int songCount,
     Radio? radio,
-    Thumbnail[] thumbnails)
+    Thumbnail[] thumbnails) : LibraryEntity(name, id, thumbnails)
 {
-    /// <summary>
-    /// The name of this artist
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// The id of this artist
-    /// </summary>
-    public string Id { get; } = id;
-
     /// <summary>
     /// The count of songs by the artist which are saved in the library
     /// </summary>
@@ -34,9 +24,4 @@ public class LibraryArtist(
     /// The radio channel of this artist
     /// </summary>
     public Radio? Radio { get; } = radio;
-
-    /// <summary>
-    /// The thumbnails of this artist
-    /// </summary>
-    public Thumbnail[] Thumbnails { get; } = thumbnails;
 }

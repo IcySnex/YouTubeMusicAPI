@@ -4,7 +4,6 @@ using Jint;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Xml.Serialization;
 
 namespace YouTubeMusicAPI.Internal;
 
@@ -109,35 +108,22 @@ internal class Player
 
         foreach (Node node in ast.DescendantNodesAndSelf())
         {
-            if (node is not ExpressionStatement statement ||
-                statement.Expression is not AssignmentExpression assignment ||
-                assignment.Left is not Identifier identifier ||
-                assignment.Right is not FunctionExpression)
+            if (!node.TryGetFunctionInfo(playerJs, out string? funcName, out string? funcCode))
                 continue;
 
-            string? functionCode = null;
-            string? functionName = null;
-
-            string code = playerJs.Substring(node.Start, node.End - node.Start);
             foreach (string pattern in patterns)
-                if (code.Contains(pattern))
-                {
-                    functionCode = code;
-                    functionName = identifier.Name;
-                    break;
-                }
-
-            if (functionCode is not null && functionName is not null)
             {
-                string fixedCode = Regex.Replace(code, @"if\s*\(\s*typeof\s*[a-zA-Z0-9_$]*\s*===\s*""*undefined""*\s*\)\s*return\s+[a-zA-Z0-9_$]*;", "");
-                return globalVariable is null
-                    ? $"let {fixedCode} {functionName}(nsig);"
-                    : $"{globalVariable.Value.Source} var {fixedCode} {fixedCode}(nsig);";
+                if (!funcCode!.Contains(pattern))
+                    continue;
+
+                funcCode = Regex.Replace(funcCode, @"if\s*\(\s*typeof\s+[a-zA-Z0-9_$]+\s*===\s*[a-zA-Z0-9_[$]+\[\d+\]\s*\)\s*return\s*[a-zA-Z0-9_$];", "", RegexOptions.Multiline);
+                return $"{funcCode.Trim()} {funcName}(nsig);";
             }
         }
 
         throw new Exception("Could not find n-signature deciphering algorithm");
     }
+
 
     /// <summary>
     /// Extracts the signature timestamp from the player
@@ -226,8 +212,8 @@ internal class Player
 
         // Parse
         NameValueCollection query = HttpUtility.ParseQueryString(actualUrl);
-        string extractedUrl = query["url"] ?? actualUrl;
-        string? sig = query["s"];
+        string extractedUrl = HttpUtility.UrlDecode(query["url"] ?? actualUrl);
+        string? sig = HttpUtility.UrlDecode(query["s"]);
         string sp = query["sp"] ?? "signature";
 
         NameValueCollection urlQuery = HttpUtility.ParseQueryString(extractedUrl);

@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Acornima.Ast;
+using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Models.Search;
 
 namespace YouTubeMusicAPI.Internal;
@@ -108,5 +109,46 @@ internal static class Extensions
             hourMatch.Success ? int.Parse(hourMatch.Groups[1].Value) : 0,
             minuteMatch.Success ? int.Parse(minuteMatch.Groups[1].Value) : 0,
             secondMatch.Success ? int.Parse(secondMatch.Groups[1].Value) : 0);
+    }
+
+
+    /// <summary>
+    /// Tries to get the fucntion name and code from a node
+    /// </summary>
+    /// <param name="value">The node to parse</param>
+    /// <param name="fullJs">The full js containing the node</param>
+    /// <param name="name">The name of the function</param>
+    /// <param name="code">The code of the function</param>
+    /// <returns>A boolean indicating weither the function was parsed correctly</returns>
+    public static bool TryGetFunctionInfo(
+        this Node value,
+        string fullJs,
+        out string? name,
+        out string? code)
+    {
+        switch (value)
+        {
+            case FunctionDeclaration funcDecl when funcDecl.Id is not null:
+                (name, code) = (funcDecl.Id.Name, fullJs.Substring(funcDecl.Start, funcDecl.End - funcDecl.Start));
+                return true;
+
+            case VariableDeclaration varDecl:
+                foreach (VariableDeclarator decl in varDecl.Declarations)
+                {
+                    if (decl.Id is not Identifier id || decl.Init is not FunctionExpression)
+                        continue;
+
+                    (name, code) = (id.Name, fullJs.Substring(decl.Start, decl.End - decl.Start));
+                    return true;
+                }
+                break;
+
+            case ExpressionStatement { Expression: AssignmentExpression { Left: Identifier id, Right: FunctionExpression } }:
+                (name, code) = (id.Name, fullJs.Substring(value.Start, value.End - value.Start));
+                return true;
+        }
+
+        (name, code) = (null, null);
+        return false;
     }
 }

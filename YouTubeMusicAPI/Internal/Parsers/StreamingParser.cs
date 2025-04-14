@@ -1,6 +1,4 @@
-﻿using Acornima;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using Newtonsoft.Json.Linq;
 using YouTubeMusicAPI.Models.Streaming;
 
 namespace YouTubeMusicAPI.Internal.Parsers;

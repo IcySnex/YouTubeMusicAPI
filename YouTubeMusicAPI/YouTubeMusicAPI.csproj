@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>3.0.0-alpha</Version>
-		<AssemblyVersion>3.0.0</AssemblyVersion>
-		<FileVersion>3.0.0</FileVersion>
+		<Version>3.0.1-alpha</Version>
+		<AssemblyVersion>3.0.1</AssemblyVersion>
+		<FileVersion>3.0.1</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -25,25 +25,8 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageReleaseNotes>
-			CONTAINS BREAKING CHANGES, PLEASE READ RELEASE NOTES
-
-			- Introduced pagination system:
-				- PaginatedAsyncEnumerable&lt;T&gt;
-				- Removed “Shelves” to search
-				- Introduced ability to get 100+ songs for playlists (Fix #10)
-				- Introduced ability to get infinite songs for auto generated playlists (e.g. radios)
-			- Project restructue:
-				- Removed YouTubeMusicItem &amp; IYouTubeMusicItem
-				- Added NamedEntity base model
-				- Added base classes for models (SearchResult, LibraryEntity, EntityInfo)
-				- New cleaner namespaces
-			- Renamed classes:
-				- Removed "Info" suffix for info sub-models (e.g. AlbumSongInfo -> AlbumSong)
-				- MediaStreamInfo -> StreamInfo
-				- MediaContainer -> StreamContainer
-				- YouTubeMusicItemKind -> SearchCategory
-			- Added "IsInfinite" property to CommunityPlaylistInfo
-			- Updated packages
+			- Fixed n-sig deciphering for getting streaming data when authenticated (Fix #19)
+			- Optimized getting streaming data when authenticated
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	

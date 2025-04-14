@@ -21,6 +21,8 @@ public class YouTubeMusicClient
     readonly RequestHelper requestHelper;
     readonly YouTubeMusicBase baseClient;
 
+    readonly bool isCookieAuthenticated;
+
     Player? player = null;
 
     /// <summary>
@@ -39,6 +41,8 @@ public class YouTubeMusicClient
         GeographicalLocation = geographicalLocation;
         VisitorData = visitorData;
         PoToken = poToken;
+
+        isCookieAuthenticated = cookies is not null;
 
         this.requestHelper = new(cookies);
         this.baseClient = new(requestHelper);
@@ -64,6 +68,8 @@ public class YouTubeMusicClient
         GeographicalLocation = geographicalLocation;
         VisitorData = visitorData;
         PoToken = poToken;
+
+        isCookieAuthenticated = cookies is not null;
 
         this.logger = logger;
         this.requestHelper = new(logger, cookies);
@@ -659,7 +665,7 @@ public class YouTubeMusicClient
             VisitorData = await baseClient.GetVisitorDataAsync(cancellationToken);
         }
 
-        try
+        if (!isCookieAuthenticated)
         {
             // Send requests
             Dictionary<string, object> payload = Payload.Mobile(GeographicalLocation, VisitorData, PoToken,
@@ -672,9 +678,8 @@ public class YouTubeMusicClient
             StreamingData streamingData = StreamingParser.GetData(requestResponse);
             return streamingData;
         }
-        catch (HttpRequestException)
+        else // Mobile client does not support cookie authentication -> falling back to WebRemix client
         {
-            // Create player if necessary
             if (player is null)
             {
                 logger?.LogInformation("[YouTubeMusicClient-GetStreamingDataAsync] Creating required player for streaming...");

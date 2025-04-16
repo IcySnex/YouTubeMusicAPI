@@ -102,7 +102,7 @@ internal static class SearchParser
         int albumIndex = artists[0].Id is null ? 2 : artists.Length * 2;
 
         string? radioPlaylistId = jsonToken.SelectObjectOptional<string>("menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.playlistId");
-        
+
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId"),
@@ -194,12 +194,19 @@ internal static class SearchParser
     public static ArtistSearchResult GetArtist(
         JToken jsonToken)
     {
+        var name = jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text");
+        var id = jsonToken.SelectObject<string>("navigationEndpoint.browseEndpoint.browseId");
+        var subscribersInfo = jsonToken.SelectObjectOptional<string>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[2].text");
+        var radio = jsonToken.SelectRadio("menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null);
+        var thumbnails = jsonToken.SelectThumbnails();
+
+
         return new(
-            name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
-            id: jsonToken.SelectObject<string>("navigationEndpoint.browseEndpoint.browseId"),
-            subscribersInfo: jsonToken.SelectObject<string>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[2].text"),
-            radio: jsonToken.SelectRadio("menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
-            thumbnails: jsonToken.SelectThumbnails());
+            name: name,
+            id: id,
+            subscribersInfo: subscribersInfo,
+            radio: radio,
+            thumbnails: thumbnails);
     }
 
     /// <summary>

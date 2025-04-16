@@ -123,10 +123,13 @@ internal static class Selectors
     public static Radio SelectRadio(
         this JToken value,
         string playlistIdPath = "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.playlistId",
-        string? videoIdPath = "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.videoId") =>
-        new(
-            value.SelectObject<string>(playlistIdPath),
-            videoIdPath is null ? null : value.SelectObjectOptional<string>(videoIdPath));
+        string? videoIdPath = "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.videoId")
+    {
+        var playlistId = value.SelectObjectOptional<string>(playlistIdPath);
+        var videoId = videoIdPath is null ? null : value.SelectObjectOptional<string>(videoIdPath);
+
+        return new(playlistId, videoId);
+    }
 
     /// <summary>
     /// Selects and casts a bool weither its explicit from a json token
@@ -255,13 +258,24 @@ internal static class Selectors
             if (content.SelectObjectOptional<JToken>("continuationItemRenderer") is not null)
                 continue;
 
+            var name = content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text");
+            var id = content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId");
+            var isExplicit = content.SelectObjectOptional<JToken[]>("musicResponsiveListItemRenderer.badges")?.Any(badge => badge.SelectToken("musicInlineBadgeRenderer.icon.iconType")?.ToString() == "MUSIC_EXPLICIT_BADGE") ?? false;
+            var playsInfo = content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text");
+            var duration = content.SelectObject<string>("musicResponsiveListItemRenderer.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text").ToTimeSpan();
+
+            var songNumberText = content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.index.runs[0].text");
+            int songNumber = 0;
+            if (string.IsNullOrWhiteSpace(songNumberText) == false)
+                int.TryParse(songNumberText, out songNumber);
+
             result.Add(new(
-                name: content.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
-                id: content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].navigationEndpoint.watchEndpoint.videoId"),
-                isExplicit: content.SelectObjectOptional<JToken[]>("musicResponsiveListItemRenderer.badges")?.Any(badge => badge.SelectToken("musicInlineBadgeRenderer.icon.iconType")?.ToString() == "MUSIC_EXPLICIT_BADGE") ?? false,
-                playsInfo: content.SelectObjectOptional<string>("musicResponsiveListItemRenderer.flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
-                duration: content.SelectObject<string>("musicResponsiveListItemRenderer.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text").ToTimeSpan(),
-                songNumber: content.SelectObjectOptional<int>("musicResponsiveListItemRenderer.index.runs[0].text")));
+                name: name,
+                id: id,
+                isExplicit: isExplicit,
+                playsInfo: playsInfo,
+                duration: duration,
+                songNumber: songNumber));
         }
 
         return [.. result];

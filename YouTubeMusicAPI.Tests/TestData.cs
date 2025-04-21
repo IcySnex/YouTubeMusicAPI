@@ -45,7 +45,7 @@ internal abstract class TestData
     /// <summary>
     /// Test query for search requests
     /// </summary>
-    public const string SearchQuery = "Pashanim";
+    public const string SearchQuery = "mero";
 
 
     /// <summary>
@@ -56,7 +56,7 @@ internal abstract class TestData
     /// <summary>
     /// Test maximum items of items which should be retruened for fetch requests
     /// </summary>
-    public const int FetchLimit = 20;
+    public const int FetchLimit = 200;
 
 
     /// <summary>
@@ -88,7 +88,7 @@ internal abstract class TestData
     /// <summary>
     /// Test artist browse id
     /// </summary>
-    public const string ArtistBrowseId = "UCESdnJ-8tBDMqqkPpjHOuMg";
+    public const string ArtistBrowseId = "UC3fVljA2QQYuEr0U6MKoj8g";
 
 
     /// <summary>

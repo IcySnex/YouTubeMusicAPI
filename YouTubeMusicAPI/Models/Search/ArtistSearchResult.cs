@@ -11,17 +11,17 @@
 public class ArtistSearchResult(
     string name,
     string id,
-    string subscribersInfo,
-    Radio radio,
+    string? subscribersInfo,
+    Radio? radio,
     Thumbnail[] thumbnails) : SearchResult(name, id, thumbnails, SearchCategory.Artists)
 {
     /// <summary>
     /// The subscribers info of this artist
     /// </summary>
-    public string SubscribersInfo { get; } = subscribersInfo;
+    public string? SubscribersInfo { get; } = subscribersInfo;
 
     /// <summary>
     /// The radio channel of this artist
     /// </summary>
-    public Radio Radio { get; } = radio;
+    public Radio? Radio { get; } = radio;
 }

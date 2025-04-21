@@ -112,6 +112,7 @@ internal static class Selectors
         };
     }
 
+
     /// <summary>
     /// Selects and casts a radio from a json token
     /// </summary>
@@ -127,6 +128,21 @@ internal static class Selectors
         new(
             value.SelectObject<string>(playlistIdPath),
             videoIdPath is null ? null : value.SelectObjectOptional<string>(videoIdPath));
+    
+    /// <summary>
+    /// Selects and casts an optional radio from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the item data</param>
+    /// <param name="playlistIdPath">The json token playlist id path</param>
+    /// <param name="videoIdPath">The json token video id path</param>
+    /// <exception cref="ArgumentNullException">Occurrs when the specified path could not be found</exception>
+    /// <returns>A new radio</returns>
+    public static Radio? SelectRadioOptional(
+        this JToken value,
+        string playlistIdPath = "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.playlistId",
+        string? videoIdPath = "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.videoId") =>
+        value.SelectObjectOptional<string>(playlistIdPath) is string playlistId ? new(playlistId, videoIdPath is null ? null : value.SelectObjectOptional<string>(videoIdPath)) : null;
+
 
     /// <summary>
     /// Selects and casts a bool weither its explicit from a json token

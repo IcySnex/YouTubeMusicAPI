@@ -197,8 +197,8 @@ internal static class SearchParser
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("navigationEndpoint.browseEndpoint.browseId"),
-            subscribersInfo: jsonToken.SelectObject<string>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[2].text"),
-            radio: jsonToken.SelectRadio("menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
+            subscribersInfo: jsonToken.SelectObjectOptional<string>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[2].text"),
+            radio: jsonToken.SelectRadioOptional("menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
             thumbnails: jsonToken.SelectThumbnails());
     }
 

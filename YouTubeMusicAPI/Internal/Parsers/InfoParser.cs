@@ -40,7 +40,7 @@ internal static class InfoParser
             artists: nextItem.SelectArtists("longBylineText.runs", 0, albumIndex),
             album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId) : null,
             duration: TimeSpan.FromSeconds(playerJsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
-            radio: isLive ? null : nextItem.SelectRadio(),
+            radio: isLive ? null : nextItem.SelectRadioOptional(),
             playabilityStatus: new(playerJsonToken.SelectObject<string>("playabilityStatus.status") == "OK", playerJsonToken.SelectObjectOptional<string>("playabilityStatus.reason")),
             isRatingsAllowed: playerJsonToken.SelectObject<bool>("videoDetails.allowRatings"),
             isPrivate: playerJsonToken.SelectObject<bool>("videoDetails.isPrivate"),

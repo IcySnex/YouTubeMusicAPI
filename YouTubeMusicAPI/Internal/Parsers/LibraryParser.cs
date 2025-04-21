@@ -28,7 +28,7 @@ internal class LibraryParser
             id: jsonToken.SelectObject<string>("musicTwoRowItemRenderer.thumbnailOverlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId"),
             creator: new(creatorId is null ? "YouTube Music" : jsonToken.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text"), creatorId),
             songCount: int.Parse(jsonToken.SelectObject<string>($"musicTwoRowItemRenderer.subtitle.runs[{runs.Length - 1}].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
-            radio: jsonToken.SelectRadio("musicTwoRowItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
+            radio: jsonToken.SelectRadioOptional("musicTwoRowItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
             thumbnails: jsonToken.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails"));
     }
 
@@ -86,13 +86,11 @@ internal class LibraryParser
     public static LibraryArtist GetArtist(
         JObject jsonToken)
     {
-        string? radioPlaylistId = jsonToken.SelectObjectOptional<string>("musicResponsiveListItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId");
-
         return new(
             name: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.navigationEndpoint.browseEndpoint.browseId").Substring(4),
             songCount: int.Parse(jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text").Split(' ')[0], NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
-            radio: radioPlaylistId is null ? null : new(radioPlaylistId, null),
+            radio: jsonToken.SelectRadioOptional("musicResponsiveListItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
             thumbnails: jsonToken.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails"));
     }
 
@@ -105,13 +103,11 @@ internal class LibraryParser
     public static LibrarySubscription GetSubscription(
         JObject jsonToken)
     {
-        string? radioPlaylistId = jsonToken.SelectObjectOptional<string>("musicResponsiveListItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId");
-
         return new(
             name: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.navigationEndpoint.browseEndpoint.browseId"),
             subscribersInfo: jsonToken.SelectObject<string>("musicResponsiveListItemRenderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
-            radio: radioPlaylistId is null ? null : new(radioPlaylistId, null),
+            radio: jsonToken.SelectRadioOptional("musicResponsiveListItemRenderer.menu.menuRenderer.items[1].menuNavigationItemRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId", null),
             thumbnails: jsonToken.SelectThumbnails("musicResponsiveListItemRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails"));
     }
 

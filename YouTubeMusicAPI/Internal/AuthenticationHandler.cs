@@ -6,21 +6,19 @@ using System.Text;
 namespace YouTubeMusicAPI.Internal;
 
 /// <summary>
-/// Http handler which handles cookies and authentication for YouTube Music
+/// Handles authenticaion via cookies for YouTube Music requests
 /// </summary>
-internal class CookiesHttpHandler : DelegatingHandler
+public class AuthenticationHandler
 {
     readonly CookieContainer cookieContainer = new();
 
     /// <summary>
-    /// Creates a new CookiesHttpHandler
+    /// Creates a new AuthenticationHandler
     /// </summary>
     /// <param name="cookies">The initial cookies</param>
-    public CookiesHttpHandler(
+    public AuthenticationHandler(
         IEnumerable<Cookie>? cookies = null)
     {
-        InnerHandler = new HttpClientHandler();
-
         if (cookies is not null)
             foreach (var cookie in cookies)
                 cookieContainer.Add(cookie);
@@ -60,14 +58,11 @@ internal class CookiesHttpHandler : DelegatingHandler
 
 
     /// <summary>
-    /// Sends an HTTP request to the inner handler to send to the server as an asynchronous operation
+    /// Prepares an HTTP request for the inner handler to send to the server
     /// </summary>
-    /// <param name="request">The HTTP request message to send to the server</param>
-    /// <param name="cancellationToken">The token to cancel this action</param>
-    /// <returns>The task object representing the asynchronous operation</returns>
-    protected override async Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    /// <param name="request">The HTTP request message to prepare</param>
+    public void Prepare(
+        HttpRequestMessage request)
     {
         string requestUrl = request.RequestUri.OriginalString;
         request.RequestUri = new(requestUrl + (requestUrl.Contains('?') ? '&' : '?') + "key=AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w");
@@ -80,7 +75,5 @@ internal class CookiesHttpHandler : DelegatingHandler
 
         if (cookieContainer.Count > 0)
             request.Headers.Add("Cookie", cookieContainer.GetCookieHeader(request.RequestUri));
-
-        return await base.SendAsync(request, cancellationToken);
     }
 }

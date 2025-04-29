@@ -32,11 +32,13 @@ public class YouTubeMusicClient
     /// <param name="visitorData">The persistent visitor data used for session tailoring</param>
     /// <param name="poToken">The Proof of Origin Token for attestation (may be required for streaming)</param>
     /// <param name="cookies">Initial cookies used for authentication</param>
+    /// <param name="httpClient">Http client which handles sending requests</param>
     public YouTubeMusicClient(
         string geographicalLocation = "US",
         string? visitorData = null,
         string? poToken = null,
-        IEnumerable<Cookie>? cookies = null)
+        IEnumerable<Cookie>? cookies = null,
+        HttpClient? httpClient = null)
     {
         GeographicalLocation = geographicalLocation;
         VisitorData = visitorData;
@@ -44,7 +46,7 @@ public class YouTubeMusicClient
 
         isCookieAuthenticated = cookies is not null;
 
-        this.requestHelper = new(cookies);
+        this.requestHelper = new(httpClient ?? new(), cookies);
         this.baseClient = new(requestHelper);
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient has been initialized.");
@@ -58,12 +60,14 @@ public class YouTubeMusicClient
     /// <param name="visitorData">The persistent visitor data used for session tailoring</param>
     /// <param name="poToken">The Proof of Origin Token for attestation (may be required for streaming)</param>
     /// <param name="cookies">Initial cookies used for authentication</param>
+    /// <param name="httpClient">Http client which handles sending requests</param>
     public YouTubeMusicClient(
         ILogger logger,
         string geographicalLocation = "US",
         string? visitorData = null,
         string? poToken = null,
-        IEnumerable<Cookie>? cookies = null)
+        IEnumerable<Cookie>? cookies = null,
+        HttpClient? httpClient = null)
     {
         GeographicalLocation = geographicalLocation;
         VisitorData = visitorData;
@@ -72,7 +76,7 @@ public class YouTubeMusicClient
         isCookieAuthenticated = cookies is not null;
 
         this.logger = logger;
-        this.requestHelper = new(logger, cookies);
+        this.requestHelper = new(httpClient ?? new(), cookies);
         this.baseClient = new(logger, requestHelper);
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient with extendended logging functions has been initialized.");

@@ -16,31 +16,38 @@ internal class RequestHelper
 {
     readonly ILogger? logger;
 
-    readonly HttpClient httpClient;
+    readonly HttpClient client;
+    readonly AuthenticationHandler authentication;
     readonly JsonSerializerSettings jsonSettings = new() { NullValueHandling = NullValueHandling.Ignore };
 
     /// <summary>
     /// Creates a new request helper
     /// </summary>
+    /// <param name="httpClient">Http client which handles sending requests</param>
     /// <param name="cookies">Initial cookies used for authentication</param>
     public RequestHelper(
+        HttpClient httpClient,
         IEnumerable<Cookie>? cookies = null)
     {
-        httpClient = new(new CookiesHttpHandler(cookies));
+        client = httpClient;
+        authentication = new(cookies);
     }
 
     /// <summary>
     /// Creates a new request helper
     /// </summary>
     /// <param name="logger">The optional logger used for logging</param>
+    /// <param name="httpClient">Http client which handles sending requests</param>
     /// <param name="cookies">Initial cookies used for authentication</param>
     public RequestHelper(
         ILogger logger,
+        HttpClient httpClient,
         IEnumerable<Cookie>? cookies = null)
     {
         this.logger = logger;
 
-        httpClient = new(new CookiesHttpHandler(cookies));
+        client = httpClient;
+        authentication = new(cookies);
 
         logger.LogInformation($"[RequestHelper-.ctor] RequestHelper with extendended logging functions has been initialized.");
     }
@@ -67,10 +74,11 @@ internal class RequestHelper
             Method = HttpMethod.Get,
             RequestUri = new UriBuilder(url) { Query = parameters }.Uri
         };
+        authentication.Prepare(request);
 
         // Send HTTP request
         logger?.LogInformation($"[RequestHelper-GetAsync] Sending HTTP reuqest. GET: {url}.");
-        return httpClient.SendAsync(request, cancellationToken);
+        return client.SendAsync(request, cancellationToken);
     }
 
     /// <summary>
@@ -133,10 +141,11 @@ internal class RequestHelper
         };
         if (body is not null)
             request.Content = new StringContent(JsonConvert.SerializeObject(body, jsonSettings), Encoding.UTF8, "application/json");
+        authentication.Prepare(request);
 
         // Send HTTP request
         logger?.LogInformation($"[RequestHelper-PostBodyAsync] Sending HTTP reuqest. POST: {url}.");
-        return httpClient.SendAsync(request, cancellationToken);
+        return client.SendAsync(request, cancellationToken);
     }
 
     /// <summary>

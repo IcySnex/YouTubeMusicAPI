@@ -38,13 +38,12 @@ internal class Player
     /// Extracts the global variable from the player
     /// </summary>
     /// <param name="playerJs">The player javascript source</param>
+    /// <param name="ast">The parsed player abstract syntax tree</param>
     /// <returns>The global variable</returns>
     static (string Source, string Name)? ExtractGlobalVariable(
-        string playerJs)
+        string playerJs,
+        Script ast)
     {
-        Parser parser = new();
-        Script ast = parser.ParseScript(playerJs);
-
         string[] patterns = ["-_w8_", "Untrusted URL{", "1969", "1970", "playerfallback"];
 
         foreach (Node node in ast.DescendantNodesAndSelf())
@@ -92,22 +91,20 @@ internal class Player
             throw new Exception("Failed to extract signature deciphering algorithm");
 
         return $"{globalVariable?.Source ?? ""} function descramble_sig({varName}) {{ let {objName}={{{functions}}}; {match.Groups[2].Value} }} descramble_sig(sig);";
-
     }
 
     /// <summary>
     /// Extracts the n-signature deciphering algorithm from the player
     /// </summary>
     /// <param name="playerJs">The player javascript source</param>
+    /// <param name="ast">The parsed player abstract syntax tree</param>
     /// <param name="globalVariable">The player global variable, if available</param>
     /// <returns>The n-signature deciphering algorithm</returns>
     static string ExtractNSigDecipherAlgorithm(
         string playerJs,
+        Script ast,
         (string Source, string Name)? globalVariable)
     {
-        Parser parser = new();
-        Script ast = parser.ParseScript(playerJs);
-
         string[] patterns = globalVariable is null
             ? ["-_w8_", "1969", "enhanced_except"]
             : [$"new Date({globalVariable.Value.Name}", ".push(String.fromCharCode(", ".reverse().forEach(function"];
@@ -189,13 +186,14 @@ internal class Player
         string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
 
         string playerId = GetStringBetween(js, @"player\/", @"\/") ?? throw new Exception("Failed to get player id");
-
         string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
-        string playerJs = await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
 
-        (string Source, string Name)? gloablVariable = ExtractGlobalVariable(playerJs);
+        string playerJs = await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
+        Script ast = new Parser().ParseScript(playerJs);
+
+        (string Source, string Name)? gloablVariable = ExtractGlobalVariable(playerJs, ast);
         string sigDecipherAlgorithm = ExtractSigDecipherAlgorithm(playerJs, gloablVariable);
-        string nSigDecipherAlgorithm = ExtractNSigDecipherAlgorithm(playerJs, gloablVariable);
+        string nSigDecipherAlgorithm = ExtractNSigDecipherAlgorithm(playerJs, ast, gloablVariable);
         int sigTimestamp = ExtractSigTimestamp(playerJs);
 
         return new(sigDecipherAlgorithm, nSigDecipherAlgorithm, sigTimestamp, poToken);

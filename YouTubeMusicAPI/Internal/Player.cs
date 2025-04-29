@@ -72,9 +72,15 @@ internal class Player
         string playerJs,
         (string Source, string Name)? globalVariable)
     {
-        Match match = Regex.Match(playerJs, @"function\(([A-Za-z_0-9]+)\){([A-Za-z_0-9]+=[A-Za-z_0-9]+\.split\((?:[^)]+)\)(.+?)\.join\((?:[^)]+)\))}");
+        Match match = Regex.Match(playerJs, @"function\(([A-Za-z_0-9]+)\)\{([A-Za-z_0-9]+=[A-Za-z_0-9]+\.split\((?:[^)]+)\)(.+?)\.join\((?:[^)]+)\))\}");
+        if (!match.Success && globalVariable?.Name is not null)
+        {
+            string globalVariableName = Regex.Escape(globalVariable.Value.Name);
+            match = Regex.Match(playerJs, $@"function\(([A-Za-z_0-9]+)\)\{{([A-Za-z_0-9]+=[A-Za-z_0-9]+\[{globalVariableName}\[\d+\]\]\([^)]*\)([\s\S]+?)\[{globalVariableName}\[\d+\]\]\([^)]*\))\}}");
+        }
         if (!match.Success)
             throw new Exception("Failed to extract signature deciphering algorithm");
+
 
         string varName = match.Groups[1].Value;
         string? objName = match.Groups[3].Value.Split(['.', '['], StringSplitOptions.RemoveEmptyEntries) is { Length: > 0 } parts ? parts[0].Replace(";", "").Trim() : null;

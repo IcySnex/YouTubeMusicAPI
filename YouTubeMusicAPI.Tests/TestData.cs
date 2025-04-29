@@ -56,7 +56,7 @@ internal abstract class TestData
     /// <summary>
     /// Test maximum items of items which should be retruened for fetch requests
     /// </summary>
-    public const int FetchLimit = 200;
+    public const int FetchLimit = 20;
 
 
     /// <summary>

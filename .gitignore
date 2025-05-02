@@ -5,10 +5,16 @@ packages/
 *.user
 _ReSharper.*
 
+Development/
+
 YouTubeMusicAPI/bin/
 YouTubeMusicAPI/obj/
 
 YouTubeMusicAPI.Tests/bin/
 YouTubeMusicAPI.Tests/obj/
 
-Development/
+YouTubeMusicAPI/bin/
+YouTubeMusicAPI/obj/
+
+YouTubeMusicAPI-recode-v3/YouTubeMusicAPI.Tests/bin/
+YouTubeMusicAPI-recode-v3/YouTubeMusicAPI.Tests/obj/

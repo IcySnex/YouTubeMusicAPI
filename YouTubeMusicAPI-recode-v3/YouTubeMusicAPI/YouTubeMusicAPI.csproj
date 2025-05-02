@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="YouTubeMusicAPI.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Models\Library\" />
+		<Folder Include="Models\Info\" />
+		<Folder Include="Models\Streaming\" />
+		<Folder Include="Models\Search\" />
+	</ItemGroup>
+</Project>

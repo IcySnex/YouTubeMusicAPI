@@ -1,0 +1,12 @@
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\bin\Debug\net9.0\YouTubeMusicAPI.deps.json
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\bin\Debug\net9.0\YouTubeMusicAPI.dll
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\bin\Debug\net9.0\YouTubeMusicAPI.pdb
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\YouTubeMusicAPI.GeneratedMSBuildEditorConfig.editorconfig
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\YouTubeMusicAPI.AssemblyInfoInputs.cache
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\YouTubeMusicAPI.AssemblyInfo.cs
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\YouTubeMusicAPI.csproj.CoreCompileInputs.cache
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\YouTubeMusicAPI.sourcelink.json
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\YouTubeMusicAPI.dll
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\refint\YouTubeMusicAPI.dll
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\YouTubeMusicAPI.pdb
+D:\YouTubeMusicAPI\Development\v3\YouTubeMusicAPI\YouTubeMusicAPI\obj\Debug\net9.0\ref\YouTubeMusicAPI.dll

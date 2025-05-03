@@ -34,7 +34,7 @@ public class AnonymousAuthenticator(
     /// <remarks>
     /// May be required when fetching streaming data.
     /// </remarks>
-    public string? ProoOfOriginToken { get; } = prooOfOriginToken;
+    public string? ProofOfOriginToken { get; } = prooOfOriginToken;
 
     /// <summary>
     /// Represents the API key used to validate the YouTube client.

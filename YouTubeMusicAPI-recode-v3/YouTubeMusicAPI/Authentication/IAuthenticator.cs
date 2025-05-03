@@ -1,4 +1,6 @@
-﻿namespace YouTubeMusicAPI.Authentication;
+﻿using YouTubeMusicAPI.Exceptions;
+
+namespace YouTubeMusicAPI.Authentication;
 
 /// <summary>
 /// Handles the authentication of HTTP requests sent to YouTube Music.
@@ -16,7 +18,7 @@ public interface IAuthenticator
     /// <remarks>
     /// May be required when fetching streaming data.
     /// </remarks>
-    public string? ProoOfOriginToken { get; }
+    public string? ProofOfOriginToken { get; }
 
     /// <summary>
     /// Represents the API key used to validate the YouTube client.
@@ -33,6 +35,7 @@ public interface IAuthenticator
     /// Applies the authentication to the given HTTP request.
     /// </summary>
     /// <param name="request">The HTTP request to which the authentication will be applied.</param>
+    /// <exception cref="AuthenticationException">Occurrs when applying the authentication fails.</exception>
     public void Apply(
         HttpRequestMessage request);
 }

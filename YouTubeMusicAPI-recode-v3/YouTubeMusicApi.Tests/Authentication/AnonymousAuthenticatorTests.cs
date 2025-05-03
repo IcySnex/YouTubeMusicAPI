@@ -20,7 +20,7 @@ public class AnonymousAuthenticatorTests
         Assert.Multiple(() =>
         {
             Assert.That(authenticator.VisitorData, Is.EqualTo(visitorData));
-            Assert.That(authenticator.ProoOfOriginToken, Is.EqualTo(poToken));
+            Assert.That(authenticator.ProofOfOriginToken, Is.EqualTo(poToken));
             Assert.That(authenticator.ApiKey, Is.EqualTo(apiKey));
             Assert.That(authenticator.UserAgent, Is.EqualTo(userAgent));
         });

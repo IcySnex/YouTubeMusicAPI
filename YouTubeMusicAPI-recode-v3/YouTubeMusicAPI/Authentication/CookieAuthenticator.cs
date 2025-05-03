@@ -2,6 +2,7 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Authentication;
@@ -38,13 +39,15 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
     }
 
 
+    /// <exception cref="AuthenticationException">Occurrs when provided cookies cookies do not contain a session id.</exception>
     string GenerateAuthHeaderValue(
         Uri uri)
     {
         IReadOnlyCollection<Cookie> cookies = Container.GetCookies(uri);
 
         string? sessionId = (cookies.FirstOrDefault(c => string.Equals(c.Name, "__Secure-3PAPISID", StringComparison.Ordinal)) ?? cookies.FirstOrDefault(c => string.Equals(c.Name, "SAPISID", StringComparison.Ordinal)))?.Value;
-        Ensure.NotNullOrEmpty(sessionId, nameof(sessionId));
+        if (string.IsNullOrEmpty(sessionId))
+            throw new AuthenticationException("The provided cookies do not contain a session id (__Secure-3PAPISID or SAPISID).");
 
         long timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         string domain = uri.Scheme + Uri.SchemeDelimiter + uri.Host;
@@ -64,7 +67,9 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
     /// Applies the authentication to the given HTTP request.
     /// </summary>
     /// <param name="request">The HTTP request to which the authentication will be applied.</param>
+    /// <exception cref="AuthenticationException">Occurrs when provided cookies cookies do not contain a session id.</exception>
     /// <exception cref="ArgumentNullException">Occurrs when the RequestUri of the request is <see langword="null"/>./></exception>
+    /// <exception cref="ArgumentException">Occurrs when the provided cookies do not contain a session id.</exception>
     public override void Apply(
         HttpRequestMessage request)
     {

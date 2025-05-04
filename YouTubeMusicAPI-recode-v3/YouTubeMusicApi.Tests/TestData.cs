@@ -2,7 +2,7 @@
 
 namespace YouTubeMusicApi.Tests;
 
-public static class TestData
+internal static class TestData
 {
     public static string RandomString() =>
         Guid.NewGuid().ToString();

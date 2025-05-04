@@ -3,7 +3,7 @@
 namespace YouTubeMusicApi.Tests.Authentication;
 
 [TestFixture]
-public class AnonymousAuthenticatorTests
+internal sealed class AnonymousAuthenticatorTests
 {
     [Test]
     public void Should_maintain_parameters()

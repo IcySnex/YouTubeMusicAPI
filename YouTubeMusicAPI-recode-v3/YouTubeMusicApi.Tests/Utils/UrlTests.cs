@@ -3,7 +3,7 @@
 namespace YouTubeMusicApi.Tests.Utils;
 
 [TestFixture]
-public class UrlTests
+internal sealed class UrlTests
 {
     [Test]
     [TestCase("https://api.example.com/endpoint", "key1", ExpectedResult = "https://api.example.com/endpoint")]

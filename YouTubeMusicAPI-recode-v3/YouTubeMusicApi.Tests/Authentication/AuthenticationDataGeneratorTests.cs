@@ -3,7 +3,7 @@
 namespace YouTubeMusicApi.Tests.Authentication;
 
 [TestFixture]
-public class AuthenticationDataGeneratorTests
+internal sealed class AuthenticationDataGeneratorTests
 {
     [Test]
     public void Should_generate_visitor_data()

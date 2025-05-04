@@ -24,6 +24,24 @@ public class AuthenticationDataGeneratorTests
     }
 
     [Test]
+    public void Should_generate_rollout_token()
+    {
+        // Act
+        string? rolloutToken = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            rolloutToken = await AuthenticationDataGenerator.RolloutTokenAsync();
+        });
+
+        // Assert
+        Assert.That(rolloutToken, Is.Not.Null.Or.Empty);
+
+        // Output
+        TestContext.Out.WriteLine("Rollout Token: {0}", rolloutToken);
+    }
+
+    [Test]
     [Ignore("Currently not supported.")]
     public void Should_generate_proof_of_origin_token()
     {
@@ -32,7 +50,7 @@ public class AuthenticationDataGeneratorTests
 
         //Assert.DoesNotThrowAsync(async () =>
         //{
-        //    proofOfOriginToken = await IdentityGenerator.ProofOfOriginTokenAsync();
+        //    proofOfOriginToken = await AuthenticationDataGenerator.ProofOfOriginTokenAsync();
         //});
 
         // Assert

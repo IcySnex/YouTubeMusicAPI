@@ -13,10 +13,11 @@ public class CookieAuthenticatorTests
         Cookie[] cookies = TestData.RandomCookies();
         string visitorData = TestData.RandomString();
         string poToken = TestData.RandomString();
+        string rolloutToken = TestData.RandomString();
         string apiKey = TestData.RandomString();
         string userAgent = TestData.RandomString();
 
-        CookieAuthenticator authenticator = new(cookies, visitorData, poToken, apiKey, userAgent);
+        CookieAuthenticator authenticator = new(cookies, visitorData, poToken, rolloutToken, apiKey, userAgent);
 
         CookieCollection storedCookies = authenticator.Container.GetAllCookies();
 
@@ -25,6 +26,7 @@ public class CookieAuthenticatorTests
         {
             Assert.That(authenticator.VisitorData, Is.EqualTo(visitorData));
             Assert.That(authenticator.ProofOfOriginToken, Is.EqualTo(poToken));
+            Assert.That(authenticator.RolloutToken, Is.EqualTo(rolloutToken));
             Assert.That(authenticator.ApiKey, Is.EqualTo(apiKey));
             Assert.That(authenticator.UserAgent, Is.EqualTo(userAgent));
 

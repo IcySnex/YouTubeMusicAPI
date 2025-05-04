@@ -1,18 +1,19 @@
 ﻿using YouTubeMusicAPI.Authentication;
 using YouTubeMusicAPI.Http;
+using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicApi.Tests.Http;
 
 [TestFixture]
-public class RequestHandlerTests
+internal class RequestHandlerTests
 {
     [Test]
     public void Should_get()
     {
         // Arrange
-        HttpClient client = new();
+        HttpClient httpClient = new();
         IAuthenticator authenticator = new AnonymousAuthenticator();
-        RequestHandler requestHandler = new(client, authenticator);
+        RequestHandler requestHandler = new(httpClient, authenticator);
 
         // Act
         string? response = null;
@@ -33,32 +34,38 @@ public class RequestHandlerTests
     }
 
     [Test]
-    public void Should_post()
+    [TestCase(ClientType.None)]
+    [TestCase(ClientType.WebMusic)]
+    [TestCase(ClientType.IOS)]
+    [TestCase(ClientType.Tv)]
+    public void Should_post_with_client(
+        ClientType clientType)
     {
         // Arrange
-        HttpClient client = new();
+        HttpClient httpClient = new();
         IAuthenticator authenticator = new AnonymousAuthenticator();
-        RequestHandler requestHandler = new(client, authenticator);
+        RequestHandler requestHandler = new(httpClient, authenticator);
 
         // Act
         string? response = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            response = await requestHandler.PostAsync("https://jsonplaceholder.typicode.com/posts", new
-            {
-                Title = "foo",
-                Body = "bar",
-                UserId = 1
-            });
+            response = await requestHandler.PostAsync("https://jsonplaceholder.typicode.com/posts",
+            [
+                new("title", "foo"),
+            ], clientType);
         });
 
         // Assert
         Assert.That(response, Is.Not.Null.Or.Empty);
         Assert.That(response, Does.StartWith("{"));
         Assert.That(response, Contains.Substring("\"title\": \"foo\""));
-        Assert.That(response, Contains.Substring("\"body\": \"bar\""));
-        Assert.That(response, Contains.Substring("\"userId\": 1"));
+        if (clientType.Create() is Client client)
+        {
+            Assert.That(response, Contains.Substring($"\"clientName\": \"{client.ClientName}\""));
+            Assert.That(response, Contains.Substring($"\"clientVersion\": \"{client.ClientVersion}\""));
+        }
         Assert.That(response, Does.EndWith("}"));
 
         // Output

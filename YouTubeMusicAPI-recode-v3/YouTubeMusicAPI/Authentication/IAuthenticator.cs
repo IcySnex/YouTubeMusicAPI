@@ -8,12 +8,17 @@ namespace YouTubeMusicAPI.Authentication;
 public interface IAuthenticator
 {
     /// <summary>
-    /// Represents a unique identifier used to authenticate and link YouTube requests to a user.
+    /// A unique identifier used to authenticate and link YouTube requests to a user.
     /// </summary>
     public string? VisitorData { get; }
 
     /// <summary>
-    /// Represents a unique security token used to verify the authenticity of a client for YouTube requests.
+    /// A unique rollout token used to validate the YouTube client.
+    /// </summary>
+    public string? RolloutToken { get; }
+
+    /// <summary>
+    /// A unique security token used to verify the authenticity of a client for YouTube requests.
     /// </summary>
     /// <remarks>
     /// May be required when fetching streaming data.
@@ -21,12 +26,12 @@ public interface IAuthenticator
     public string? ProofOfOriginToken { get; }
 
     /// <summary>
-    /// Represents the API key used to validate the YouTube client.
+    /// The API key used to validate the YouTube client.
     /// </summary>
     public string ApiKey { get; }
 
     /// <summary>
-    /// Represents the user agent sent with the request to identify the client making the YouTube request.
+    /// The user agent sent with the request to identify the client making the YouTube request.
     /// </summary>
     public string UserAgent { get; }
 

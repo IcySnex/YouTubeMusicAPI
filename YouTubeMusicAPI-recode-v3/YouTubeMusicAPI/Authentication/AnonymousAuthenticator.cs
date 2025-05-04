@@ -5,12 +5,14 @@ namespace YouTubeMusicAPI.Authentication;
 /// <summary>
 /// Represents an anonymous session used to authenticate HTTP requests sent to YouTube Music.
 /// </summary>
-/// <param name="visitorData">Represents a unique identifier used to authenticate and link YouTube requests to a user. Leave this <see langword="null"/> to use randomly generated visitor data.</param>
-/// <param name="prooOfOriginToken">Represents a unique security token used to verify the authenticity of a client for YouTube requests. May be required when fetching streaming data.</param>
-/// <param name="apiKey">Represents the API key used to validate the YouTube client.</param>
-/// <param name="userAgent">Represents the user agent sent with the request to identify the client making the YouTube request.</param>
+/// <param name="visitorData">A unique identifier used to authenticate and link YouTube requests to a user. Leave this <see langword="null"/> to use randomly generated visitor data.</param>
+/// <param name="rolloutToken">A unique rollout token used to validate the YouTube client.</param>
+/// <param name="prooOfOriginToken">A unique security token used to verify the authenticity of a client for YouTube requests. May be required when fetching streaming data.</param>
+/// <param name="apiKey">The API key used to validate the YouTube client.</param>
+/// <param name="userAgent">The user agent sent with the request to identify the client making the YouTube request.</param>
 public class AnonymousAuthenticator(
     string? visitorData = null,
+    string? rolloutToken = null,
     string? prooOfOriginToken = null,
     string apiKey = AnonymousAuthenticator.DefaultApiKey,
     string userAgent = AnonymousAuthenticator.DefaultUserAgent) : IAuthenticator
@@ -21,7 +23,7 @@ public class AnonymousAuthenticator(
 
 
     /// <summary>
-    /// Represents a unique identifier used to authenticate and link YouTube requests to a user.
+    /// A unique identifier used to authenticate and link YouTube requests to a user.
     /// </summary>
     /// <remarks>
     /// Leave this <see langword="null"/> to use randomly generated visitor data.
@@ -29,7 +31,12 @@ public class AnonymousAuthenticator(
     public string? VisitorData { get; } = visitorData;
 
     /// <summary>
-    /// Represents a unique security token used to verify the authenticity of a client for YouTube requests.
+    /// A unique rollout token used to validate the YouTube client.
+    /// </summary>
+    public string? RolloutToken { get; } = rolloutToken;
+
+    /// <summary>
+    /// A unique security token used to verify the authenticity of a client for YouTube requests.
     /// </summary>
     /// <remarks>
     /// May be required when fetching streaming data.
@@ -37,12 +44,12 @@ public class AnonymousAuthenticator(
     public string? ProofOfOriginToken { get; } = prooOfOriginToken;
 
     /// <summary>
-    /// Represents the API key used to validate the YouTube client.
+    /// The API key used to validate the YouTube client.
     /// </summary>
     public string ApiKey { get; } = apiKey;
 
     /// <summary>
-    /// Represents the user agent sent with the request to identify the client making the YouTube request.
+    /// The user agent sent with the request to identify the client making the YouTube request.
     /// </summary>
     public string UserAgent { get; } = userAgent;
 

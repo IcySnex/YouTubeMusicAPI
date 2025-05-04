@@ -3,7 +3,7 @@
 namespace YouTubeMusicApi.Tests.Authentication;
 
 [TestFixture]
-public class IdentityGeneratorTests
+public class AuthenticationDataGeneratorTests
 {
     [Test]
     public void Should_generate_visitor_data()
@@ -13,7 +13,7 @@ public class IdentityGeneratorTests
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            visitorData = await IdentityGenerator.VisitorDataAsync();
+            visitorData = await AuthenticationDataGenerator.VisitorDataAsync();
         });
 
         // Assert

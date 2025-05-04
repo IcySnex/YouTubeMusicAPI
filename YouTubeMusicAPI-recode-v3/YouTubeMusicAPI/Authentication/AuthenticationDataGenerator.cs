@@ -6,7 +6,7 @@ namespace YouTubeMusicAPI.Authentication;
 /// <summary>
 /// Contains static methods used to generate valid authentication data for YouTube Music.
 /// </summary>
-public static partial class IdentityGenerator
+public static partial class AuthenticationDataGenerator
 {
     [GeneratedRegex("\"visitorData\":\"([^\"]+)")]
     private static partial Regex VisitorDataRegex();

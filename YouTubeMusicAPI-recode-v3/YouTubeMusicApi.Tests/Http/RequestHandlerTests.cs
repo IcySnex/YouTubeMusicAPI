@@ -5,7 +5,7 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicApi.Tests.Http;
 
 [TestFixture]
-internal class RequestHandlerTests
+internal sealed class RequestHandlerTests
 {
     [Test]
     public void Should_get()

@@ -4,7 +4,7 @@ using YouTubeMusicAPI.Authentication;
 namespace YouTubeMusicApi.Tests.Authentication;
 
 [TestFixture]
-public class CookieAuthenticatorTests
+internal sealed class CookieAuthenticatorTests
 {
     [Test]
     public void Should_maintain_parameters()

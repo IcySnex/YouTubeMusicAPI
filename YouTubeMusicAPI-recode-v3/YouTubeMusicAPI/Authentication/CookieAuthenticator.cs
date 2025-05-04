@@ -23,15 +23,11 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
     /// <param name="visitorData">A unique identifier used to authenticate and link YouTube requests to a user. Leave this <see langword="null"/> to use randomly generated visitor data.</param>
     /// <param name="rolloutToken">A unique rollout token used to validate the YouTube client.</param>
     /// <param name="prooOfOriginToken">A unique security token used to verify the authenticity of a client for YouTube requests. May be required when fetching streaming data.</param>
-    /// <param name="apiKey">The API key used to validate the YouTube client.</param>
-    /// <param name="userAgent">The user agent sent with the request to identify the client making the YouTube request.</param>
     public CookieAuthenticator(
         IEnumerable<Cookie> cookies,
         string? visitorData = null,
         string? rolloutToken = null,
-        string? prooOfOriginToken = null,
-        string apiKey = DefaultApiKey,
-        string userAgent = DefaultUserAgent) : base(visitorData, rolloutToken, prooOfOriginToken, apiKey, userAgent)
+        string? prooOfOriginToken = null) : base(visitorData, rolloutToken, prooOfOriginToken)
     {
         foreach (Cookie cookie in cookies)
             Container.Add(cookie);

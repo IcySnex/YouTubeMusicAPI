@@ -12,10 +12,8 @@ public class AnonymousAuthenticatorTests
         string visitorData = TestData.RandomString();
         string poToken = TestData.RandomString();
         string rolloutToken = TestData.RandomString();
-        string apiKey = TestData.RandomString();
-        string userAgent = TestData.RandomString();
 
-        AnonymousAuthenticator authenticator = new(visitorData, poToken, rolloutToken, apiKey, userAgent);
+        AnonymousAuthenticator authenticator = new(visitorData, rolloutToken, poToken);
 
         // Assert
         Assert.Multiple(() =>
@@ -23,8 +21,6 @@ public class AnonymousAuthenticatorTests
             Assert.That(authenticator.VisitorData, Is.EqualTo(visitorData));
             Assert.That(authenticator.ProofOfOriginToken, Is.EqualTo(poToken));
             Assert.That(authenticator.RolloutToken, Is.EqualTo(rolloutToken));
-            Assert.That(authenticator.ApiKey, Is.EqualTo(apiKey));
-            Assert.That(authenticator.UserAgent, Is.EqualTo(userAgent));
         });
     }
 

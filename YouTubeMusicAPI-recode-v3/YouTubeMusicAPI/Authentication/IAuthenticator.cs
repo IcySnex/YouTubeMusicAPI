@@ -25,16 +25,6 @@ public interface IAuthenticator
     /// </remarks>
     public string? ProofOfOriginToken { get; }
 
-    /// <summary>
-    /// The API key used to validate the YouTube client.
-    /// </summary>
-    public string ApiKey { get; }
-
-    /// <summary>
-    /// The user agent sent with the request to identify the client making the YouTube request.
-    /// </summary>
-    public string UserAgent { get; }
-
 
     /// <summary>
     /// Applies the authentication to the given HTTP request.

@@ -8,20 +8,11 @@ namespace YouTubeMusicAPI.Authentication;
 /// <param name="visitorData">A unique identifier used to authenticate and link YouTube requests to a user. Leave this <see langword="null"/> to use randomly generated visitor data.</param>
 /// <param name="rolloutToken">A unique rollout token used to validate the YouTube client.</param>
 /// <param name="prooOfOriginToken">A unique security token used to verify the authenticity of a client for YouTube requests. May be required when fetching streaming data.</param>
-/// <param name="apiKey">The API key used to validate the YouTube client.</param>
-/// <param name="userAgent">The user agent sent with the request to identify the client making the YouTube request.</param>
 public class AnonymousAuthenticator(
     string? visitorData = null,
     string? rolloutToken = null,
-    string? prooOfOriginToken = null,
-    string apiKey = AnonymousAuthenticator.DefaultApiKey,
-    string userAgent = AnonymousAuthenticator.DefaultUserAgent) : IAuthenticator
+    string? prooOfOriginToken = null) : IAuthenticator
 {
-    internal const string DefaultApiKey = "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w";
-
-    internal const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
-
-
     /// <summary>
     /// A unique identifier used to authenticate and link YouTube requests to a user.
     /// </summary>
@@ -43,16 +34,6 @@ public class AnonymousAuthenticator(
     /// </remarks>
     public string? ProofOfOriginToken { get; } = prooOfOriginToken;
 
-    /// <summary>
-    /// The API key used to validate the YouTube client.
-    /// </summary>
-    public string ApiKey { get; } = apiKey;
-
-    /// <summary>
-    /// The user agent sent with the request to identify the client making the YouTube request.
-    /// </summary>
-    public string UserAgent { get; } = userAgent;
-
 
     /// <summary>
     /// Applies the authentication to the given HTTP request.
@@ -64,9 +45,6 @@ public class AnonymousAuthenticator(
     {
         Ensure.NotNull(request.RequestUri, nameof(request.RequestUri));
 
-        request.RequestUri = new(Url.SetQueryParameter(request.RequestUri.OriginalString, "key", ApiKey));
-
-        request.Headers.Add("User-Agent", UserAgent);
         request.Headers.Add("Origin", request.RequestUri.Scheme + Uri.SchemeDelimiter + request.RequestUri.Host);
         request.Headers.Add("Cookie", "SOCS=CAI");
     }

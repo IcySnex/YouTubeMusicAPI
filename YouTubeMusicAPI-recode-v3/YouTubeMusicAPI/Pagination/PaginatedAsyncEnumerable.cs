@@ -36,7 +36,7 @@ public class PaginatedAsyncEnumerable<T>(
             return [];
 
         previousContinuationTokens.Pop();
-        string? previousContinuationToken = previousContinuationTokens.Pop();
+        string? previousContinuationToken = previousContinuationTokens.Peek();
 
         Page<T> page = await fetchDelegate(previousContinuationToken, cancellationToken);
 

@@ -45,8 +45,10 @@ internal sealed class RequestHandler(
         {
             client.VisitorData = authenticator.VisitorData;
             client.RolloutToken = authenticator.RolloutToken;
-
             body["client"] = client;
+
+            if (authenticator.ProofOfOriginToken is string poToken)
+                body["serviceIntegrityDimensions"] = new { poToken };
 
             request.Headers.Add("User-Agent", client.UserAgent);
         }

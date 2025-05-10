@@ -8,7 +8,6 @@ internal enum ClientType
     /// <summary>
     /// Represents no client.
     /// </summary>
-    /// <remarks>
     None,
     
     /// <summary>
@@ -33,7 +32,5 @@ internal enum ClientType
     /// <summary>
     /// Represents the YouTube TV client.
     /// </summary>
-    /// <remarks>
-    /// </remarks>
     Tv
 }

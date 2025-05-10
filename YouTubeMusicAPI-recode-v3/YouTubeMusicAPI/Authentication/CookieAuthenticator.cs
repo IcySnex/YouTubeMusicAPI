@@ -20,6 +20,7 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
     /// <summary>
     /// Creates a new instance of the <see cref="CookieAuthenticator"/> class.
     /// </summary>
+    /// <param name="cookies">A collection of cookies containing the required authentication data.</param>
     /// <param name="visitorData">A unique identifier used to authenticate and link YouTube requests to a user. Leave this <see langword="null"/> to use randomly generated visitor data.</param>
     /// <param name="rolloutToken">A unique rollout token used to validate the YouTube client.</param>
     /// <param name="prooOfOriginToken">A unique security token used to verify the authenticity of a client for YouTube requests. May be required when fetching streaming data.</param>

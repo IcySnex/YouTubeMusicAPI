@@ -161,10 +161,11 @@ public class PaginatedAsyncEnumerableTests
             await enumerable.FetchNextPageAsync();
 
             result = await enumerable.FetchPreviousPageAsync();
+            result = await enumerable.FetchPreviousPageAsync();
         });
 
         // Assert
-        Assert.That(result, Is.EquivalentTo(Items[PageSize..(PageSize + PageSize)]));
+        Assert.That(result, Is.EquivalentTo(Items[..PageSize]));
 
         // Output
         string json = JsonSerializer.Serialize(result);

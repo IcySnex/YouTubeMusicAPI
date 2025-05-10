@@ -8,6 +8,8 @@ namespace YouTubeMusicAPI.Authentication;
 /// </summary>
 public static partial class AuthenticationDataGenerator
 {
+    static readonly HttpClient client = new();
+
     /// <exception cref="InvalidDataException">Occurs when the visitor data could not be extracted from the HTML content.</exception>"
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>"
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
@@ -15,8 +17,6 @@ public static partial class AuthenticationDataGenerator
         string property,
         CancellationToken cancellationToken = default)
     {
-        using HttpClient client = new();
-
         string url = Endpoints.YouTubeUrl + Endpoints.Embed("um0ETkJABmI");
         HttpRequestMessage request = new(HttpMethod.Get, url);
 

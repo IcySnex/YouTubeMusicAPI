@@ -1,7 +1,7 @@
 ﻿using YouTubeMusicAPI;
 using YouTubeMusicAPI.Authentication;
 
-namespace YouTubeMusicApi.Tests.Main;
+namespace YouTubeMusicApi.Tests.Client;
 
 public class YouTubeMusicConfigTests
 {

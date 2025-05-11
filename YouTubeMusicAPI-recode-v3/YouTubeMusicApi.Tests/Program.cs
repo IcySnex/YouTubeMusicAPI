@@ -4,14 +4,14 @@ using YouTubeMusicAPI.Authentication;
 
 namespace YouTubeMusicApi.Tests;
 
-public class Example
+public class Program
 {
     [Test]
-    public async Task TestAsync()
+    public async Task MainAsync()
     {
         // Getting Started
         ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-        ILogger logger = factory.CreateLogger<Example>();
+        ILogger logger = factory.CreateLogger<Program>();
 
         string visitorData = await AuthenticationDataGenerator.VisitorDataAsync();
         string rolloutToken = await AuthenticationDataGenerator.RolloutTokenAsync();

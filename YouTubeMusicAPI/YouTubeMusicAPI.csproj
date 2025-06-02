@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>3.0.2-alpha</Version>
-		<AssemblyVersion>3.0.2</AssemblyVersion>
-		<FileVersion>3.0.2</FileVersion>
+		<Version>3.0.3-alpha</Version>
+		<AssemblyVersion>3.0.3</AssemblyVersion>
+		<FileVersion>3.0.3</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -25,9 +25,8 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageReleaseNotes>
-			- Introduced ability to set custom HttpClient for requests
-			- Fixed sig deciphering for getting streaming data
-			- Improved JS parsing performance for getting streaming data
+			- Fixed Video-Search not being fully implemented
+			- Fixed parsing of duration for Video-Search
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	

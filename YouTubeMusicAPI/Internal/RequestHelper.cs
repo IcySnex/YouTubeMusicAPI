@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.Data;
-using System.Globalization;
 using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace YouTubeMusicAPI.Internal;
@@ -72,9 +68,11 @@ internal class RequestHelper
         HttpRequestMessage request = new()
         {
             Method = HttpMethod.Get,
-            RequestUri = new UriBuilder(url) { Query = parameters }.Uri
+            RequestUri = new(url + (url.Contains('?') ? '&' : '?') + parameters)
         };
         authentication.Prepare(request);
+
+        string ur = request.RequestUri.ToString();
 
         // Send HTTP request
         logger?.LogInformation($"[RequestHelper-GetAsync] Sending HTTP reuqest. GET: {url}.");
@@ -137,7 +135,7 @@ internal class RequestHelper
         HttpRequestMessage request = new()
         {
             Method = HttpMethod.Post,
-            RequestUri = new UriBuilder(url) { Query = parameters }.Uri,
+            RequestUri = new(url + (url.Contains('?') ? '&' : '?') + parameters)
         };
         if (body is not null)
             request.Content = new StringContent(JsonConvert.SerializeObject(body, jsonSettings), Encoding.UTF8, "application/json");

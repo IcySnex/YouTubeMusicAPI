@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YouTubeMusicAPI.Client;
+using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Streaming;
 
 namespace YouTubeMusicAPI.Tests;
@@ -89,5 +90,41 @@ internal class Streaming
 
         // Output
         logger.LogInformation("Download finished");
+    }
+
+
+    /// <summary>
+    /// Add song or video to watch history
+    /// </summary>
+    [Test]
+    public void AddToWatchHistory()
+    {
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            SongVideoInfo songVideo = await client.GetSongVideoInfoAsync(TestData.SongVideoId);
+
+            await client.AddToWatchHistoryAsync(songVideo);
+        });
+
+        // Output
+        logger.LogInformation("Added song or video to watch history");
+    }
+
+    /// <summary>
+    /// Updates the watch time of a song or video
+    /// </summary>
+    [Test]
+    public void UpdateWatchTime()
+    {
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            SongVideoInfo songVideo = await client.GetSongVideoInfoAsync(TestData.SongVideoId);
+
+            await client.AddToWatchHistoryAsync(songVideo);
+            await client.UpdateWatchTimeAsync(songVideo, TestData.WatchTime);
+        });
+
+        // Output
+        logger.LogInformation("Added song or video to watch history and updated watch time");
     }
 }

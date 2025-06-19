@@ -30,6 +30,7 @@ internal static class InfoParser
         int albumIndex = runs.Length - (nextItem.SelectObjectOptional<JToken>($"longBylineText.runs[{runs.Length - 1}].navigationEndpoint") is null ? 3 : 1);
         string? albumId = albumIndex > -1 ? nextItem.SelectObjectOptional<string>($"longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId") : null;
 
+        bool isPlayable = playerJsonToken.SelectObject<string>("playabilityStatus.status") == "OK";
         bool isLive = playerJsonToken.SelectObject<bool>("videoDetails.isLiveContent");
 
         return new(
@@ -41,7 +42,9 @@ internal static class InfoParser
             album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId) : null,
             duration: TimeSpan.FromSeconds(playerJsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
             radio: isLive ? null : nextItem.SelectRadioOptional(),
-            playabilityStatus: new(playerJsonToken.SelectObject<string>("playabilityStatus.status") == "OK", playerJsonToken.SelectObjectOptional<string>("playabilityStatus.reason")),
+            playabilityStatus: new(
+                isPlayable,
+                playerJsonToken.SelectObjectOptional<string>("playabilityStatus.reason")),
             isRatingsAllowed: playerJsonToken.SelectObject<bool>("videoDetails.allowRatings"),
             isPrivate: playerJsonToken.SelectObject<bool>("videoDetails.isPrivate"),
             isUnlisted: playerJsonToken.SelectObject<bool>("microformat.microformatDataRenderer.unlisted"),
@@ -51,6 +54,16 @@ internal static class InfoParser
             viewsCount: playerJsonToken.SelectObject<long>("videoDetails.viewCount"),
             publishedAt: playerJsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.publishDate"),
             uploadedAt: playerJsonToken.SelectObject<DateTime>("microformat.microformatDataRenderer.uploadDate"),
+            playbackTracking: isPlayable ? new(
+                videostatsPlaybackUrl: playerJsonToken.SelectObject<string>("playbackTracking.videostatsPlaybackUrl.baseUrl"),
+                videostatsDelayplayUrl: playerJsonToken.SelectObject<string>("playbackTracking.videostatsDelayplayUrl.baseUrl"),
+                videostatsWatchtimeUrl: playerJsonToken.SelectObject<string>("playbackTracking.videostatsWatchtimeUrl.baseUrl"),
+                playbackTrackingUrl: playerJsonToken.SelectObject<string>("playbackTracking.ptrackingUrl.baseUrl"),
+                qualityOfExperienceUrl: playerJsonToken.SelectObject<string>("playbackTracking.qoeUrl.baseUrl"),
+                adTelemetryReportUrl: playerJsonToken.SelectObject<string>("playbackTracking.atrUrl.baseUrl"),
+                videostatsScheduledFlushWalltimes: playerJsonToken.SelectObject<int[]>("playbackTracking.videostatsScheduledFlushWalltimeSeconds").Select(i => TimeSpan.FromSeconds(i)).ToArray(),
+                videostatsDefaultFlushIntervalSeconds: TimeSpan.FromSeconds(playerJsonToken.SelectObjectOptional<int>("playbackTracking.videostatsDefaultFlushIntervalSeconds"))
+            ) : null,
             thumbnails: playerJsonToken.SelectThumbnails("videoDetails.thumbnail.thumbnails"),
             tags: playerJsonToken.SelectObjectOptional<string[]>("microformat.microformatDataRenderer.tags") ?? []);
     }

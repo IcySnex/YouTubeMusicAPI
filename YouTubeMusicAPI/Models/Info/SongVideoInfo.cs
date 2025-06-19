@@ -21,6 +21,7 @@
 /// <param name="viewsCount">The views count of the song or video</param>
 /// <param name="publishedAt">The date when the song or video was published</param>
 /// <param name="uploadedAt">The date when the song or video was uploaded</param>
+/// <param name="playbackTracking">The tracking information for playback</param>
 /// <param name="thumbnails">The thumbnails of the song or video</param>
 /// <param name="tags">The tags of the song or video</param>
 public class SongVideoInfo(
@@ -42,6 +43,7 @@ public class SongVideoInfo(
     long viewsCount,
     DateTime publishedAt,
     DateTime uploadedAt,
+    PlaybackTracking? playbackTracking,
     Thumbnail[] thumbnails,
     string[] tags) : EntityInfo(name, id, thumbnails)
 {
@@ -124,6 +126,11 @@ public class SongVideoInfo(
     /// The date when the song or video was uploaded
     /// </summary>
     public DateTime UploadedAt { get; } = uploadedAt;
+
+    /// <summary>
+    /// The URL to flush video stats playback
+    /// </summary>
+    public PlaybackTracking? PlaybackTracking { get; } = playbackTracking;
 
     /// <summary>
     /// The tags of the song or video

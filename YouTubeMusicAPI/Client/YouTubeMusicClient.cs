@@ -2,13 +2,14 @@
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Internal.Parsers;
+using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Library;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Streaming;
+using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Client;
 
@@ -17,9 +18,12 @@ namespace YouTubeMusicAPI.Client;
 /// </summary>
 public class YouTubeMusicClient
 {
+    const string CpnaCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+
     readonly ILogger? logger;
     readonly RequestHelper requestHelper;
     readonly YouTubeMusicBase baseClient;
+    readonly Random random = new();
 
     readonly bool isCookieAuthenticated;
 
@@ -102,7 +106,7 @@ public class YouTubeMusicClient
         set
         {
             poToken = value;
-            
+
             if (player is not null)
                 player.PoToken = value;
         }
@@ -701,5 +705,88 @@ public class YouTubeMusicClient
             StreamingData streamingData = StreamingParser.GetData(requestResponse, player);
             return streamingData;
         }
+    }
+
+
+    /// <summary>
+    /// Adds a song or video to the watch history of the currently authenticated user on YouTube Music
+    /// </summary>
+    /// <param name="songVideo">The song or video to add to the watch history</param>
+    /// <param name="cancellationToken">The token to cancel this action</param>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task AddToWatchHistoryAsync(
+        SongVideoInfo songVideo,
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (songVideo.PlaybackTracking is null)
+        {
+            logger?.LogError($"[YouTubeMusicClient-AddToHistoryAsync] Adding song to watch history failed. Video tracking parameter is null; Please make sure the song/video is playable.");
+            throw new ArgumentNullException(nameof(songVideo.PlaybackTracking), "Adding song to history failed. Video tracking parameter is null; Please make sure the song/video is playable.");
+        }
+
+        if (!isCookieAuthenticated)
+        {
+            logger?.LogError($"[YouTubeMusicClient-AddToHistoryAsync] Adding song to watch history failed. Client is not authenticated.");
+            throw new InvalidOperationException("Adding song to history failed. Client is not authenticated.");
+        }
+
+        // Generate CPN
+        char[] cpn = new char[16];
+        for (int i = 0; i < 16; i++)
+            cpn[i] = CpnaCharacters[random.Next(64)];
+
+        // Send request
+        await requestHelper.GetAndValidateAsync(
+            songVideo.PlaybackTracking.VideostatsPlaybackUrl.Replace("https://s.", "https://www."),
+            "ver=2" + "&c=WEB_REMIX" + "&cbrver=1.20211213.00.00" + "&cver=1.20211213.00.00" + $"&cpn={new string(cpn)}" + "&fmt=251" + "&rtn=0" + "&rt=0",
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates the watch time of a song or video on YouTube Music
+    /// </summary>
+    /// <param name="songVideo">The song or video whose playback time should be updated</param>
+    /// <param name="startTime">The new watch time</param>
+    /// <param name="cancellationToken">The token to cancel this action</param>
+    /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
+    /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occurs when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
+    public async Task UpdateWatchTimeAsync(
+        SongVideoInfo songVideo,
+        TimeSpan startTime,
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (songVideo.PlaybackTracking is null)
+        {
+            logger?.LogError($"[YouTubeMusicClient-UpdateWatchTimeAsync] Updating watch time failed. Video tracking parameter is null; Please make sure the song/video is playable.");
+            throw new ArgumentNullException(nameof(songVideo.PlaybackTracking), "Adding song to history failed. Video tracking parameter is null; Please make sure the song/video is playable.");
+        }
+
+        if (!isCookieAuthenticated)
+        {
+            logger?.LogError($"[YouTubeMusicClient-UpdateWatchTimeAsync] Updating watch time failed. Client is not authenticated.");
+            throw new InvalidOperationException("Updating watch time failed. Client is not authenticated.");
+        }
+
+        // Generate CPN
+        char[] cpn = new char[16];
+        for (int i = 0; i < 16; i++)
+            cpn[i] = CpnaCharacters[random.Next(64)];
+
+        // Send request
+        string time = startTime.TotalSeconds.ToString();
+
+        await requestHelper.GetAndValidateAsync(
+            songVideo.PlaybackTracking.VideostatsWatchtimeUrl.Replace("https://s.", "https://www."),
+            "ver=2" + "&c=WEB_REMIX" + "&cbrver=1.20211213.00.00" + "&cver=1.20211213.00.00" + $"&cpn={new string(cpn)}" + $"&st={time}" + $"&et={time}" + $"&cmt={time}",
+            cancellationToken);
     }
 }

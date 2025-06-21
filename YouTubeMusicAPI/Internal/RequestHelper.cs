@@ -72,8 +72,6 @@ internal class RequestHelper
         };
         authentication.Prepare(request);
 
-        string ur = request.RequestUri.ToString();
-
         // Send HTTP request
         logger?.LogInformation($"[RequestHelper-GetAsync] Sending HTTP reuqest. GET: {url}.");
         return client.SendAsync(request, cancellationToken);

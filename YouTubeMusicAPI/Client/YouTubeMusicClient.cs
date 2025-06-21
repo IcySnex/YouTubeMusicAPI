@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Internal;
 using YouTubeMusicAPI.Internal.Parsers;
-using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Library;
 using YouTubeMusicAPI.Models.Search;
@@ -18,12 +18,10 @@ namespace YouTubeMusicAPI.Client;
 /// </summary>
 public class YouTubeMusicClient
 {
-    const string CpnaCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
 
     readonly ILogger? logger;
     readonly RequestHelper requestHelper;
     readonly YouTubeMusicBase baseClient;
-    readonly Random random = new();
 
     readonly bool isCookieAuthenticated;
 
@@ -735,23 +733,25 @@ public class YouTubeMusicClient
             throw new InvalidOperationException("Adding song to history failed. Client is not authenticated.");
         }
 
-        // Generate CPN
-        char[] cpn = new char[16];
-        for (int i = 0; i < 16; i++)
-            cpn[i] = CpnaCharacters[random.Next(64)];
-
         // Send request
+        string subDomain = "music";
+        string client = "WEB_REMIX";
+        string clientVer = "1.20211213.00.00";
+
         await requestHelper.GetAndValidateAsync(
-            songVideo.PlaybackTracking.VideostatsPlaybackUrl.Replace("https://s.", "https://www."),
-            "ver=2" + "&c=WEB_REMIX" + "&cbrver=1.20211213.00.00" + "&cver=1.20211213.00.00" + $"&cpn={new string(cpn)}" + "&fmt=251" + "&rtn=0" + "&rt=0",
+            songVideo.PlaybackTracking.VideostatsPlaybackUrl.Replace("https://s.", $"https://{subDomain}."),
+            "ver=2" + $"&cpn={songVideo.PlaybackTracking.ClientPlaybackNonce}" + "&rtn=0" + "&rt=0" + "&fs=0" + "&state=paused" + $"&c={client}" + $"&cver={clientVer}" + "&cplayer=UNIPLAYER" + "&cplatform=DESKTOP" + "&cbr=Chrome" + "&cbrver=130.0.0.0" + "&cos=Windows" + "&cosver=10.0" + "&hl=en_US" + $"cr={GeographicalLocation}",
             cancellationToken);
     }
 
     /// <summary>
     /// Updates the watch time of a song or video on YouTube Music
     /// </summary>
+    /// <remarks>
+    /// Unclear if YouTube Music supports 'watch time' updates in the classic sense; use with caution - weird results occurred during testing.
+    /// </remarks>
     /// <param name="songVideo">The song or video whose playback time should be updated</param>
-    /// <param name="startTime">The new watch time</param>
+    /// <param name="time">The new watch time</param>
     /// <param name="cancellationToken">The token to cancel this action</param>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
     /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
@@ -760,7 +760,7 @@ public class YouTubeMusicClient
     /// <exception cref="TaskCanceledException">Occurs when The task was cancelled</exception>
     public async Task UpdateWatchTimeAsync(
         SongVideoInfo songVideo,
-        TimeSpan startTime,
+        TimeSpan time,
         CancellationToken cancellationToken = default)
     {
         // Prepare request
@@ -776,17 +776,16 @@ public class YouTubeMusicClient
             throw new InvalidOperationException("Updating watch time failed. Client is not authenticated.");
         }
 
-        // Generate CPN
-        char[] cpn = new char[16];
-        for (int i = 0; i < 16; i++)
-            cpn[i] = CpnaCharacters[random.Next(64)];
-
         // Send request
-        string time = startTime.TotalSeconds.ToString();
+        string subDomain = "music";
+        string client = "WEB_REMIX";
+        string clientVer = "1.20211213.00.00";
+
+        string seconds = time.TotalSeconds.ToString("F3", CultureInfo.InvariantCulture);
 
         await requestHelper.GetAndValidateAsync(
-            songVideo.PlaybackTracking.VideostatsWatchtimeUrl.Replace("https://s.", "https://www."),
-            "ver=2" + "&c=WEB_REMIX" + "&cbrver=1.20211213.00.00" + "&cver=1.20211213.00.00" + $"&cpn={new string(cpn)}" + $"&st={time}" + $"&et={time}" + $"&cmt={time}",
+            songVideo.PlaybackTracking.VideostatsWatchtimeUrl.Replace("https://s.", $"https://{subDomain}."),
+            "ver=2" + $"&cpn={songVideo.PlaybackTracking.ClientPlaybackNonce}" + $"&st={seconds}" + $"&et={seconds}" + $"&cmt={seconds}" + "&final=1" + "&fs=0" + "&state=paused" + $"&c={client}" + $"&cver={clientVer}" + "&cplayer=UNIPLAYER" + "&cplatform=DESKTOP" + "&cbr=Chrome" + "&cbrver=130.0.0.0" + "&cos=Windows" + "&cosver=10.0" + "&hl=en_US" + $"cr={GeographicalLocation}",
             cancellationToken);
     }
 }

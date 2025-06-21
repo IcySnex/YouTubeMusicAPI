@@ -62,7 +62,7 @@ internal abstract class TestData
     /// <summary>
     /// Test song or video id
     /// </summary>
-    public const string SongVideoId = "RE7QXwx1bVY";
+    public const string SongVideoId = "3b97cGKN_1A";
 
     /// <summary>
     /// Test album id
@@ -94,7 +94,7 @@ internal abstract class TestData
     /// <summary>
     /// Test watch time for update requests
     /// </summary>
-    public static TimeSpan WatchTime = TimeSpan.FromMinutes(1);
+    public static TimeSpan WatchTime = TimeSpan.FromMinutes(1.2);
 
 
     /// <summary>

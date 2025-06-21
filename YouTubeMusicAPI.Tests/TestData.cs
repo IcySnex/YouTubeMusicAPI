@@ -45,7 +45,7 @@ internal abstract class TestData
     /// <summary>
     /// Test query for search requests
     /// </summary>
-    public const string SearchQuery = "michael jackson billie jean";
+    public const string SearchQuery = "pasha";
 
 
     /// <summary>
@@ -88,7 +88,7 @@ internal abstract class TestData
     /// <summary>
     /// Test artist browse id
     /// </summary>
-    public const string ArtistBrowseId = "UC3fVljA2QQYuEr0U6MKoj8g";
+    public const string ArtistBrowseId = "UC5_H9CxsfukWbjYeYepADsw";
 
 
     /// <summary>

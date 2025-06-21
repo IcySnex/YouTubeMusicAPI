@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Http;
+using YouTubeMusicAPI.Services;
 
 namespace YouTubeMusicAPI;
 
@@ -7,23 +8,27 @@ namespace YouTubeMusicAPI;
 /// </summary>
 public class YouTubeMusicClient
 {
-    readonly RequestHandler requestHandler;
-
-    /// <summary>
-    /// The configuration options for this YouTube Music client.
-    /// </summary>
-    public YouTubeMusicConfig Config { get; }
-
     /// <summary>
     /// Creates a new instance of the <see cref="YouTubeMusicClient"/> class.
     /// </summary>
-    /// <param name="config"></param>
+    /// <param name="config">The configuration for this YouTube Music client</param>
     public YouTubeMusicClient(
         YouTubeMusicConfig? config = null)
     {
         Config = config ?? new();
 
-        requestHandler = new(Config.HttpClient, Config.Authenticator, Config.Logger);
+        RequestHandler requestHandler = new(Config.GeographicalLocation, Config.Authenticator, Config.HttpClient, Config.Logger);
+        Search = new(requestHandler, Config.Logger);
     }
 
+
+    /// <summary>
+    /// The configuration for this YouTube Music client.
+    /// </summary>
+    public YouTubeMusicConfig Config { get; }
+
+    /// <summary>
+    /// The service used to search on YouTube Music.
+    /// </summary>
+    public SearchService Search { get; }
 }

@@ -12,12 +12,14 @@ namespace YouTubeMusicAPI.Http;
 /// Handles all outgoing HTTP requests.
 /// </summary>
 internal sealed class RequestHandler(
-    HttpClient httpClient,
+    string geographicalLocation,
     IAuthenticator authenticator,
+    HttpClient httpClient,
     ILogger? logger = null)
 {
-    readonly HttpClient httpClient = httpClient;
+    readonly string geographicalLocation = geographicalLocation;
     readonly IAuthenticator authenticator = authenticator;
+    readonly HttpClient httpClient = httpClient;
     readonly ILogger? logger = logger;
 
     readonly JsonSerializerOptions jsonOptions = new()
@@ -43,6 +45,7 @@ internal sealed class RequestHandler(
 
         if (clientType.Create() is Client client)
         {
+            client.Gl = geographicalLocation;
             client.VisitorData = authenticator.VisitorData;
             client.RolloutToken = authenticator.RolloutToken;
             body["client"] = client;

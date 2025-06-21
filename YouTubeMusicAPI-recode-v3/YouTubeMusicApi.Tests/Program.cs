@@ -25,5 +25,6 @@ public class Program
         };
         YouTubeMusicClient client = new(config);
 
+        client.Search.
     }
 }

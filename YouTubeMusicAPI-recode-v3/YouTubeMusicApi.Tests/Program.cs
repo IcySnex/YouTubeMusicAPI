@@ -2,7 +2,7 @@
 using YouTubeMusicAPI;
 using YouTubeMusicAPI.Authentication;
 
-namespace YouTubeMusicApi.Tests;
+namespace YouTubeMusicAPI.Tests;
 
 public class Program
 {

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using YouTubeMusicAPI.Pagination;
 
-namespace YouTubeMusicApi.Tests.Pagination;
+namespace YouTubeMusicAPI.Tests.Pagination;
 
 public class PaginatedAsyncEnumerableTests
 {

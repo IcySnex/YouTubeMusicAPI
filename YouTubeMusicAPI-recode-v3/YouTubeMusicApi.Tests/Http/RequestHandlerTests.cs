@@ -2,7 +2,7 @@
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicApi.Tests.Http;
+namespace YouTubeMusicAPI.Tests.Http;
 
 [TestFixture]
 internal sealed class RequestHandlerTests

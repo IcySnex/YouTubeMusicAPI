@@ -1,6 +1,6 @@
 ﻿using YouTubeMusicAPI.Authentication;
 
-namespace YouTubeMusicApi.Tests.Authentication;
+namespace YouTubeMusicAPI.Tests.Authentication;
 
 [TestFixture]
 internal sealed class AnonymousAuthenticatorTests

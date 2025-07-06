@@ -1,6 +1,6 @@
 ﻿using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicApi.Tests.Utils;
+namespace YouTubeMusicAPI.Tests.Utils;
 
 [TestFixture]
 internal sealed class UrlTests

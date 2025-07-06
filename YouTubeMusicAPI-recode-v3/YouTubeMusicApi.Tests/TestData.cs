@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace YouTubeMusicApi.Tests;
+namespace YouTubeMusicAPI.Tests;
 
 internal static class TestData
 {

@@ -21,6 +21,5 @@
 		<Folder Include="Models\Library\" />
 		<Folder Include="Models\Info\" />
 		<Folder Include="Models\Streaming\" />
-		<Folder Include="Models\Search\" />
 	</ItemGroup>
 </Project>

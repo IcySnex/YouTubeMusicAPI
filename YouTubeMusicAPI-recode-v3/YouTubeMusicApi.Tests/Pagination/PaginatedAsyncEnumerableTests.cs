@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using YouTubeMusicAPI.Pagination;
+﻿using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Tests.Pagination;
 
@@ -43,9 +42,7 @@ public class PaginatedAsyncEnumerableTests
         // Assert
         Assert.That(result, Is.EquivalentTo(Items));
 
-        // Output
-        string json = JsonSerializer.Serialize(result);
-        TestContext.Out.WriteLine("Items: {0}", json);
+        TestData.WriteResult(result);
     }
 
 
@@ -71,9 +68,7 @@ public class PaginatedAsyncEnumerableTests
         // Assert
         Assert.That(result, Is.EquivalentTo(Items[offset..(offset + limit ?? Items.Length)]));
 
-        // Output
-        string json = JsonSerializer.Serialize(result);
-        TestContext.Out.WriteLine("Items: {0}", json);
+        TestData.WriteResult(result);
     }
 
 
@@ -93,9 +88,7 @@ public class PaginatedAsyncEnumerableTests
         // Assert
         Assert.That(result, Is.EquivalentTo(Items[..PageSize]));
 
-        // Output
-        string json = JsonSerializer.Serialize(result);
-        TestContext.Out.WriteLine("Items: {0}", json);
+        TestData.WriteResult(result);
     }
 
     [Test]
@@ -116,9 +109,7 @@ public class PaginatedAsyncEnumerableTests
         // Assert
         Assert.That(result, Is.EquivalentTo(Items[PageSize..(2 * PageSize)]));
 
-        // Output
-        string json = JsonSerializer.Serialize(result);
-        TestContext.Out.WriteLine("Items: {0}", json);
+        TestData.WriteResult(result);
     }
 
 
@@ -141,9 +132,7 @@ public class PaginatedAsyncEnumerableTests
         // Assert
         Assert.That(result, Is.EquivalentTo(Items[..PageSize]));
 
-        // Output
-        string json = JsonSerializer.Serialize(result);
-        TestContext.Out.WriteLine("Items: {0}", json);
+        TestData.WriteResult(result);
     }
 
     [Test]
@@ -167,8 +156,6 @@ public class PaginatedAsyncEnumerableTests
         // Assert
         Assert.That(result, Is.EquivalentTo(Items[..PageSize]));
 
-        // Output
-        string json = JsonSerializer.Serialize(result);
-        TestContext.Out.WriteLine("Items: {0}", json);
+        TestData.WriteResult(result);
     }
 }

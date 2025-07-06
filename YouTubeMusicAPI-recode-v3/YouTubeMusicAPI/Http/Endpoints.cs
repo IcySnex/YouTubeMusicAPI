@@ -5,4 +5,11 @@
 /// </summary>
 internal static class Endpoints
 {
+    const string MusicApiUrl = "https://music.youtube.com/youtubei/v1";
+
+
+    /// <summary>
+    /// The path to the search endpoint.
+    /// </summary>
+    public const string Search = MusicApiUrl + "/search";
 }

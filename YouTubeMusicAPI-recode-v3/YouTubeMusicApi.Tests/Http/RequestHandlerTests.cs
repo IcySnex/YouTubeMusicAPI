@@ -16,21 +16,20 @@ internal sealed class RequestHandlerTests
         RequestHandler requestHandler = new(TestData.GeographicalLocation, authenticator, httpClient);
 
         // Act
-        string? response = null;
+        string? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            response = await requestHandler.GetAsync("https://jsonplaceholder.typicode.com/posts/1");
+            result = await requestHandler.GetAsync("https://jsonplaceholder.typicode.com/posts/1");
         });
 
         // Assert
-        Assert.That(response, Is.Not.Null.Or.Empty);
-        Assert.That(response, Does.StartWith("{"));
-        Assert.That(response, Contains.Substring("\"id\": 1"));
-        Assert.That(response, Does.EndWith("}"));
+        Assert.That(result, Is.Not.Null.Or.Empty);
+        Assert.That(result, Does.StartWith("{"));
+        Assert.That(result, Contains.Substring("\"id\": 1"));
+        Assert.That(result, Does.EndWith("}"));
 
-        // Output
-        TestContext.Out.WriteLine(response);
+        TestData.WriteResult(result);
     }
 
     [Test]
@@ -47,29 +46,28 @@ internal sealed class RequestHandlerTests
         RequestHandler requestHandler = new(TestData.GeographicalLocation, authenticator, httpClient);
 
         // Act
-        string? response = null;
+        string? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            response = await requestHandler.PostAsync("https://jsonplaceholder.typicode.com/posts",
+            result = await requestHandler.PostAsync("https://jsonplaceholder.typicode.com/posts",
             [
                 new("title", "foo"),
             ], clientType);
         });
 
         // Assert
-        Assert.That(response, Is.Not.Null.Or.Empty);
-        Assert.That(response, Does.StartWith("{"));
-        Assert.That(response, Contains.Substring("\"title\": \"foo\""));
+        Assert.That(result, Is.Not.Null.Or.Empty);
+        Assert.That(result, Does.StartWith("{"));
+        Assert.That(result, Contains.Substring("\"title\": \"foo\""));
         if (clientType.Create() is YouTubeMusicAPI.Http.Client client)
         {
-            Assert.That(response, Contains.Substring($"\"clientName\": \"{client.ClientName}\""));
-            Assert.That(response, Contains.Substring($"\"clientVersion\": \"{client.ClientVersion}\""));
+            Assert.That(result, Contains.Substring($"\"clientName\": \"{client.ClientName}\""));
+            Assert.That(result, Contains.Substring($"\"clientVersion\": \"{client.ClientVersion}\""));
         }
-        Assert.That(response, Does.EndWith("}"));
+        Assert.That(result, Does.EndWith("}"));
 
-        // Output
-        TestContext.Out.WriteLine(response);
+        TestData.WriteResult(result);
     }
 
 }

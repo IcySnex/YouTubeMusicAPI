@@ -44,20 +44,20 @@ internal sealed class RequestHandler(
     async Task<string> SendAsync(
         string url,
         HttpMethod method,
-        KeyValuePair<string, object>[]? payload = null,
+        KeyValuePair<string, object?>[]? payload = null,
         ClientType clientType = ClientType.None,
         CancellationToken cancellationToken = default)
     {
         // Prepare
         HttpRequestMessage request = new(method, url);
-        Dictionary<string, object> body = payload?.ToDictionary() ?? [];
+        Dictionary<string, object?> body = payload?.ToDictionary() ?? [];
 
         if (clientType.Create() is Client client)
         {
             client.Gl = geographicalLocation;
             client.VisitorData = authenticator.VisitorData;
             client.RolloutToken = authenticator.RolloutToken;
-            body["client"] = client;
+            body["context"] = new { client };
 
             if (authenticator.ProofOfOriginToken is string poToken)
                 body["serviceIntegrityDimensions"] = new { poToken };
@@ -103,7 +103,7 @@ internal sealed class RequestHandler(
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public Task<string> GetAsync(
         string url,
-        KeyValuePair<string, object>[]? payload = null,
+        KeyValuePair<string, object?>[]? payload = null,
         ClientType clientType = ClientType.None,
         CancellationToken cancellationToken = default) =>
         SendAsync(url, HttpMethod.Get, payload, clientType, cancellationToken);
@@ -121,7 +121,7 @@ internal sealed class RequestHandler(
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public Task<string> PostAsync(
         string url,
-        KeyValuePair<string, object>[]? payload = null,
+        KeyValuePair<string, object?>[]? payload = null,
         ClientType clientType = ClientType.None,
         CancellationToken cancellationToken = default) =>
         SendAsync(url, HttpMethod.Post, payload, clientType, cancellationToken);

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using YouTubeMusicAPI;
 using YouTubeMusicAPI.Authentication;
 
 namespace YouTubeMusicAPI.Tests;

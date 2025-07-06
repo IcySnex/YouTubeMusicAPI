@@ -37,6 +37,11 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
     }
 
 
+    /// <summary>
+    /// Generates the value for the Authorization header based on the provided cookies and the request URI.
+    /// </summary>
+    /// <param name="uri">The request uri.</param>
+    /// <returns>The Authorization header.</returns>
     /// <exception cref="AuthenticationException">Occurrs when provided cookies cookies do not contain a session id.</exception>
     string GenerateAuthHeaderValue(
         Uri uri)

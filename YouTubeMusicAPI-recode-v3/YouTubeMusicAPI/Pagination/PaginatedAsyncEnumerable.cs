@@ -10,6 +10,7 @@ public class PaginatedAsyncEnumerable<T>(
 {
     readonly FetchPageDelegate<T> fetchDelegate = fetchDelegate;
     readonly Stack<string?> previousContinuationTokens = new();
+
     string? nextContinuationToken = null;
 
 

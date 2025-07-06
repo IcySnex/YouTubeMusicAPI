@@ -4,6 +4,9 @@ namespace YouTubeMusicApi.Tests;
 
 internal static class TestData
 {
+    public const string GeographicalLocation = "US";
+
+
     public static string RandomString() =>
         Guid.NewGuid().ToString();
 

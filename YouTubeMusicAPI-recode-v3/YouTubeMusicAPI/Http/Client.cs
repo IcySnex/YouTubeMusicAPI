@@ -30,14 +30,14 @@ internal sealed class Client(
     int utcOffsetMinutes)
 {
     /// <summary>
-    /// Creates a new <see cref="Client"/> instance which represents the YouTube Music Web client.
+    /// A template <see cref="Client"/> instance which represents the YouTube Music Web client.
     /// </summary>
     /// <remarks>
     /// Notes:<br/>
     /// - Proof of Origin Token for streaming required.
     /// </remarks>
     /// <returns>A <see cref="Client"/> which represents the YouTube Music Web client.</returns>
-    public static Client WebMusic() =>
+    public static readonly Client WebMusic =
         new(hl: "en",
             gl: "US",
             platform: "DESKTOP",
@@ -57,7 +57,7 @@ internal sealed class Client(
         };
 
     /// <summary>
-    /// Creates a new <see cref="Client"/> instance which represents the YouTube iOS client.
+    /// A template <see cref="Client"/> instance which represents the YouTube iOS client.
     /// </summary>
     /// <remarks>
     /// Notes:<br/>
@@ -65,7 +65,7 @@ internal sealed class Client(
     /// - Provides HLS (m3u8) streaming formats .
     /// </remarks>
     /// <returns>A <see cref="Client"/> which represents the YouTube iOS client.</returns>
-    public static Client IOS() =>
+    public static readonly Client IOS =
         new(hl: "en",
             gl: "US",
             platform: "MOBILE",
@@ -80,12 +80,12 @@ internal sealed class Client(
             utcOffsetMinutes: 0);
 
     /// <summary>
-    /// Creates a new <see cref="Client"/> instance which represents the YouTube TV client.
+    /// A template <see cref="Client"/> instance which represents the YouTube TV client.
     /// </summary>
     /// <remarks>
     /// </remarks>
     /// <returns>A <see cref="Client"/> which represents the YouTube TV client.</returns>
-    public static Client Tv() =>
+    public static readonly Client Tv =
         new(hl: "en",
             gl: "US",
             platform: "DESKTOP",
@@ -227,4 +227,12 @@ internal sealed class Client(
     /// The UTC offset in minutes for the client's time zone.
     /// </summary>
     public int UtcOffsetMinutes { get; set; } = utcOffsetMinutes;
+
+
+    /// <summary>
+    /// Creates a shallow copy of the current <see cref="Client"/> instance.
+    /// </summary>
+    /// <returns>A new <see cref="Client"/> object that is a shallow copy of the current instance.</returns>
+    public Client Clone() =>
+        (Client)MemberwiseClone();
 }

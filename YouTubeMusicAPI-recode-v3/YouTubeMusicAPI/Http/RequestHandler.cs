@@ -29,14 +29,23 @@ internal sealed class RequestHandler(
     };
 
 
-    /// <exception cref="AuthenticationException">Occurrs when applying the authentication fails.</exception>
-    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>"
+    /// <summary>
+    /// Sends an asynchronous request using the provided HTTP method.
+    /// </summary>
+    /// <param name="url">The target URL for the HTTP request.</param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="payload">An optional array of key-value pairs representing the request payload.</param>
+    /// <param name="clientType">The type of client to use for the request.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The request response.</returns>
+    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     async Task<string> SendAsync(
         string url,
         HttpMethod method,
-        KeyValuePair<string, object>[]? payload,
-        ClientType clientType,
+        KeyValuePair<string, object>[]? payload = null,
+        ClientType clientType = ClientType.None,
         CancellationToken cancellationToken = default)
     {
         // Prepare
@@ -65,7 +74,7 @@ internal sealed class RequestHandler(
         authenticator.Apply(request);
 
         // Send
-        logger?.LogInformation("[RequestHandler-SendAsync] Sending HTTP reuqest: {method}-{url}.", method, url);
+        logger?.LogInformation("[RequestHandler-SendAsync] Sending HTTP request: {method}-{url}.", method, url);
         HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         string content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -74,15 +83,23 @@ internal sealed class RequestHandler(
         if (!response.IsSuccessStatusCode)
         {
             logger?.LogError("[RequestHandler-SendAsync] HTTP request failed. Statuscode: {statusCode}.", response.StatusCode);
-            throw new HttpRequestException($"HTTP request failed. StatusCode: {response.StatusCode}.", new(content));
+            throw new HttpRequestException($"HTTP request failed..", new(content), response.StatusCode);
         }
 
         return content;
     }
 
 
-    /// <exception cref="AuthenticationException">Occurrs when applying the authentication fails.</exception>
-    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>"
+    /// <summary>
+    /// Sends an asynchronous GET request.
+    /// </summary>
+    /// <param name="url">The target URL for the HTTP request.</param>
+    /// <param name="payload">An optional array of key-value pairs representing the request payload.</param>
+    /// <param name="clientType">The type of client to use for the request.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The request response.</returns>
+    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public Task<string> GetAsync(
         string url,
@@ -91,8 +108,16 @@ internal sealed class RequestHandler(
         CancellationToken cancellationToken = default) =>
         SendAsync(url, HttpMethod.Get, payload, clientType, cancellationToken);
 
-    /// <exception cref="AuthenticationException">Occurrs when applying the authentication fails.</exception>
-    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>"
+    /// <summary>
+    /// Sends an asynchronous POST request.
+    /// </summary>
+    /// <param name="url">The target URL for the HTTP request.</param>
+    /// <param name="payload">An optional array of key-value pairs representing the request payload.</param>
+    /// <param name="clientType">The type of client to use for the request.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The request response.</returns>
+    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public Task<string> PostAsync(
         string url,

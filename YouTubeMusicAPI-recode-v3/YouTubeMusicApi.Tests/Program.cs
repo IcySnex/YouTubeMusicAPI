@@ -13,9 +13,7 @@ public class Program
         ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
         ILogger logger = factory.CreateLogger<Program>();
 
-        string visitorData = await AuthenticationDataGenerator.VisitorDataAsync();
-        string rolloutToken = await AuthenticationDataGenerator.RolloutTokenAsync();
-        IAuthenticator authenticator = new AnonymousAuthenticator(visitorData, rolloutToken);
+        IAuthenticator authenticator = new AnonymousAuthenticator();
 
         YouTubeMusicConfig config = new()
         {
@@ -25,6 +23,7 @@ public class Program
         };
         YouTubeMusicClient client = new(config);
 
-        client.Search.
+
+        await Task.Delay(100);
     }
 }

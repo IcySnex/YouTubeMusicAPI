@@ -9,7 +9,7 @@ internal enum ClientType
     /// Represents no client.
     /// </summary>
     None,
-    
+
     /// <summary>
     /// Represents the YouTube Music Web client.
     /// </summary>

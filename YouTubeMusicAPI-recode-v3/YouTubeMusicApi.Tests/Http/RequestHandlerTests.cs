@@ -13,7 +13,7 @@ internal sealed class RequestHandlerTests
         // Arrange
         HttpClient httpClient = new();
         IAuthenticator authenticator = new AnonymousAuthenticator();
-        RequestHandler requestHandler = new(httpClient, authenticator);
+        RequestHandler requestHandler = new(TestData.GeographicalLocation, authenticator, httpClient);
 
         // Act
         string? response = null;
@@ -44,7 +44,7 @@ internal sealed class RequestHandlerTests
         // Arrange
         HttpClient httpClient = new();
         IAuthenticator authenticator = new AnonymousAuthenticator();
-        RequestHandler requestHandler = new(httpClient, authenticator);
+        RequestHandler requestHandler = new(TestData.GeographicalLocation, authenticator, httpClient);
 
         // Act
         string? response = null;
@@ -61,7 +61,7 @@ internal sealed class RequestHandlerTests
         Assert.That(response, Is.Not.Null.Or.Empty);
         Assert.That(response, Does.StartWith("{"));
         Assert.That(response, Contains.Substring("\"title\": \"foo\""));
-        if (clientType.Create() is Client client)
+        if (clientType.Create() is YouTubeMusicAPI.Http.Client client)
         {
             Assert.That(response, Contains.Substring($"\"clientName\": \"{client.ClientName}\""));
             Assert.That(response, Contains.Substring($"\"clientVersion\": \"{client.ClientVersion}\""));

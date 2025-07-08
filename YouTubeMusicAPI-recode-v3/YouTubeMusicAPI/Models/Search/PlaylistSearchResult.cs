@@ -52,7 +52,8 @@ public class PlaylistSearchResult(
             .GetProperty("runs")
             .GetElementAt(0)
             .GetProperty("text")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
         string id = item
             .SelectOverlayNavigationPlaylistId();
@@ -71,7 +72,8 @@ public class PlaylistSearchResult(
         string viewsInfo = descriptionRuns
             .GetElementAt(2)
             .GetProperty("text")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
         Radio? radio = item
             .GetProperty("menu")

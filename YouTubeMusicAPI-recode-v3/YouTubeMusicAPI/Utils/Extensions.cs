@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Models;
@@ -29,23 +31,87 @@ internal static class Extensions
 
 
     /// <summary>
-    /// Converts a string to a <see cref="TimeSpan"/> using the invariant culture.
+    /// Returns the value if it is not <c>null</c>; otherwise, returns the specified default value.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="value">The nullable value.</param>
+    /// <param name="defaultValue">The value to return if <paramref name="value"/> is <c>null</c>.</param>
+    /// <returns><paramref name="value"/> if it is not <c>null</c>; otherwise, <paramref name="defaultValue"/>.</returns>
+    public static T Or<T>(
+        this T? value,
+        T defaultValue) where T : struct =>
+        value ?? defaultValue;
+    /// <summary>
+    /// Returns the value if it is not <c>null</c>; otherwise, returns the specified default value.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="value">The nullable value.</param>
+    /// <param name="defaultValue">The value to return if <paramref name="value"/> is <c>null</c>.</param>
+    /// <returns><paramref name="value"/> if it is not <c>null</c>; otherwise, <paramref name="defaultValue"/>.</returns>
+    public static T Or<T>(
+        this T? value,
+        T defaultValue) where T : class =>
+        value ?? defaultValue;
+
+
+    /// <summary>
+    /// Returns the value if it is not <c>null</c>; otherwise, throws a <see cref="NullReferenceException"/> with the original expression text included in the message.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="value">The nullable value.</param>
+    /// <param name="expression">The original expression that produced the value (automatically provided by the compiler).</param>
+    /// <returns><paramref name="value"/> if it is not <c>null</c>.</returns>
+    /// <exception cref="NullReferenceException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
+    public static T OrThrow<T>(
+        this T? value,
+        [CallerArgumentExpression(nameof(value))] string? expression = null) where T : struct =>
+        value ?? throw new NullReferenceException($"Value was null: {expression}");
+    /// <summary>
+    /// Returns the value if it is not <c>null</c>; otherwise, throws a <see cref="NullReferenceException"/> with the original expression text included in the message.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="value">The nullable value.</param>
+    /// <param name="expression">The original expression that produced the value (automatically provided by the compiler).</param>
+    /// <returns><paramref name="value"/> if it is not <c>null</c>.</returns>
+    /// <exception cref="NullReferenceException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
+    public static T OrThrow<T>(
+        this T? value,
+        [CallerArgumentExpression(nameof(value))] string? expression = null) where T : class =>
+        value ?? throw new NullReferenceException($"Value was null: {expression}");
+
+
+    /// <summary>
+    /// Converts a string to a <see cref="TimeSpan"/>.
     /// </summary>
     /// <param name="text">The text to convert.</param>
     /// <returns>A TimeSpan representing the string.</returns>
-    public static TimeSpan ToTimeSpan(
-        this string text)
+    public static TimeSpan? ToTimeSpan(
+        this string? text)
     {
-        if (TimeSpan.TryParseExact(text, @"m\:ss", null, out TimeSpan timeSpan))
+        if (TimeSpan.TryParseExact(text, @"m\:ss", CultureInfo.InvariantCulture, out TimeSpan timeSpan))
             return timeSpan;
-        if (TimeSpan.TryParseExact(text, @"mm\:ss", null, out timeSpan))
+        if (TimeSpan.TryParseExact(text, @"mm\:ss", CultureInfo.InvariantCulture, out timeSpan))
             return timeSpan;
-        if (TimeSpan.TryParseExact(text, @"h\:mm\:ss", null, out timeSpan))
+        if (TimeSpan.TryParseExact(text, @"h\:mm\:ss", CultureInfo.InvariantCulture, out timeSpan))
             return timeSpan;
-        if (TimeSpan.TryParseExact(text, @"hh\:mm\:ss", null, out timeSpan))
+        if (TimeSpan.TryParseExact(text, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out timeSpan))
             return timeSpan;
 
-        throw new ArgumentException($"The TimeSpan string '{text}' could not be parsed");
+        return null;
+    }
+
+    /// <summary>
+    /// Converts a string to a <see cref="int"/>.
+    /// </summary>
+    /// <param name="text">The text to convert.</param>
+    /// <returns>An Int32 representing the string.</returns>
+    public static int? ToInt32(
+        this string? text)
+    {
+        if (int.TryParse(text, CultureInfo.InvariantCulture, out int result))
+            return result;
+
+        return null;
     }
 
 
@@ -97,15 +163,6 @@ internal static class Extensions
         return element[index];
     }
 
-    /// <summary>
-    /// Gets the value of the element as a <see cref="string"/>.
-    /// </summary>
-    /// <param name="element">The elemnt to get the string from.</param>
-    /// <returns>The string value of the property.</returns>
-    public static string GetStringOrEmpty(
-        this JsonElement element) =>
-        element.GetString() ?? string.Empty;
-
 
     /// <summary>
     /// Selects the navigation browse endpoint ID from a JSON element.
@@ -118,7 +175,8 @@ internal static class Extensions
             .GetProperty("navigationEndpoint")
             .GetProperty("browseEndpoint")
             .GetProperty("browseId")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
     /// <summary>
     /// Selects the navigation browse endpoint ID from a JSON element or null if not found.
     /// </summary>
@@ -148,7 +206,8 @@ internal static class Extensions
             .GetProperty("playNavigationEndpoint")
             .GetProperty("watchPlaylistEndpoint")
             .GetProperty("playlistId")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
     /// <summary>
     /// Selects the overlay navigation video endpoint ID from a JSON element.
@@ -165,7 +224,8 @@ internal static class Extensions
             .GetProperty("playNavigationEndpoint")
             .GetProperty("watchEndpoint")
             .GetProperty("videoId")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
 
     /// <summary>
@@ -201,7 +261,8 @@ internal static class Extensions
     {
         string text = element
             .GetProperty("text")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
         string? id = element
             .SelectNavigationBrowseIdOrNull();
@@ -213,16 +274,24 @@ internal static class Extensions
     /// Selects the artists from a JSON element.
     /// </summary>
     /// <param name="element">The array element.</param>
+    /// <param name="startIndex">The index to start from.</param>
     /// <returns>An array containing the artists.</returns>
     public static YouTubeMusicEntity[] SelectArtists(
-        this JsonElement element)
+        this JsonElement element,
+        int startIndex = 0)
     {
+        int index = 0;
+
         List<YouTubeMusicEntity> result = [];
         foreach (JsonElement run in element.EnumerateArray())
         {
+            if (index++ < startIndex)
+                continue;
+
             string text = run
                 .GetProperty("text")
-                .GetStringOrEmpty()
+                .GetString()
+                .OrThrow()
                 .Trim();
 
             switch (text)
@@ -256,7 +325,8 @@ internal static class Extensions
                 .GetProperty("runs")
                 .GetElementAt(0)
                 .GetProperty("text")
-                .GetStringOrEmpty();
+                .GetString()
+                .OrThrow();
 
             if (type != "Start radio")
                 continue;

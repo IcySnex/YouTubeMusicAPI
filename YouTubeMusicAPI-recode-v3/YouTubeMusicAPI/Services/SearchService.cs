@@ -15,7 +15,6 @@ public sealed class SearchService : YouTubeMusicService
 {
     // Query Params
     const string QueryParamsAlbums = "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
-    const string QueryParamsCommunityPlaylists = "EgeKAQQoAEABahAQAxAKEAkQBBAFEBEQEBAV";
     const string QueryParamsArtists = "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
     const string QueryParamsPodcasts = "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
     const string QueryParamsEpisodes = "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
@@ -151,7 +150,6 @@ public sealed class SearchService : YouTubeMusicService
             "EgWKAQIIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Songs",
             SongSearchResult.Parse);
-
         return new(fetchPageDelegate);
     }
 
@@ -171,6 +169,25 @@ public sealed class SearchService : YouTubeMusicService
             "EgWKAQIQAWoQEAMQBBAJEAoQBRAREBAQFQ%3D%3D",
             "Videos",
             VideoSearchResult.Parse);
+        return new(fetchPageDelegate);
+    }
+
+    /// <summary>
+    /// Searches for playlists on YouTube Music.
+    /// </summary>
+    /// <param name="query">The query to search for.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PlaylistSearchResult"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    public PaginatedAsyncEnumerable<PlaylistSearchResult> PlaylistsAsync(
+        string query)
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
+
+        FetchPageDelegate<PlaylistSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+            query,
+            "EgeKAQQoAEABahAQAxAKEAkQBBAFEBEQEBAV",
+            "Community playlists",
+            PlaylistSearchResult.Parse);
         return new(fetchPageDelegate);
     }
 }

@@ -238,16 +238,29 @@ internal static class Extensions
             if (type != "Start radio")
                 continue;
 
-            string playlistId = menu
-                .GetProperty("navigationEndpoint")
-                .GetProperty("watchEndpoint")
-                .GetProperty("playlistId")
-                .GetStringOrEmpty();
 
-            string? songVideoId = menu
-                .GetProperty("navigationEndpoint")
-                .GetProperty("watchEndpoint")
-                .GetPropertyOrNull("videoId")
+            JsonElement navigationEndpoint = menu
+                .GetProperty("navigationEndpoint");
+
+            JsonElement? watchEndpoint =
+                navigationEndpoint
+                    .GetPropertyOrNull("watchEndpoint")
+                ?? navigationEndpoint
+                    .GetPropertyOrNull("watchPlaylistEndpoint");
+
+            if (watchEndpoint is null)
+                return null;
+
+
+            string? playlistId = watchEndpoint
+                ?.GetPropertyOrNull("playlistId")
+                ?.GetString();
+
+            if (playlistId is null)
+                return null;
+
+            string? songVideoId = watchEndpoint
+                ?.GetPropertyOrNull("videoId")
                 ?.GetString();
 
             return new(playlistId, songVideoId);

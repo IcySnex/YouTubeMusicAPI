@@ -49,4 +49,23 @@ public class SearchServiceTests
 
         TestData.WriteResult(results);
     }
+
+    [Test]
+    public void Should_search_for_playlists()
+    {
+        // Act
+        IReadOnlyList<PlaylistSearchResult>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<PlaylistSearchResult> response = client.Search.PlaylistsAsync(TestData.SearchQuery);
+
+            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
 }

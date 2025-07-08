@@ -52,7 +52,8 @@ public class VideoSearchResult(
             .GetProperty("runs")
             .GetElementAt(0)
             .GetProperty("text")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
         string id = item
             .SelectOverlayNavigationVideoId();
@@ -67,13 +68,15 @@ public class VideoSearchResult(
         TimeSpan duration = descriptionRuns
             .GetElementAt(artists.Length * 2 + 2)
             .GetProperty("text")
-            .GetStringOrEmpty()
-            .ToTimeSpan();
+            .GetString()
+            .ToTimeSpan()
+            .OrThrow();
 
         string viewsInfo = descriptionRuns
             .GetElementAt(artists.Length * 2)
             .GetProperty("text")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
         Radio? radio = item
             .GetProperty("menu")

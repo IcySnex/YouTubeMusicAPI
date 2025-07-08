@@ -56,7 +56,8 @@ public class SongSearchResult(
             .GetProperty("runs")
             .GetElementAt(0)
             .GetProperty("text")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
         string id = item
             .SelectOverlayNavigationVideoId();
@@ -75,8 +76,9 @@ public class SongSearchResult(
         TimeSpan duration = descriptionRuns
             .GetElementAt(artists.Length * 2 + 2)
             .GetProperty("text")
-            .GetStringOrEmpty()
-            .ToTimeSpan();
+            .GetString()
+            .ToTimeSpan()
+            .OrThrow();
 
         bool isExplicit = item
             .GetPropertyOrNull("badges")
@@ -89,7 +91,8 @@ public class SongSearchResult(
             .GetProperty("runs")
             .GetElementAt(0)
             .GetProperty("text")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
         Radio? radio = item
             .GetProperty("menu")

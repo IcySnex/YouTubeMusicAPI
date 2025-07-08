@@ -26,7 +26,8 @@ public class Thumbnail(
     {
         string url = element
             .GetProperty("url")
-            .GetStringOrEmpty();
+            .GetString()
+            .OrThrow();
 
         int width = element
             .GetProperty("width")

@@ -4,36 +4,32 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a song search result on YouTube Music.
+/// Represents a video search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="SongSearchResult"/>.
+/// Creates a new instance of <see cref="VideoSearchResult"/>.
 /// </remarks>
-/// <param name="name">The name of this song.</param>
-/// <param name="id">The ID of this song.</param>
-/// <param name="thumbnails">The thumbnails of this song.</param>
-/// <param name="artists">The artists of this song.</param>
-/// <param name="album">The album of this song.</param>
-/// <param name="duration">The duration of this song.</param>
-/// <param name="isExplicit">Whether this song is explicit or not.</param>
-/// <param name="playsInfo">The information about the numbers of plays this song has.</param>
-/// <param name="radio">The radio associated with this song, if available.</param>
-public class SongSearchResult(
+/// <param name="name">The name of this video.</param>
+/// <param name="id">The ID of this video.</param>
+/// <param name="thumbnails">The thumbnails of this video.</param>
+/// <param name="artists">The artists of this video.</param>
+/// <param name="duration">The duration of this video.</param>
+/// <param name="viewsInfo">The information about the number of views this video has.</param>
+/// <param name="radio">The radio associated with this video, if available.</param>
+public class VideoSearchResult(
     string name,
     string id,
     Thumbnail[] thumbnails,
     YouTubeMusicEntity[] artists,
-    YouTubeMusicEntity album,
     TimeSpan duration,
-    bool isExplicit,
-    string playsInfo,
+    string viewsInfo,
     Radio? radio) : SearchResult(name, id, thumbnails)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="SongSearchResult"/>.
+    /// Parses the JSON element into a <see cref="VideoSearchResult"/>.
     /// </summary>
     /// <param name="element">The JSON element containing "musicResponsiveListItemRenderer".</param>
-    internal static SongSearchResult Parse(
+    internal static VideoSearchResult Parse(
         JsonElement element)
     {
         JsonElement item = element
@@ -70,26 +66,14 @@ public class SongSearchResult(
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists();
 
-        YouTubeMusicEntity album = descriptionRuns
-            .GetElementAt(artists.Length * 2)
-            .SelectYouTubeMusicEntity();
-
         TimeSpan duration = descriptionRuns
             .GetElementAt(artists.Length * 2 + 2)
             .GetProperty("text")
             .GetStringOrEmpty()
             .ToTimeSpan();
 
-        bool isExplicit = item
-            .GetPropertyOrNull("badges")
-            .SelectContainsExplicitBadge();
-
-        string playsInfo = flexColumns
-            .GetElementAt(2)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetElementAt(0)
+        string viewsInfo = descriptionRuns
+            .GetElementAt(artists.Length * 2)
             .GetProperty("text")
             .GetStringOrEmpty();
 
@@ -99,37 +83,27 @@ public class SongSearchResult(
             .GetProperty("items")
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, radio);
+        return new(name, id, thumbnails, artists, duration, viewsInfo, radio);
     }
 
 
     /// <summary>
-    /// The artists of this song.
+    /// The artists of this video.
     /// </summary>
     public YouTubeMusicEntity[] Artists { get; } = artists;
 
     /// <summary>
-    /// The album of this song.
-    /// </summary>
-    public YouTubeMusicEntity Album { get; } = album;
-
-    /// <summary>
-    /// The duration of this song.
+    /// The duration of this video.
     /// </summary>
     public TimeSpan Duration { get; } = duration;
 
     /// <summary>
-    /// Whether this song is explicit or not.
+    /// The information about the number of views this video has.
     /// </summary>
-    public bool IsExplicit { get; } = isExplicit;
+    public string ViewsInfo { get; } = viewsInfo;
 
     /// <summary>
-    /// The information about the numbers of plays this song has.
-    /// </summary>
-    public string PlaysInfo { get; } = playsInfo;
-
-    /// <summary>
-    /// The radio associated with this song, if available.
+    /// The radio associated with this video, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
 }

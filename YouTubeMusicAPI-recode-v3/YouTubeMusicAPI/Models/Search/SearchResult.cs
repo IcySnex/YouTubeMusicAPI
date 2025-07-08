@@ -6,7 +6,7 @@
 /// <param name="name">The name of this search result.</param>
 /// <param name="id">The ID of this search result.</param>
 /// <param name="thumbnails">The thumbnails of this search result.</param>
-public class SearchResult(
+public abstract class SearchResult(
     string name,
     string id,
     Thumbnail[] thumbnails) : YouTubeMusicEntity(name, id)

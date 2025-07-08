@@ -71,7 +71,7 @@ internal static class Extensions
     /// <param name="element">The elemnt to get the item on.</param>
     /// <param name="index">The index to lookup.</param>
     /// <returns>The item at the specific index.</returns>
-    /// <exception cref="IndexOutOfRangeException">Occurrs when if the index is out of bounds.</exception>
+    /// <exception cref="IndexOutOfRangeException">Occurrs when the index is out of bounds.</exception>
     public static JsonElement GetElementAt(
         this JsonElement element,
         int index)

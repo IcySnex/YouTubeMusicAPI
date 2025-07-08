@@ -12,6 +12,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// <param name="name">The name of this playlist.</param>
 /// <param name="id">The ID of this playlist.</param>
 /// <param name="thumbnails">The thumbnails of this playlist.</param>
+/// <param name="browseId">The browse ID of this playlist.</param>
 /// <param name="creator">The artists of this playlist.</param>
 /// <param name="viewsInfo">The information about the number of views this playlist has.</param>
 /// <param name="radio">The radio associated with this playlist, if available.</param>
@@ -19,6 +20,7 @@ public class PlaylistSearchResult(
     string name,
     string id,
     Thumbnail[] thumbnails,
+    string browseId,
     YouTubeMusicEntity creator,
     string viewsInfo,
     Radio? radio) : SearchResult(name, id, thumbnails)
@@ -53,12 +55,14 @@ public class PlaylistSearchResult(
             .GetStringOrEmpty();
 
         string id = item
-            .SelectNavigationBrowseId()
-            .Substring(2);
+            .SelectOverlayNavigationPlaylistId();
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
             .SelectThumbnails();
+
+        string browseId = item
+            .SelectNavigationBrowseId();
 
         YouTubeMusicEntity creator = descriptionRuns
             .GetElementAt(0)
@@ -75,9 +79,14 @@ public class PlaylistSearchResult(
             .GetProperty("items")
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, creator, viewsInfo, radio);
+        return new(name, id, thumbnails, browseId, creator, viewsInfo, radio);
     }
 
+
+    /// <summary>
+    /// The browse ID of this playlist.
+    /// </summary>
+    public string BrowseId { get; } = browseId;
 
     /// <summary>
     /// The creator of this playlist.

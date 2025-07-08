@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using YouTubeMusicAPI.Authentication;
+using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Http;

@@ -38,13 +38,6 @@ public class VideoSearchResult(
         JsonElement flexColumns = item
             .GetProperty("flexColumns");
 
-        JsonElement titleRun = flexColumns
-            .GetElementAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetElementAt(0);
-
         JsonElement descriptionRuns = flexColumns
             .GetElementAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
@@ -52,12 +45,17 @@ public class VideoSearchResult(
             .GetProperty("runs");
 
 
-        string name = titleRun
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
             .GetProperty("text")
             .GetStringOrEmpty();
 
-        string id = titleRun
-            .SelectNavigationWatchId();
+        string id = item
+            .SelectOverlayNavigationVideoId();
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")

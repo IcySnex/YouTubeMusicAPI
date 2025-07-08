@@ -132,18 +132,41 @@ internal static class Extensions
             ?.GetPropertyOrNull("browseId")
             ?.GetString();
 
+
     /// <summary>
-    /// Selects the navigation watch endpoint ID from a JSON element.
+    /// Selects the overlay navigation playlist endpoint ID from a JSON element.
     /// </summary>
-    /// <param name="element">The element containing "navigationEndpoint.watchEndpoint.videoId".</param>
+    /// <param name="element">The element containing "overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId".</param>
     /// <returns></returns>
-    public static string SelectNavigationWatchId(
+    public static string SelectOverlayNavigationPlaylistId(
         this JsonElement element) =>
         element
-            .GetProperty("navigationEndpoint")
+            .GetProperty("overlay")
+            .GetProperty("musicItemThumbnailOverlayRenderer")
+            .GetProperty("content")
+            .GetProperty("musicPlayButtonRenderer")
+            .GetProperty("playNavigationEndpoint")
+            .GetProperty("watchPlaylistEndpoint")
+            .GetProperty("playlistId")
+            .GetStringOrEmpty();
+
+    /// <summary>
+    /// Selects the overlay navigation video endpoint ID from a JSON element.
+    /// </summary>
+    /// <param name="element">The element containing "overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId".</param>
+    /// <returns></returns>
+    public static string SelectOverlayNavigationVideoId(
+        this JsonElement element) =>
+        element
+            .GetProperty("overlay")
+            .GetProperty("musicItemThumbnailOverlayRenderer")
+            .GetProperty("content")
+            .GetProperty("musicPlayButtonRenderer")
+            .GetProperty("playNavigationEndpoint")
             .GetProperty("watchEndpoint")
             .GetProperty("videoId")
             .GetStringOrEmpty();
+
 
     /// <summary>
     /// Selects the thumbnails from a JSON element.

@@ -14,10 +14,8 @@ namespace YouTubeMusicAPI.Services;
 public sealed class SearchService : YouTubeMusicService
 {
     // Query Params
-    const string QueryParamsArtists = "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
     const string QueryParamsPodcasts = "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
     const string QueryParamsEpisodes = "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
-    const string QueryParamsProfiles = "EgWKAQJYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
 
 
     /// <summary>
@@ -207,6 +205,44 @@ public sealed class SearchService : YouTubeMusicService
             "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Albums",
             AlbumSearchResult.Parse);
+        return new(fetchPageDelegate);
+    }
+
+    /// <summary>
+    /// Searches for artists on YouTube Music.
+    /// </summary>
+    /// <param name="query">The query to search for.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ArtistSearchResult"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    public PaginatedAsyncEnumerable<ArtistSearchResult> ArtistsAsync(
+        string query)
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
+
+        FetchPageDelegate<ArtistSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+            query,
+            "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            "Artists",
+            ArtistSearchResult.Parse);
+        return new(fetchPageDelegate);
+    }
+
+    /// <summary>
+    /// Searches for profiles on YouTube Music.
+    /// </summary>
+    /// <param name="query">The query to search for.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ProfileSearchResult"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    public PaginatedAsyncEnumerable<ProfileSearchResult> ProfilesAsync(
+        string query)
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
+
+        FetchPageDelegate<ProfileSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+            query,
+            "EgWKAQJYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            "Profiles",
+            ProfileSearchResult.Parse);
         return new(fetchPageDelegate);
     }
 }

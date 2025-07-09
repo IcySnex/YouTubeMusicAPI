@@ -125,4 +125,42 @@ public class SearchServiceTests
 
         TestData.WriteResult(results);
     }
+
+    [Test]
+    public void Should_search_for_podcasts()
+    {
+        // Act
+        IReadOnlyList<PodcastSearchResult>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<PodcastSearchResult> response = client.Search.PodcastsAsync(TestData.SearchQuery);
+
+            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
+
+    [Test]
+    public void Should_search_for_episodes()
+    {
+        // Act
+        IReadOnlyList<EpisodeSearchResult>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<EpisodeSearchResult> response = client.Search.EpisodesAsync(TestData.SearchQuery);
+
+            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
 }

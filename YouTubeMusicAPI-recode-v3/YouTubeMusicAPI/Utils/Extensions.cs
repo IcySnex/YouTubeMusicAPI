@@ -88,16 +88,44 @@ internal static class Extensions
     public static TimeSpan? ToTimeSpan(
         this string? text)
     {
-        if (TimeSpan.TryParseExact(text, @"m\:ss", CultureInfo.InvariantCulture, out TimeSpan timeSpan))
-            return timeSpan;
-        if (TimeSpan.TryParseExact(text, @"mm\:ss", CultureInfo.InvariantCulture, out timeSpan))
-            return timeSpan;
-        if (TimeSpan.TryParseExact(text, @"h\:mm\:ss", CultureInfo.InvariantCulture, out timeSpan))
-            return timeSpan;
-        if (TimeSpan.TryParseExact(text, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out timeSpan))
-            return timeSpan;
+        if (TimeSpan.TryParseExact(text, @"m\:ss", CultureInfo.InvariantCulture, out TimeSpan result))
+            return result;
+        if (TimeSpan.TryParseExact(text, @"mm\:ss", CultureInfo.InvariantCulture, out result))
+            return result;
+        if (TimeSpan.TryParseExact(text, @"h\:mm\:ss", CultureInfo.InvariantCulture, out result))
+            return result;
+        if (TimeSpan.TryParseExact(text, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out result))
+            return result;
 
         return null;
+    }
+
+    /// <summary>
+    /// Converts a string to a <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="text">The text to convert.</param>
+    /// <returns>A DateTime representing the string.</returns>
+    public static DateTime? ToDateTime(
+        this string? text)
+    {
+        if (text is null)
+            return null;
+
+        if (!text.Contains(" ago") && DateTime.TryParse(text, CultureInfo.InvariantCulture, out DateTime result))
+            return result;
+
+        string[] timeSpanParts = text.Split(' ');
+        int timeSpanValue = int.Parse(timeSpanParts[0]);
+        string timeSpanKind = timeSpanParts[1];
+
+        return timeSpanKind[0] switch
+        {
+            'd' => DateTime.Now - TimeSpan.FromDays(timeSpanValue),
+            'h' => DateTime.Now - TimeSpan.FromHours(timeSpanValue),
+            'm' => DateTime.Now - TimeSpan.FromMinutes(timeSpanValue),
+            's' => DateTime.Now - TimeSpan.FromSeconds(timeSpanValue),
+            _ => null
+        };
     }
 
     /// <summary>
@@ -270,9 +298,11 @@ internal static class Extensions
     /// Selects a YouTubeMusicEntity with a text and navigation browse endpoint ID.
     /// </summary>
     /// <param name="element">The element containing "text" and "navigationEndpoint.browseEndpoint.browseId".</param>
+    /// <param name="idStartIndex">The start index of the id.</param>
     /// <returns>An array containing the artists.</returns>
     public static YouTubeMusicEntity SelectYouTubeMusicEntity(
-        this JsonElement element)
+        this JsonElement element,
+        int idStartIndex = 0)
     {
         string text = element
             .GetProperty("text")
@@ -280,7 +310,8 @@ internal static class Extensions
             .OrThrow();
 
         string? id = element
-            .SelectNavigationBrowseIdOrNull();
+            .SelectNavigationBrowseIdOrNull()
+            ?.Substring(idStartIndex);
 
         return new(text, id);
     }

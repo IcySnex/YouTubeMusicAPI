@@ -87,4 +87,42 @@ public class SearchServiceTests
 
         TestData.WriteResult(results);
     }
+
+    [Test]
+    public void Should_search_for_artists()
+    {
+        // Act
+        IReadOnlyList<ArtistSearchResult>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<ArtistSearchResult> response = client.Search.ArtistsAsync(TestData.SearchQuery);
+
+            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
+
+    [Test]
+    public void Should_search_for_profiles()
+    {
+        // Act
+        IReadOnlyList<ProfileSearchResult>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<ProfileSearchResult> response = client.Search.ProfilesAsync(TestData.SearchQuery);
+
+            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
 }

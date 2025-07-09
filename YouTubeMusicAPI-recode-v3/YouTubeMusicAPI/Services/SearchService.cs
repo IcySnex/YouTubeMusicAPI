@@ -14,7 +14,6 @@ namespace YouTubeMusicAPI.Services;
 public sealed class SearchService : YouTubeMusicService
 {
     // Query Params
-    const string QueryParamsAlbums = "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
     const string QueryParamsArtists = "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
     const string QueryParamsPodcasts = "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
     const string QueryParamsEpisodes = "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
@@ -94,7 +93,8 @@ public sealed class SearchService : YouTubeMusicService
                         .GetProperty("runs")
                         .GetElementAt(0)
                         .GetProperty("text")
-                        .GetStringOrEmpty();
+                        .GetString()
+                        .OrThrow();
 
                     return category == categoryTitle;
                 })
@@ -188,6 +188,25 @@ public sealed class SearchService : YouTubeMusicService
             "EgeKAQQoAEABahAQAxAKEAkQBBAFEBEQEBAV",
             "Community playlists",
             PlaylistSearchResult.Parse);
+        return new(fetchPageDelegate);
+    }
+
+    /// <summary>
+    /// Searches for albums on YouTube Music.
+    /// </summary>
+    /// <param name="query">The query to search for.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="AlbumSearchResult"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    public PaginatedAsyncEnumerable<AlbumSearchResult> AlbumsAsync(
+        string query)
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
+
+        FetchPageDelegate<AlbumSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+            query,
+            "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            "Albums",
+            AlbumSearchResult.Parse);
         return new(fetchPageDelegate);
     }
 }

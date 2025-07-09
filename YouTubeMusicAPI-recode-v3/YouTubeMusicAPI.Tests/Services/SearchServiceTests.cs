@@ -68,4 +68,23 @@ public class SearchServiceTests
 
         TestData.WriteResult(results);
     }
+
+    [Test]
+    public void Should_search_for_albums()
+    {
+        // Act
+        IReadOnlyList<AlbumSearchResult>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<AlbumSearchResult> response = client.Search.AlbumsAsync(TestData.SearchQuery);
+
+            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
 }

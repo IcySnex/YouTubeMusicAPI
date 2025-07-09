@@ -114,6 +114,21 @@ internal static class Extensions
         return null;
     }
 
+    /// <summary>
+    /// Converts a string to a <see cref="int"/>.
+    /// </summary>
+    /// <param name="text">The text to convert.</param>
+    /// <returns>An Int32 representing the string.</returns>
+    public static AlbumType? ToAlbumType(
+        this string? text) =>
+        text switch
+        {
+            "Album" => (AlbumType?)AlbumType.Album,
+            "Single" => (AlbumType?)AlbumType.Single,
+            "EP" => (AlbumType?)AlbumType.Ep,
+            _ => null,
+        };
+
 
     /// <summary>
     /// Looks for a property named <paramref name="propertyName"/> in the current object.

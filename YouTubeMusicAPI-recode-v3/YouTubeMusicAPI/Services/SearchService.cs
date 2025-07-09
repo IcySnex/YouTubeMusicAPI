@@ -13,11 +13,6 @@ namespace YouTubeMusicAPI.Services;
 /// </summary>
 public sealed class SearchService : YouTubeMusicService
 {
-    // Query Params
-    const string QueryParamsPodcasts = "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
-    const string QueryParamsEpisodes = "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D";
-
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchService"/> class.
     /// </summary>
@@ -243,6 +238,44 @@ public sealed class SearchService : YouTubeMusicService
             "EgWKAQJYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Profiles",
             ProfileSearchResult.Parse);
+        return new(fetchPageDelegate);
+    }
+
+    /// <summary>
+    /// Searches for podcasts on YouTube Music.
+    /// </summary>
+    /// <param name="query">The query to search for.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PodcastSearchResult"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    public PaginatedAsyncEnumerable<PodcastSearchResult> PodcastsAsync(
+        string query)
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
+
+        FetchPageDelegate<PodcastSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+            query,
+            "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            "Podcasts",
+            PodcastSearchResult.Parse);
+        return new(fetchPageDelegate);
+    }
+
+    /// <summary>
+    /// Searches for podcast episodes on YouTube Music.
+    /// </summary>
+    /// <param name="query">The query to search for.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="EpisodeSearchResult"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    public PaginatedAsyncEnumerable<EpisodeSearchResult> EpisodesAsync(
+        string query)
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
+
+        FetchPageDelegate<EpisodeSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+            query,
+            "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
+            "Episodes",
+            EpisodeSearchResult.Parse);
         return new(fetchPageDelegate);
     }
 }

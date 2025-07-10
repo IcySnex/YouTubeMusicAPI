@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using System.Threading;
 using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Models.Search;
@@ -32,7 +31,7 @@ public sealed class SearchService : YouTubeMusicService
     /// <param name="continuationToken">The token used to continue a previous search.</param>
     /// <param name="queryParams">The query params to filter.</param>
     /// <param name="categoryTitle">The title of the shelf category.</param>
-    /// <param name="parseItem">The function to parse items from JSON to a search result.</param>
+    /// <param name="parse">The function to parse JSON elements to a search result.</param>
     /// <param name="cancellationToken">The token to cancel this action.</param>
     /// <returns>A page of search results.</returns>
     /// <exception cref="KeyNotFoundException">Occurrs when no property in the JSON was found with the requested name.</exception>
@@ -45,7 +44,7 @@ public sealed class SearchService : YouTubeMusicService
         string? continuationToken,
         string queryParams,
         string categoryTitle,
-        Func<JsonElement, T> parseItem,
+        Func<JsonElement, T> parse,
         CancellationToken cancellationToken = default) where T : SearchResult
     {
         // Send request
@@ -104,7 +103,7 @@ public sealed class SearchService : YouTubeMusicService
         List<T> result = [];
         foreach (JsonElement item in shelf.GetProperty("contents").EnumerateArray())
         {
-            T searchResult = parseItem(item);
+            T searchResult = parse(item);
             result.Add(searchResult);
         }
 
@@ -118,19 +117,19 @@ public sealed class SearchService : YouTubeMusicService
     /// <param name="query">The query to search for.</param>
     /// <param name="queryParams">The query params to filter.</param>
     /// <param name="categoryTitle">The title of the shelf category.</param>
-    /// <param name="parseItem">The function to parse items from JSON to a search result.</param>
+    /// <param name="parse">The function to parse JSON elements to a search result.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     PaginatedAsyncEnumerable<T> CreatePaginatorAsync<T>(
         string query,
         string queryParams,
         string categoryTitle,
-        Func<JsonElement, T> parseItem) where T : SearchResult
+        Func<JsonElement, T> parse) where T : SearchResult
     {
         Ensure.NotNullOrEmpty(query, nameof(query));
 
         return new((contiuationToken, cancellationToken) =>
-            FetchPageAsync(query, contiuationToken, queryParams, categoryTitle, parseItem, cancellationToken));
+            FetchPageAsync(query, contiuationToken, queryParams, categoryTitle, parse, cancellationToken));
     }
 
 
@@ -260,7 +259,7 @@ public sealed class SearchService : YouTubeMusicService
     /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
-    public async Task<IReadOnlyList<SearchResult>> AllAsync(
+    public async Task<SearchPage> AllAsync(
         string query,
         CancellationToken cancellationToken = default)
     {
@@ -279,49 +278,147 @@ public sealed class SearchService : YouTubeMusicService
         JsonElement rootElement = json.RootElement;
 
         JsonElement contents = rootElement
-                .GetProperty("contents")
-                .GetProperty("tabbedSearchResultsRenderer")
-                .GetProperty("tabs")
-                .GetElementAt(0)
-                .GetProperty("tabRenderer")
-                .GetProperty("content")
-                .GetProperty("sectionListRenderer")
-                .GetProperty("contents");
+            .GetProperty("contents")
+            .GetProperty("tabbedSearchResultsRenderer")
+            .GetProperty("tabs")
+            .GetElementAt(0)
+            .GetProperty("tabRenderer")
+            .GetProperty("content")
+            .GetProperty("sectionListRenderer")
+            .GetProperty("contents");
 
-        List<SearchResult> result = [];
+        List<SearchResult> items = [];
+        SearchResult? topResult = null;
+        List<SearchResult> relatedTopResults = [];
         foreach (JsonElement content in contents.EnumerateArray())
         {
-            if (!content.TryGetProperty("musicShelfRenderer", out JsonElement shelf))
-                continue;
-
-            string category = shelf
-                .GetProperty("title")
-                .GetProperty("runs")
-                .GetElementAt(0)
-                .GetProperty("text")
-                .GetString()
-                .OrThrow();
-
-            Func<JsonElement, SearchResult> parseItem = category switch
+            // Top Result
+            if (content.TryGetProperty("musicCardShelfRenderer", out JsonElement cardShelf))
             {
-                "Songs" => SongSearchResult.Parse,
-                "Videos" => VideoSearchResult.Parse,
-                "Community playlists" => PlaylistSearchResult.Parse,
-                "Albums" => AlbumSearchResult.Parse,
-                "Artists" => ArtistSearchResult.Parse,
-                "Profiles" => ProfileSearchResult.Parse,
-                "Podcasts" => PodcastSearchResult.Parse,
-                "Episodes" => EpisodeSearchResult.Parse,
-                _ => throw new NotSupportedException($"Category '{category}' is not supported.")
-            };
+                string category = cardShelf
+                    .GetProperty("subtitle")
+                    .GetProperty("runs")
+                    .GetElementAt(0)
+                    .GetProperty("text")
+                    .GetString()
+                    .OrThrow();
 
-            foreach (JsonElement item in shelf.GetProperty("contents").EnumerateArray())
+                // Primary
+                Func<JsonElement, SearchResult>? parseTopResult = category switch
+                {
+                    "Song" => SongSearchResult.ParseTopResult,
+                    "Video" => VideoSearchResult.ParseTopResult,
+                    "Playlist" => PlaylistSearchResult.ParseTopResult,
+                    "Album" or "EP" or "Single" => AlbumSearchResult.ParseTopResult,
+                    "Artist" => ArtistSearchResult.ParseTopResult,
+                    "Profile" => null, // never found any top results profiles lol; If u did, CREATE AN ISSUE plz
+                    "Podcast" => null, // bruh; YT returns top result podcasts in a "musicShelfRenderer". cba rn frfr
+                    "Episode" => EpisodeSearchResult.ParseTopResult,
+                    _ => null
+                };
+                if (parseTopResult is null)
+                {
+                    logger?.LogWarning("[SearchService-AllAsync] Could not parse top result. Unsupported caegory: {category}.", category);
+                    continue;
+                }
+
+                topResult = parseTopResult(cardShelf);
+
+                // Related
+                if (cardShelf.TryGetProperty("contents", out JsonElement cardShelfContents))
+                {
+                    foreach (JsonElement item in cardShelfContents.EnumerateArray())
+                    {
+                        if (!item.TryGetProperty("musicResponsiveListItemRenderer", out JsonElement itemContent))
+                            continue;
+
+                        JsonElement descriptionRuns = itemContent
+                            .GetProperty("flexColumns")
+                            .GetElementAt(1)
+                            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+                            .GetProperty("text")
+                            .GetProperty("runs");
+
+                        JsonElement firstDescriptionRun = descriptionRuns
+                            .GetElementAt(0);
+
+                        string itemCategory = firstDescriptionRun
+                            .GetProperty("text")
+                            .GetString()
+                            .OrThrow();
+
+                        Func<JsonElement, SearchResult>? parseItem = itemCategory switch
+                        {
+                            "Song" => SongSearchResult.Parse,
+                            "Video" => VideoSearchResult.Parse,
+                            "Album" or "EP" or "Single" => AlbumSearchResult.Parse,
+                            _ => null // never found any top results playlists, artists, profiles, podcasts or episodes lol; If u did, CREATE AN ISSUE plz
+                        };
+                        if (parseItem is null &&
+                            firstDescriptionRun
+                                .TryGetProperty("navigationEndpoint", out _) &&
+                            descriptionRuns
+                                .GetElementAtOrNull(2)?
+                                .GetPropertyOrNull("text")
+                                ?.GetString() is string viewsInfo &&
+                            viewsInfo
+                                .Contains("views") &&
+                            descriptionRuns
+                                .GetElementAtOrNull(4)
+                                ?.GetPropertyOrNull("text")
+                                ?.GetString()
+                                ?.ToTimeSpan() is not null)
+                            parseItem = VideoSearchResult.Parse;
+                        if (parseItem is null)
+                        {
+                            logger?.LogWarning("[SearchService-AllAsync] Could not parse related top result. Unsupported caegory: {category}.", category);
+                            continue;
+                        }
+
+                        SearchResult searchResult = parseItem(item);
+                        relatedTopResults.Add(searchResult);
+                    }
+                }
+
+            }
+
+            // Shelf
+            if (content.TryGetProperty("musicShelfRenderer", out JsonElement shelf))
             {
-                SearchResult searchResult = parseItem(item);
-                result.Add(searchResult);
+                string category = shelf
+                    .GetProperty("title")
+                    .GetProperty("runs")
+                    .GetElementAt(0)
+                    .GetProperty("text")
+                    .GetString()
+                    .OrThrow();
+
+                Func<JsonElement, SearchResult>? parse = category switch
+                {
+                    "Songs" => SongSearchResult.Parse,
+                    "Videos" => VideoSearchResult.Parse,
+                    "Community playlists" or "Featured playlists" => PlaylistSearchResult.Parse,
+                    "Albums" => AlbumSearchResult.Parse,
+                    "Artists" => ArtistSearchResult.Parse,
+                    "Profiles" => ProfileSearchResult.Parse,
+                    "Podcasts" => PodcastSearchResult.Parse,
+                    "Episodes" => EpisodeSearchResult.Parse,
+                    _ => null
+                };
+                if (parse is null)
+                {
+                    logger?.LogWarning("[SearchService-AllAsync] Could not parse item. Unsupported caegory: {category}.", category);
+                    continue;
+                }
+
+                foreach (JsonElement item in shelf.GetProperty("contents").EnumerateArray())
+                {
+                    SearchResult searchResult = parse(item);
+                    items.Add(searchResult);
+                }
             }
         }
 
-        return result;
+        return new(items, topResult, relatedTopResults);
     }
 }

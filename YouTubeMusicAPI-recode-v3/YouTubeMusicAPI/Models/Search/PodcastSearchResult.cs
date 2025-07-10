@@ -59,6 +59,7 @@ public class PodcastSearchResult(
             .OrThrow();
 
         string id = item
+            .GetProperty("overlay")
             .SelectOverlayNavigationPlaylistId();
 
         string browseId = item

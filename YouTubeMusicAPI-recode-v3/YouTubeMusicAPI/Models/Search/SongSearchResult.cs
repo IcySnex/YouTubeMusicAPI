@@ -70,6 +70,7 @@ public class SongSearchResult(
             .OrThrow();
 
         string id = item
+            .GetProperty("overlay")
             .SelectOverlayNavigationVideoId();
 
         Thumbnail[] thumbnails = item
@@ -77,14 +78,22 @@ public class SongSearchResult(
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
-            .SelectArtists();
+            .SelectArtists(descriptionStartIndex);
 
-        YouTubeMusicEntity album = descriptionRuns
-            .GetElementAt(artists.Length * 2)
-            .SelectYouTubeMusicEntity();
+        bool hasKnownAlbum = (descriptionRuns
+            .GetElementAtOrNull(descriptionStartIndex + artists.Length * 2)
+            ?.GetPropertyOrNull("navigationEndpoint"))
+            .If(null, false, true);
+
+        YouTubeMusicEntity album = hasKnownAlbum
+            ? descriptionRuns
+                .GetElementAt(descriptionStartIndex + artists.Length * 2)
+                .SelectYouTubeMusicEntity()
+            : menuItems
+                .SelectUnknownAlbum();
 
         TimeSpan duration = descriptionRuns
-            .GetElementAt(artists.Length * 2 + 2)
+            .GetElementAt(descriptionStartIndex + artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
             .GetProperty("text")
             .GetString()
             .ToTimeSpan()
@@ -103,6 +112,62 @@ public class SongSearchResult(
             .GetProperty("text")
             .GetString()
             .OrThrow();
+
+        Radio? radio = menuItems
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, radio);
+    }
+
+    /// <summary>
+    /// Parses the JSON item into an <see cref="SongSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    internal static SongSearchResult ParseTopResult(
+        JsonElement item)
+    {
+        JsonElement menuItems = item
+            .SelectMenuItems();
+
+        JsonElement descriptionRuns = item
+            .GetProperty("subtitle")
+            .GetProperty("runs");
+
+
+        string name = item
+            .GetProperty("title")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("thumbnailOverlay")
+            .SelectOverlayNavigationVideoId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists(2);
+
+        YouTubeMusicEntity album = menuItems
+            .SelectUnknownAlbum();
+
+        TimeSpan duration = descriptionRuns
+            .GetElementAt(artists.Length * 2 + 2)
+            .GetProperty("text")
+            .GetString()
+            .ToTimeSpan()
+            .OrThrow();
+
+        bool isExplicit = item
+            .GetPropertyOrNull("subtitleBadges")
+            .SelectContainsExplicitBadge();
+
+        string playsInfo = "N/A plays";
 
         Radio? radio = menuItems
             .SelectRadioOrNull();

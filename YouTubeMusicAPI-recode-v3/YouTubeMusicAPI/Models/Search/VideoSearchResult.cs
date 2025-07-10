@@ -44,6 +44,13 @@ public class VideoSearchResult(
             .GetProperty("text")
             .GetProperty("runs");
 
+        int descriptionStartIndex = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow()
+            .If("Video", 2, 0);
+
 
         string name = flexColumns
             .GetElementAt(0)
@@ -63,25 +70,23 @@ public class VideoSearchResult(
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
-            .SelectArtists();
+            .SelectArtists(descriptionStartIndex);
 
         TimeSpan duration = descriptionRuns
-            .GetElementAt(artists.Length * 2 + 2)
+            .GetElementAt(descriptionStartIndex + artists.Length * 2 + 2)
             .GetProperty("text")
             .GetString()
             .ToTimeSpan()
             .OrThrow();
 
         string viewsInfo = descriptionRuns
-            .GetElementAt(artists.Length * 2)
+            .GetElementAt(descriptionStartIndex + artists.Length * 2)
             .GetProperty("text")
             .GetString()
             .OrThrow();
 
         Radio? radio = item
-            .GetProperty("menu")
-            .GetProperty("menuRenderer")
-            .GetProperty("items")
+            .SelectMenuItems()
             .SelectRadioOrNull();
 
         return new(name, id, thumbnails, artists, duration, viewsInfo, radio);

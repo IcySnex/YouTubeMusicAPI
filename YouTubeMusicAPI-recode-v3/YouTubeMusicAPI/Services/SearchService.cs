@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using System.Threading;
 using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Models.Search;
@@ -111,20 +112,26 @@ public sealed class SearchService : YouTubeMusicService
     }
 
     /// <summary>
-    /// Creates a delegate that fetches a page of search results from YouTube Music.
+    /// Creates a paginator that fetches search results from YouTube Music.
     /// </summary>
     /// <typeparam name="T">The type of search results to parse.</typeparam>
     /// <param name="query">The query to search for.</param>
     /// <param name="queryParams">The query params to filter.</param>
     /// <param name="categoryTitle">The title of the shelf category.</param>
     /// <param name="parseItem">The function to parse items from JSON to a search result.</param>
-    /// <returns>A delegate that fetches a page of search results.</returns>
-    FetchPageDelegate<T> CreateFetchPageDelegate<T>(
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SearchResult"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    PaginatedAsyncEnumerable<T> CreatePaginatorAsync<T>(
         string query,
         string queryParams,
         string categoryTitle,
-        Func<JsonElement, T> parseItem) where T : SearchResult =>
-        (contiuationToken, cancellationToken) => FetchPageAsync(query, contiuationToken, queryParams, categoryTitle, parseItem, cancellationToken);
+        Func<JsonElement, T> parseItem) where T : SearchResult
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
+
+        return new((contiuationToken, cancellationToken) =>
+            FetchPageAsync(query, contiuationToken, queryParams, categoryTitle, parseItem, cancellationToken));
+    }
 
 
     /// <summary>
@@ -134,17 +141,12 @@ public sealed class SearchService : YouTubeMusicService
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SongSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<SongSearchResult> SongsAsync(
-        string query)
-    {
-        Ensure.NotNullOrEmpty(query, nameof(query));
-
-        FetchPageDelegate<SongSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+        string query) =>
+        CreatePaginatorAsync(
             query,
             "EgWKAQIIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Songs",
             SongSearchResult.Parse);
-        return new(fetchPageDelegate);
-    }
 
     /// <summary>
     /// Searches for videos on YouTube Music.
@@ -153,17 +155,12 @@ public sealed class SearchService : YouTubeMusicService
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="VideoSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<VideoSearchResult> VideosAsync(
-        string query)
-    {
-        Ensure.NotNullOrEmpty(query, nameof(query));
-
-        FetchPageDelegate<VideoSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+        string query) =>
+        CreatePaginatorAsync(
             query,
             "EgWKAQIQAWoQEAMQBBAJEAoQBRAREBAQFQ%3D%3D",
             "Videos",
             VideoSearchResult.Parse);
-        return new(fetchPageDelegate);
-    }
 
     /// <summary>
     /// Searches for playlists on YouTube Music.
@@ -172,17 +169,12 @@ public sealed class SearchService : YouTubeMusicService
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PlaylistSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<PlaylistSearchResult> PlaylistsAsync(
-        string query)
-    {
-        Ensure.NotNullOrEmpty(query, nameof(query));
-
-        FetchPageDelegate<PlaylistSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+        string query) =>
+        CreatePaginatorAsync(
             query,
             "EgeKAQQoAEABahAQAxAKEAkQBBAFEBEQEBAV",
             "Community playlists",
             PlaylistSearchResult.Parse);
-        return new(fetchPageDelegate);
-    }
 
     /// <summary>
     /// Searches for albums on YouTube Music.
@@ -191,17 +183,12 @@ public sealed class SearchService : YouTubeMusicService
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="AlbumSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<AlbumSearchResult> AlbumsAsync(
-        string query)
-    {
-        Ensure.NotNullOrEmpty(query, nameof(query));
-
-        FetchPageDelegate<AlbumSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+        string query) =>
+        CreatePaginatorAsync(
             query,
             "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Albums",
             AlbumSearchResult.Parse);
-        return new(fetchPageDelegate);
-    }
 
     /// <summary>
     /// Searches for artists on YouTube Music.
@@ -210,17 +197,12 @@ public sealed class SearchService : YouTubeMusicService
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ArtistSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<ArtistSearchResult> ArtistsAsync(
-        string query)
-    {
-        Ensure.NotNullOrEmpty(query, nameof(query));
-
-        FetchPageDelegate<ArtistSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+        string query) =>
+        CreatePaginatorAsync(
             query,
             "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Artists",
             ArtistSearchResult.Parse);
-        return new(fetchPageDelegate);
-    }
 
     /// <summary>
     /// Searches for profiles on YouTube Music.
@@ -229,17 +211,12 @@ public sealed class SearchService : YouTubeMusicService
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ProfileSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<ProfileSearchResult> ProfilesAsync(
-        string query)
-    {
-        Ensure.NotNullOrEmpty(query, nameof(query));
-
-        FetchPageDelegate<ProfileSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+        string query) =>
+        CreatePaginatorAsync(
             query,
             "EgWKAQJYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Profiles",
             ProfileSearchResult.Parse);
-        return new(fetchPageDelegate);
-    }
 
     /// <summary>
     /// Searches for podcasts on YouTube Music.
@@ -248,17 +225,12 @@ public sealed class SearchService : YouTubeMusicService
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PodcastSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<PodcastSearchResult> PodcastsAsync(
-        string query)
-    {
-        Ensure.NotNullOrEmpty(query, nameof(query));
-
-        FetchPageDelegate<PodcastSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+        string query) =>
+        CreatePaginatorAsync(
             query,
             "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Podcasts",
             PodcastSearchResult.Parse);
-        return new(fetchPageDelegate);
-    }
 
     /// <summary>
     /// Searches for podcast episodes on YouTube Music.
@@ -267,15 +239,89 @@ public sealed class SearchService : YouTubeMusicService
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="EpisodeSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<EpisodeSearchResult> EpisodesAsync(
-        string query)
-    {
-        Ensure.NotNullOrEmpty(query, nameof(query));
-
-        FetchPageDelegate<EpisodeSearchResult> fetchPageDelegate = CreateFetchPageDelegate(
+        string query) =>
+        CreatePaginatorAsync(
             query,
             "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
             "Episodes",
             EpisodeSearchResult.Parse);
-        return new(fetchPageDelegate);
+
+
+    /// <summary>
+    /// Searches for all kind of results on YouTUbe Music.
+    /// </summary>
+    /// <param name="query">The query to search for.</param>
+    /// <param name="cancellationToken">The token to cancel this action.</param>
+    /// <returns>A list of search results.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="NotSupportedException">Occurrs when trying to parse an unsupported kind of shelf.</exception>
+    /// <exception cref="KeyNotFoundException">Occurrs when no property in the JSON was found with the requested name.</exception>
+    /// <exception cref="IndexOutOfRangeException">Occurrs when an index in the JSON is out of bounds.</exception>
+    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    public async Task<IReadOnlyList<SearchResult>> AllAsync(
+        string query,
+        CancellationToken cancellationToken = default)
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
+
+        // Send request
+        KeyValuePair<string, object?>[] payload =
+        [
+            new("query", query)
+        ];
+
+        string response = await requestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
+
+        // Parse response
+        using JsonDocument json = JsonDocument.Parse(response);
+        JsonElement rootElement = json.RootElement;
+
+        JsonElement contents = rootElement
+                .GetProperty("contents")
+                .GetProperty("tabbedSearchResultsRenderer")
+                .GetProperty("tabs")
+                .GetElementAt(0)
+                .GetProperty("tabRenderer")
+                .GetProperty("content")
+                .GetProperty("sectionListRenderer")
+                .GetProperty("contents");
+
+        List<SearchResult> result = [];
+        foreach (JsonElement content in contents.EnumerateArray())
+        {
+            if (!content.TryGetProperty("musicShelfRenderer", out JsonElement shelf))
+                continue;
+
+            string category = shelf
+                .GetProperty("title")
+                .GetProperty("runs")
+                .GetElementAt(0)
+                .GetProperty("text")
+                .GetString()
+                .OrThrow();
+
+            Func<JsonElement, SearchResult> parseItem = category switch
+            {
+                "Songs" => SongSearchResult.Parse,
+                "Videos" => VideoSearchResult.Parse,
+                "Community playlists" => PlaylistSearchResult.Parse,
+                "Albums" => AlbumSearchResult.Parse,
+                "Artists" => ArtistSearchResult.Parse,
+                "Profiles" => ProfileSearchResult.Parse,
+                "Podcasts" => PodcastSearchResult.Parse,
+                "Episodes" => EpisodeSearchResult.Parse,
+                _ => throw new NotSupportedException($"Category '{category}' is not supported.")
+            };
+
+            foreach (JsonElement item in shelf.GetProperty("contents").EnumerateArray())
+            {
+                SearchResult searchResult = parseItem(item);
+                result.Add(searchResult);
+            }
+        }
+
+        return result;
     }
 }

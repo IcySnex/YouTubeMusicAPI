@@ -91,9 +91,7 @@ public class AlbumSearchResult(
             .OrThrow();
 
         Radio? radio = item
-            .GetProperty("menu")
-            .GetProperty("menuRenderer")
-            .GetProperty("items")
+            .SelectMenuItems()
             .SelectRadioOrNull();
 
         return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);

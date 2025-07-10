@@ -44,6 +44,13 @@ public class PlaylistSearchResult(
             .GetProperty("text")
             .GetProperty("runs");
 
+        int descriptionStartIndex = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow()
+            .If("Playlist", 2, 0);
+
 
         string name = flexColumns
             .GetElementAt(0)
@@ -66,19 +73,17 @@ public class PlaylistSearchResult(
             .SelectNavigationBrowseId();
 
         YouTubeMusicEntity creator = descriptionRuns
-            .GetElementAt(0)
+            .GetElementAt(descriptionStartIndex)
             .SelectYouTubeMusicEntity();
 
         string viewsInfo = descriptionRuns
-            .GetElementAt(2)
+            .GetElementAt(descriptionStartIndex + 2)
             .GetProperty("text")
             .GetString()
             .OrThrow();
 
         Radio? radio = item
-            .GetProperty("menu")
-            .GetProperty("menuRenderer")
-            .GetProperty("items")
+            .SelectMenuItems()
             .SelectRadioOrNull();
 
         return new(name, id, thumbnails, browseId, creator, viewsInfo, radio);

@@ -34,6 +34,19 @@ public class ArtistSearchResult(
         JsonElement flexColumns = item
             .GetProperty("flexColumns");
 
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+        int descriptionStartIndex = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow()
+            .If("Artist", 2, 0);
+
 
         string name = flexColumns
             .GetElementAt(0)
@@ -52,20 +65,14 @@ public class ArtistSearchResult(
             .GetProperty("thumbnail")
             .SelectThumbnails();
 
-        string audienceInfo = (flexColumns
-            .GetElementAtOrNull(1)
-            ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
-            ?.GetPropertyOrNull("text")
-            ?.GetPropertyOrNull("runs")
-            ?.GetElementAtOrNull(2)
+        string audienceInfo = (descriptionRuns
+            .GetElementAtOrNull(descriptionStartIndex + 2)
             ?.GetPropertyOrNull("text")
             ?.GetString())
             .Or("0 subscribers");
 
         Radio? radio = item
-            .GetProperty("menu")
-            .GetProperty("menuRenderer")
-            .GetProperty("items")
+            .SelectMenuItems()
             .SelectRadioOrNull();
 
         return new(name, id, thumbnails, audienceInfo, radio);

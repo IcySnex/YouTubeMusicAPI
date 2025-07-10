@@ -53,7 +53,6 @@ internal static class Extensions
         T defaultValue) where T : class =>
         value ?? defaultValue;
 
-
     /// <summary>
     /// Returns the value if it is not <c>null</c>; otherwise, throws a <see cref="NullReferenceException"/> with the original expression text included in the message.
     /// </summary>
@@ -78,6 +77,23 @@ internal static class Extensions
         this T? value,
         [CallerArgumentExpression(nameof(value))] string? expression = null) where T : class =>
         value ?? throw new NullReferenceException($"Value was null: {expression}");
+
+    /// <summary>
+    /// Returns one of two results depending on whether the specified value equals the provided condition.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the value being compared.</typeparam>
+    /// <typeparam name="TResult">The type of the result to return.</typeparam>
+    /// <param name="value">The value to compare.</param>
+    /// <param name="condition">The value to compare against.</param>
+    /// <param name="trueResult">The result to return if <paramref name="value"/> equals <paramref name="condition"/>.</param>
+    /// <param name="falseResult">The result to return if <paramref name="value"/> does not equal <paramref name="condition"/>.</param>
+    /// <returns><paramref name="trueResult"/> if the values are equal; otherwise, <paramref name="falseResult"/>.</returns>
+    public static TResult If<TValue, TResult>(
+        this TValue value,
+        TValue condition,
+        TResult trueResult,
+        TResult falseResult) =>
+        EqualityComparer<TValue>.Default.Equals(value, condition) ? trueResult : falseResult;
 
 
     /// <summary>
@@ -183,13 +199,8 @@ internal static class Extensions
     /// <exception cref="IndexOutOfRangeException">Occurrs when the index is out of bounds.</exception>
     public static JsonElement GetElementAt(
         this JsonElement element,
-        int index)
-    {
-        if (index < 0 || index >= element.GetArrayLength())
-            throw new IndexOutOfRangeException($"Index {index} is out of bounds for array with length {element.GetArrayLength()}.");
-
-        return element[index];
-    }
+        int index) =>
+        element[index];
     /// <summary>
     /// Looks for a property at a specific index or returns null if not found.
     /// </summary>
@@ -233,7 +244,6 @@ internal static class Extensions
             ?.GetPropertyOrNull("browseId")
             ?.GetString();
 
-
     /// <summary>
     /// Selects the overlay navigation playlist endpoint ID from a JSON element.
     /// </summary>
@@ -269,6 +279,18 @@ internal static class Extensions
             .GetProperty("videoId")
             .GetString()
             .OrThrow();
+
+    /// <summary>
+    /// Selects the menu items from a JSON element.
+    /// </summary>
+    /// <param name="element">The element containing "menu.menuRenderer.items".</param>
+    /// <returns></returns>
+    public static JsonElement SelectMenuItems(
+        this JsonElement element) =>
+        element
+            .GetProperty("menu")
+            .GetProperty("menuRenderer")
+            .GetProperty("items");
 
 
     /// <summary>

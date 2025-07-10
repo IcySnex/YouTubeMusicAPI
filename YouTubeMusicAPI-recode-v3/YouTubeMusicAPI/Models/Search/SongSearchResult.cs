@@ -39,6 +39,9 @@ public class SongSearchResult(
         JsonElement item = element
             .GetProperty("musicResponsiveListItemRenderer");
 
+        JsonElement menuItems = item
+            .SelectMenuItems();
+
         JsonElement flexColumns = item
             .GetProperty("flexColumns");
 
@@ -47,6 +50,13 @@ public class SongSearchResult(
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
+
+        int descriptionStartIndex = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow()
+            .If("Song", 2, 0);
 
 
         string name = flexColumns
@@ -94,10 +104,7 @@ public class SongSearchResult(
             .GetString()
             .OrThrow();
 
-        Radio? radio = item
-            .GetProperty("menu")
-            .GetProperty("menuRenderer")
-            .GetProperty("items")
+        Radio? radio = menuItems
             .SelectRadioOrNull();
 
         return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, radio);

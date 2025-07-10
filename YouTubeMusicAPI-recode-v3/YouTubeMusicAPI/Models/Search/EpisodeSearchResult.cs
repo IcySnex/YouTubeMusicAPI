@@ -51,6 +51,13 @@ public class EpisodeSearchResult(
             .GetProperty("text")
             .GetProperty("runs");
 
+        int descriptionStartIndex = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow()
+            .If("Episode", 2, 0);
+
 
         string name = titleRun
             .GetProperty("text")
@@ -68,14 +75,14 @@ public class EpisodeSearchResult(
             .SelectThumbnails();
 
         DateTime releasedAt = descriptionRuns
-            .GetElementAt(0)
+            .GetElementAt(descriptionStartIndex)
             .GetProperty("text")
             .GetString()
             .ToDateTime()
             .Or(new(1970, 1, 1));
 
         YouTubeMusicEntity podcast = descriptionRuns
-            .GetElementAt(2)
+            .GetElementAt(descriptionStartIndex + 2)
             .SelectYouTubeMusicEntity(4);
 
         bool isRatingsAllowed = item

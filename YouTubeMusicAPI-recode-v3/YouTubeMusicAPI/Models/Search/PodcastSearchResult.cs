@@ -34,6 +34,19 @@ public class PodcastSearchResult(
         JsonElement flexColumns = item
             .GetProperty("flexColumns");
 
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+        int descriptionStartIndex = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow()
+            .If("Podcast", 2, 0);
+
 
         string name = flexColumns
             .GetElementAt(0)
@@ -55,12 +68,8 @@ public class PodcastSearchResult(
             .GetProperty("thumbnail")
             .SelectThumbnails();
 
-        YouTubeMusicEntity host = flexColumns
-            .GetElementAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetElementAt(0)
+        YouTubeMusicEntity host = descriptionRuns
+            .GetElementAt(descriptionStartIndex)
             .SelectYouTubeMusicEntity();
 
         return new(name, id, thumbnails, browseId, host);

@@ -13,6 +13,24 @@ public class SearchServiceTests
 
 
     [Test]
+    public void Should_search_for_all()
+    {
+        // Act
+        IReadOnlyList<SearchResult>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            results = await client.Search.AllAsync(TestData.SearchQuery);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
+
+
+    [Test]
     public void Should_search_for_songs()
     {
         // Act

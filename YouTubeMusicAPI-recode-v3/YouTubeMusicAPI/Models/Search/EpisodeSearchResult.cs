@@ -65,6 +65,7 @@ public class EpisodeSearchResult(
             .OrThrow();
 
         string id = item
+            .GetProperty("overlay")
             .SelectOverlayNavigationVideoId();
 
         string browseId = titleRun
@@ -93,6 +94,53 @@ public class EpisodeSearchResult(
             .GetProperty("likeButtonRenderer")
             .GetProperty("likesAllowed")
             .GetBoolean();
+
+        return new(name, id, thumbnails, browseId, releasedAt, podcast, isRatingsAllowed);
+    }
+
+    /// <summary>
+    /// Parses the JSON item into an <see cref="EpisodeSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    internal static EpisodeSearchResult ParseTopResult(
+        JsonElement item)
+    {
+        JsonElement descriptionRuns = item
+            .GetProperty("subtitle")
+            .GetProperty("runs");
+
+
+        string name = item
+            .GetProperty("title")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("thumbnailOverlay")
+            .SelectOverlayNavigationVideoId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        string browseId = item
+            .SelectTapBrowseId();
+
+        DateTime releasedAt = descriptionRuns
+            .GetElementAt(2)
+            .GetProperty("text")
+            .GetString()
+            .ToDateTime()
+            .Or(new(1970, 1, 1));
+
+        YouTubeMusicEntity podcast = descriptionRuns
+            .GetElementAt(4)
+            .SelectYouTubeMusicEntity(4);
+
+        bool isRatingsAllowed = true;
 
         return new(name, id, thumbnails, browseId, releasedAt, podcast, isRatingsAllowed);
     }

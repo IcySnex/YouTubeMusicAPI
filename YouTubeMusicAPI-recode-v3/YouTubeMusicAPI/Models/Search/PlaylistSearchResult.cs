@@ -63,6 +63,7 @@ public class PlaylistSearchResult(
             .OrThrow();
 
         string id = item
+            .GetProperty("overlay")
             .SelectOverlayNavigationPlaylistId();
 
         Thumbnail[] thumbnails = item
@@ -81,6 +82,50 @@ public class PlaylistSearchResult(
             .GetProperty("text")
             .GetString()
             .OrThrow();
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, browseId, creator, viewsInfo, radio);
+    }
+
+    /// <summary>
+    /// Parses the JSON item into an <see cref="PlaylistSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    internal static PlaylistSearchResult ParseTopResult(
+        JsonElement item)
+    {
+        JsonElement descriptionRuns = item
+            .GetProperty("subtitle")
+            .GetProperty("runs");
+
+
+        string name = item
+            .GetProperty("title")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("thumbnailOverlay")
+            .SelectOverlayNavigationPlaylistId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        string browseId = item
+            .SelectTapBrowseId();
+
+        YouTubeMusicEntity creator = descriptionRuns
+            .GetElementAt(2)
+            .SelectYouTubeMusicEntity();
+
+        string viewsInfo = "N/A views";
 
         Radio? radio = item
             .SelectMenuItems()

@@ -69,7 +69,44 @@ public class ArtistSearchResult(
             .GetElementAtOrNull(descriptionStartIndex + 2)
             ?.GetPropertyOrNull("text")
             ?.GetString())
-            .Or("0 subscribers");
+            .Or("N/A subscribers");
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, audienceInfo, radio);
+    }
+
+    /// <summary>
+    /// Parses the JSON item into an <see cref="ArtistSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    internal static ArtistSearchResult ParseTopResult(
+        JsonElement item)
+    {
+        string name = item
+            .GetProperty("title")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .SelectTapBrowseId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        string audienceInfo = (item
+            .GetProperty("subtitle")
+            .GetProperty("runs")
+            .GetElementAtOrNull(2)
+            ?.GetPropertyOrNull("text")
+            ?.GetString())
+            .Or("N/A subscribers");
 
         Radio? radio = item
             .SelectMenuItems()

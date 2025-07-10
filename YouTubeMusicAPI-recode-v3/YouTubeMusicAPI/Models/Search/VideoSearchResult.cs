@@ -63,6 +63,7 @@ public class VideoSearchResult(
             .OrThrow();
 
         string id = item
+            .GetProperty("overlay")
             .SelectOverlayNavigationVideoId();
 
         Thumbnail[] thumbnails = item
@@ -81,6 +82,57 @@ public class VideoSearchResult(
 
         string viewsInfo = descriptionRuns
             .GetElementAt(descriptionStartIndex + artists.Length * 2)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, artists, duration, viewsInfo, radio);
+    }
+
+    /// <summary>
+    /// Parses the JSON item into an <see cref="VideoSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    internal static VideoSearchResult ParseTopResult(
+        JsonElement item)
+    {
+        JsonElement descriptionRuns = item
+            .GetProperty("subtitle")
+            .GetProperty("runs");
+
+
+        string name = item
+            .GetProperty("title")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("thumbnailOverlay")
+            .SelectOverlayNavigationVideoId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists(2);
+
+        TimeSpan duration = descriptionRuns
+            .GetElementAt(artists.Length * 2 + 4)
+            .GetProperty("text")
+            .GetString()
+            .ToTimeSpan()
+            .OrThrow();
+
+        string viewsInfo = descriptionRuns
+            .GetElementAt(artists.Length * 2 + 2)
             .GetProperty("text")
             .GetString()
             .OrThrow();

@@ -245,14 +245,27 @@ internal static class Extensions
             ?.GetString();
 
     /// <summary>
+    /// Selects the onTap browse endpoint ID from a JSON element.
+    /// </summary>
+    /// <param name="element">The element containing "onTap.browseEndpoint.browseId".</param>
+    /// <returns></returns>
+    public static string SelectTapBrowseId(
+        this JsonElement element) =>
+        element
+            .GetProperty("onTap")
+            .GetProperty("browseEndpoint")
+            .GetProperty("browseId")
+            .GetString()
+            .OrThrow();
+
+    /// <summary>
     /// Selects the overlay navigation playlist endpoint ID from a JSON element.
     /// </summary>
-    /// <param name="element">The element containing "overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId".</param>
+    /// <param name="element">The element containing "musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId".</param>
     /// <returns></returns>
     public static string SelectOverlayNavigationPlaylistId(
         this JsonElement element) =>
         element
-            .GetProperty("overlay")
             .GetProperty("musicItemThumbnailOverlayRenderer")
             .GetProperty("content")
             .GetProperty("musicPlayButtonRenderer")
@@ -265,12 +278,11 @@ internal static class Extensions
     /// <summary>
     /// Selects the overlay navigation video endpoint ID from a JSON element.
     /// </summary>
-    /// <param name="element">The element containing "overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId".</param>
+    /// <param name="element">The element containing "musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId".</param>
     /// <returns></returns>
     public static string SelectOverlayNavigationVideoId(
         this JsonElement element) =>
         element
-            .GetProperty("overlay")
             .GetProperty("musicItemThumbnailOverlayRenderer")
             .GetProperty("content")
             .GetProperty("musicPlayButtonRenderer")
@@ -380,15 +392,23 @@ internal static class Extensions
         return [.. result];
     }
 
+    /// <summary>
+    /// Selects a radio from a JSON element.
+    /// </summary>
+    /// <param name="element">The array element.</param>
+    /// <returns>An radio, if found.</returns>
     public static Radio? SelectRadioOrNull(
         this JsonElement element)
     {
         foreach (JsonElement item in element.EnumerateArray())
         {
-            JsonElement menu = item
-                .GetProperty("menuNavigationItemRenderer");
+            JsonElement? menu = item
+                .GetPropertyOrNull("menuNavigationItemRenderer");
 
-            string type = menu
+            if (menu is null)
+                continue;
+
+            string type = menu.Value
                 .GetProperty("text")
                 .GetProperty("runs")
                 .GetElementAt(0)
@@ -400,7 +420,7 @@ internal static class Extensions
                 continue;
 
 
-            JsonElement navigationEndpoint = menu
+            JsonElement navigationEndpoint = menu.Value
                 .GetProperty("navigationEndpoint");
 
             JsonElement? watchEndpoint =
@@ -428,6 +448,48 @@ internal static class Extensions
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Selects an unknown album (only id) from a JSON element.
+    /// </summary>
+    /// <param name="element">The array element.</param>
+    /// <returns>An album with the name 'N/A'.</returns>
+    public static YouTubeMusicEntity SelectUnknownAlbum(
+        this JsonElement element)
+    {
+        foreach (JsonElement item in element.EnumerateArray())
+        {
+            JsonElement? menu = item
+                .GetPropertyOrNull("menuNavigationItemRenderer");
+
+            if (menu is null)
+                continue;
+
+            string type = menu.Value
+                .GetProperty("text")
+                .GetProperty("runs")
+                .GetElementAt(0)
+                .GetProperty("text")
+                .GetString()
+                .OrThrow();
+
+            if (type != "Go to album")
+                continue;
+
+
+            string name = "N/A";
+
+            string? id = menu.Value
+                .GetPropertyOrNull("navigationEndpoint")
+                ?.GetPropertyOrNull("browseEndpoint")
+                ?.GetPropertyOrNull("browseId")
+                ?.GetString();
+
+            return new(name, id);
+        }
+
+        return new("N/A", null);
     }
 
     /// <summary>

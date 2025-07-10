@@ -24,7 +24,7 @@ public class AlbumSearchResult(
     Thumbnail[] thumbnails,
     string browseId,
     YouTubeMusicEntity[] artists,
-    int releaseYear,
+    int? releaseYear,
     bool isExplicit,
     AlbumType type,
     Radio? radio) : SearchResult(name, id, thumbnails)
@@ -60,6 +60,7 @@ public class AlbumSearchResult(
             .OrThrow();
 
         string id = item
+            .GetProperty("overlay")
             .SelectOverlayNavigationPlaylistId();
 
         Thumbnail[] thumbnails = item
@@ -72,15 +73,68 @@ public class AlbumSearchResult(
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(2);
 
-        int releaseYear = (descriptionRuns
+        int? releaseYear = descriptionRuns
             .GetElementAtOrNull(artists.Length * 2 + 2)
             ?.GetPropertyOrNull("text")
             ?.GetString()
-            .ToInt32())
-            .Or(1970);
+            .ToInt32();
 
         bool isExplicit = item
             .GetPropertyOrNull("badges")
+            .SelectContainsExplicitBadge();
+
+        AlbumType type = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .ToAlbumType()
+            .OrThrow();
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
+    }
+
+    /// <summary>
+    /// Parses the JSON item into an <see cref="AlbumSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    internal static AlbumSearchResult ParseTopResult(
+        JsonElement item)
+    {
+        JsonElement descriptionRuns = item
+            .GetProperty("subtitle")
+            .GetProperty("runs");
+
+
+        string name = item
+            .GetProperty("title")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("thumbnailOverlay")
+            .SelectOverlayNavigationPlaylistId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        string browseId = item
+            .SelectTapBrowseId();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists(2);
+
+        int? releaseYear = null;
+
+        bool isExplicit = item
+            .GetPropertyOrNull("subtitleBadges")
             .SelectContainsExplicitBadge();
 
         AlbumType type = descriptionRuns
@@ -111,7 +165,7 @@ public class AlbumSearchResult(
     /// <summary>
     /// The year this alvbum was released in.
     /// </summary>
-    public int ReleaseYear { get; } = releaseYear;
+    public int? ReleaseYear { get; } = releaseYear;
 
     /// <summary>
     /// Whether this album is explicit or not.

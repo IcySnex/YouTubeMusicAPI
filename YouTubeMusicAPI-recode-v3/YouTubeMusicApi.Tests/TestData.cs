@@ -48,7 +48,7 @@ internal static class TestData
 
 
     // Client
-    public const string GeographicalLocation = "US";
+    public const string GeographicalLocation = "DE";
 
     public static async Task<YouTubeMusicClient> CreateClientAsync()
     {
@@ -103,7 +103,7 @@ internal static class TestData
 
 
     // Test Data
-    public const string SearchQuery = "Pashanim";
+    public const string SearchQuery = "german rap";
 
     public const int FetchOffset = 0;
     public const int FetchLimit = 20;

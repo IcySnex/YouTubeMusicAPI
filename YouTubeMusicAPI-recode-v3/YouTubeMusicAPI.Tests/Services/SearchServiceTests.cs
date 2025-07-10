@@ -16,17 +16,18 @@ public class SearchServiceTests
     public void Should_search_for_all()
     {
         // Act
-        IReadOnlyList<SearchResult>? results = null;
+        SearchPage? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            results = await client.Search.AllAsync(TestData.SearchQuery);
+            result = await client.Search.AllAsync(TestData.SearchQuery);
         });
 
         // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Items, Is.Not.Null.Or.Empty);
 
-        TestData.WriteResult(results);
+        TestData.WriteResult(result);
     }
 
 

@@ -60,7 +60,7 @@ internal sealed class RequestHandlerTests
         Assert.That(result, Is.Not.Null.Or.Empty);
         Assert.That(result, Does.StartWith("{"));
         Assert.That(result, Contains.Substring("\"title\": \"foo\""));
-        if (clientType.Create() is YouTubeMusicAPI.Http.Client client)
+        if (clientType.ToClient() is YouTubeMusicAPI.Http.Client client)
         {
             Assert.That(result, Contains.Substring($"\"clientName\": \"{client.ClientName}\""));
             Assert.That(result, Contains.Substring($"\"clientVersion\": \"{client.ClientVersion}\""));
@@ -69,5 +69,4 @@ internal sealed class RequestHandlerTests
 
         TestData.WriteResult(result);
     }
-
 }

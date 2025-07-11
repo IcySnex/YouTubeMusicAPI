@@ -1,223 +1,13 @@
-﻿using System.Globalization;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using YouTubeMusicAPI.Exceptions;
-using YouTubeMusicAPI.Http;
+﻿using System.Text.Json;
 using YouTubeMusicAPI.Models;
 
 namespace YouTubeMusicAPI.Utils;
 
 /// <summary>
-/// Contains extension methods for various use cases.
+/// Contains extension methods to select specific data from JSON elements.
 /// </summary>
-internal static class Extensions
+internal static class Selectors
 {
-    /// <summary>
-    /// Creates a new instance of a <see cref="Client"/> based on the specified <see cref="ClientType"/>.
-    /// </summary>
-    /// <param name="type">The type of client to create.</param>
-    /// <returns>A new <see cref="Client"/> instance.</returns>
-    /// <exception cref="UnknownClientException">Occurs when an invalid client type is passed.</exception>
-    public static Client? Create(
-        this ClientType type) =>
-        type switch
-        {
-            ClientType.None => null,
-            ClientType.WebMusic => Client.WebMusic.Clone(),
-            ClientType.IOS => Client.IOS.Clone(),
-            ClientType.Tv => Client.Tv.Clone(),
-            _ => throw new UnknownClientException(type)
-        };
-
-
-    /// <summary>
-    /// Returns the value if it is not <c>null</c>; otherwise, returns the specified default value.
-    /// </summary>
-    /// <typeparam name="T">The value type.</typeparam>
-    /// <param name="value">The nullable value.</param>
-    /// <param name="defaultValue">The value to return if <paramref name="value"/> is <c>null</c>.</param>
-    /// <returns><paramref name="value"/> if it is not <c>null</c>; otherwise, <paramref name="defaultValue"/>.</returns>
-    public static T Or<T>(
-        this T? value,
-        T defaultValue) where T : struct =>
-        value ?? defaultValue;
-    /// <summary>
-    /// Returns the value if it is not <c>null</c>; otherwise, returns the specified default value.
-    /// </summary>
-    /// <typeparam name="T">The value type.</typeparam>
-    /// <param name="value">The nullable value.</param>
-    /// <param name="defaultValue">The value to return if <paramref name="value"/> is <c>null</c>.</param>
-    /// <returns><paramref name="value"/> if it is not <c>null</c>; otherwise, <paramref name="defaultValue"/>.</returns>
-    public static T Or<T>(
-        this T? value,
-        T defaultValue) where T : class =>
-        value ?? defaultValue;
-
-    /// <summary>
-    /// Returns the value if it is not <c>null</c>; otherwise, throws a <see cref="NullReferenceException"/> with the original expression text included in the message.
-    /// </summary>
-    /// <typeparam name="T">The value type.</typeparam>
-    /// <param name="value">The nullable value.</param>
-    /// <param name="expression">The original expression that produced the value (automatically provided by the compiler).</param>
-    /// <returns><paramref name="value"/> if it is not <c>null</c>.</returns>
-    /// <exception cref="NullReferenceException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
-    public static T OrThrow<T>(
-        this T? value,
-        [CallerArgumentExpression(nameof(value))] string? expression = null) where T : struct =>
-        value ?? throw new NullReferenceException($"Value was null: {expression}");
-    /// <summary>
-    /// Returns the value if it is not <c>null</c>; otherwise, throws a <see cref="NullReferenceException"/> with the original expression text included in the message.
-    /// </summary>
-    /// <typeparam name="T">The value type.</typeparam>
-    /// <param name="value">The nullable value.</param>
-    /// <param name="expression">The original expression that produced the value (automatically provided by the compiler).</param>
-    /// <returns><paramref name="value"/> if it is not <c>null</c>.</returns>
-    /// <exception cref="NullReferenceException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
-    public static T OrThrow<T>(
-        this T? value,
-        [CallerArgumentExpression(nameof(value))] string? expression = null) where T : class =>
-        value ?? throw new NullReferenceException($"Value was null: {expression}");
-
-    /// <summary>
-    /// Returns one of two results depending on whether the specified value equals the provided condition.
-    /// </summary>
-    /// <typeparam name="TValue">The type of the value being compared.</typeparam>
-    /// <typeparam name="TResult">The type of the result to return.</typeparam>
-    /// <param name="value">The value to compare.</param>
-    /// <param name="condition">The value to compare against.</param>
-    /// <param name="trueResult">The result to return if <paramref name="value"/> equals <paramref name="condition"/>.</param>
-    /// <param name="falseResult">The result to return if <paramref name="value"/> does not equal <paramref name="condition"/>.</param>
-    /// <returns><paramref name="trueResult"/> if the values are equal; otherwise, <paramref name="falseResult"/>.</returns>
-    public static TResult If<TValue, TResult>(
-        this TValue value,
-        TValue condition,
-        TResult trueResult,
-        TResult falseResult) =>
-        EqualityComparer<TValue>.Default.Equals(value, condition) ? trueResult : falseResult;
-
-
-    /// <summary>
-    /// Converts a string to a <see cref="TimeSpan"/>.
-    /// </summary>
-    /// <param name="text">The text to convert.</param>
-    /// <returns>A TimeSpan representing the string.</returns>
-    public static TimeSpan? ToTimeSpan(
-        this string? text)
-    {
-        if (TimeSpan.TryParseExact(text, @"m\:ss", CultureInfo.InvariantCulture, out TimeSpan result))
-            return result;
-        if (TimeSpan.TryParseExact(text, @"mm\:ss", CultureInfo.InvariantCulture, out result))
-            return result;
-        if (TimeSpan.TryParseExact(text, @"h\:mm\:ss", CultureInfo.InvariantCulture, out result))
-            return result;
-        if (TimeSpan.TryParseExact(text, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out result))
-            return result;
-
-        return null;
-    }
-
-    /// <summary>
-    /// Converts a string to a <see cref="DateTime"/>.
-    /// </summary>
-    /// <param name="text">The text to convert.</param>
-    /// <returns>A DateTime representing the string.</returns>
-    public static DateTime? ToDateTime(
-        this string? text)
-    {
-        if (text is null)
-            return null;
-
-        if (!text.Contains(" ago") && DateTime.TryParse(text, CultureInfo.InvariantCulture, out DateTime result))
-            return result;
-
-        string[] timeSpanParts = text.Split(' ');
-        int timeSpanValue = int.Parse(timeSpanParts[0]);
-        string timeSpanKind = timeSpanParts[1];
-
-        return timeSpanKind[0] switch
-        {
-            'd' => DateTime.Now - TimeSpan.FromDays(timeSpanValue),
-            'h' => DateTime.Now - TimeSpan.FromHours(timeSpanValue),
-            'm' => DateTime.Now - TimeSpan.FromMinutes(timeSpanValue),
-            's' => DateTime.Now - TimeSpan.FromSeconds(timeSpanValue),
-            _ => null
-        };
-    }
-
-    /// <summary>
-    /// Converts a string to a <see cref="int"/>.
-    /// </summary>
-    /// <param name="text">The text to convert.</param>
-    /// <returns>An Int32 representing the string.</returns>
-    public static int? ToInt32(
-        this string? text)
-    {
-        if (int.TryParse(text, CultureInfo.InvariantCulture, out int result))
-            return result;
-
-        return null;
-    }
-
-    /// <summary>
-    /// Converts a string to a <see cref="int"/>.
-    /// </summary>
-    /// <param name="text">The text to convert.</param>
-    /// <returns>An Int32 representing the string.</returns>
-    public static AlbumType? ToAlbumType(
-        this string? text) =>
-        text switch
-        {
-            "Album" => (AlbumType?)AlbumType.Album,
-            "Single" => (AlbumType?)AlbumType.Single,
-            "EP" => (AlbumType?)AlbumType.Ep,
-            _ => null,
-        };
-
-
-    /// <summary>
-    /// Looks for a property named <paramref name="propertyName"/> in the current object.
-    /// </summary>
-    /// <param name="element">The elemnt to search on.</param>
-    /// <param name="propertyName">Name of the property to find.</param>
-    /// <returns>The property if it exists. If not, null is returned.</returns>
-    public static JsonElement? GetPropertyOrNull(
-        this JsonElement element,
-        string propertyName)
-    {
-        if (element.TryGetProperty(propertyName, out JsonElement property))
-            return property;
-
-        return null;
-    }
-
-    /// <summary>
-    /// Looks for a property at a specific index.
-    /// </summary>
-    /// <param name="element">The elemnt to get the item on.</param>
-    /// <param name="index">The index to lookup.</param>
-    /// <returns>The item at the specific index.</returns>
-    /// <exception cref="IndexOutOfRangeException">Occurrs when the index is out of bounds.</exception>
-    public static JsonElement GetElementAt(
-        this JsonElement element,
-        int index) =>
-        element[index];
-    /// <summary>
-    /// Looks for a property at a specific index or returns null if not found.
-    /// </summary>
-    /// <param name="element">The elemnt to get the item on.</param>
-    /// <param name="index">The index to lookup.</param>
-    /// <returns>The item at the specific index.</returns>
-    public static JsonElement? GetElementAtOrNull(
-        this JsonElement element,
-        int index)
-    {
-        if (index < 0 || index >= element.GetArrayLength())
-            return null;
-
-        return element[index];
-    }
-
-
     /// <summary>
     /// Selects the navigation browse endpoint ID from a JSON element.
     /// </summary>
@@ -291,6 +81,7 @@ internal static class Extensions
             .GetProperty("videoId")
             .GetString()
             .OrThrow();
+
 
     /// <summary>
     /// Selects the menu items from a JSON element.
@@ -391,7 +182,7 @@ internal static class Extensions
     /// </summary>
     /// <param name="element">The array element.</param>
     /// <returns>A playlist ID, if found.</returns>
-    public static string? SelectPlaylistId(
+    public static string? SelectPlaylistIdOrNull(
         this JsonElement element)
     {
         foreach (JsonElement item in element.EnumerateArray())

@@ -52,7 +52,7 @@ internal sealed class RequestHandler(
         HttpRequestMessage request = new(method, url);
         Dictionary<string, object?> body = payload?.ToDictionary() ?? [];
 
-        if (clientType.Create() is Client client)
+        if (clientType.ToClient() is Client client)
         {
             client.Gl = geographicalLocation;
             client.VisitorData = authenticator.VisitorData;

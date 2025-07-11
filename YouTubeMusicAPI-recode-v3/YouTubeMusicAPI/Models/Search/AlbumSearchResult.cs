@@ -182,7 +182,7 @@ public class AlbumSearchResult(
             .OrThrow();
 
         string id = menuItems
-            .SelectPlaylistId()
+            .SelectPlaylistIdOrNull()
             .OrThrow();
 
         Thumbnail[] thumbnails = item

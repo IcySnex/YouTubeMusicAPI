@@ -304,6 +304,7 @@ internal static class Extensions
             .GetProperty("menuRenderer")
             .GetProperty("items");
 
+
     /// <summary>
     /// Selects the thumbnails from a JSON element.
     /// </summary>
@@ -380,6 +381,52 @@ internal static class Extensions
                 ?.GetString();
 
             return new(playlistId, songVideoId);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Selects a playlist ID from a JSON element.
+    /// </summary>
+    /// <param name="element">The array element.</param>
+    /// <returns>A playlist ID, if found.</returns>
+    public static string? SelectPlaylistId(
+        this JsonElement element)
+    {
+        foreach (JsonElement item in element.EnumerateArray())
+        {
+            JsonElement? menu = item
+                .GetPropertyOrNull("menuNavigationItemRenderer");
+
+            if (menu is null)
+                continue;
+
+            string type = menu.Value
+                .GetProperty("text")
+                .GetProperty("runs")
+                .GetElementAt(0)
+                .GetProperty("text")
+                .GetString()
+                .OrThrow();
+
+            if (type != "Shuffle play")
+                continue;
+
+
+            JsonElement? watchEndpoint = menu.Value
+                .GetProperty("navigationEndpoint")
+                .GetPropertyOrNull("watchPlaylistEndpoint");
+
+            if (watchEndpoint is null)
+                return null;
+
+
+            string? playlistId = watchEndpoint
+                ?.GetPropertyOrNull("playlistId")
+                ?.GetString();
+
+            return playlistId;
         }
 
         return null;

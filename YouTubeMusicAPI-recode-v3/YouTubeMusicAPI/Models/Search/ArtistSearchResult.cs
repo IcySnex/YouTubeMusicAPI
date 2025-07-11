@@ -115,6 +115,40 @@ public class ArtistSearchResult(
         return new(name, id, thumbnails, audienceInfo, radio);
     }
 
+    /// <summary>
+    /// Parses the JSON item into an <see cref="ArtistSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static ArtistSearchResult ParseSuggestion(
+        JsonElement item)
+    {
+        string name = item
+            .GetProperty("flexColumns")
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .SelectNavigationBrowseId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        string audienceInfo = "N/A subscribers";
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, audienceInfo, radio);
+    }
+
 
     /// <summary>
     /// The information about the audience of this artist (e.g. subscribers, monthly listeners).

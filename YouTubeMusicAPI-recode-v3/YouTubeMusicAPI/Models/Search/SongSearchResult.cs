@@ -175,6 +175,83 @@ public class SongSearchResult(
         return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, radio);
     }
 
+    /// <summary>
+    /// Parses the JSON element into a <see cref="SongSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static SongSearchResult ParseSuggestion(
+        JsonElement item)
+    {
+        JsonElement menuItems = item
+            .SelectMenuItems();
+
+        JsonElement flexColumns = item
+            .GetProperty("flexColumns");
+
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+        JsonElement? albumRun = flexColumns
+            .GetElementAtOrNull(2)
+            ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
+            ?.GetPropertyOrNull("text")
+            ?.GetPropertyOrNull("runs")
+            ?.GetElementAtOrNull(0);
+
+
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("overlay")
+            .SelectOverlayNavigationVideoId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists(2);
+
+        bool hasKnownAlbum = (albumRun
+            ?.GetPropertyOrNull("navigationEndpoint"))
+            .If(null, false, true);
+
+        YouTubeMusicEntity album = hasKnownAlbum
+            ? albumRun!.Value
+                .SelectAlbum()
+            : menuItems
+                .SelectAlbumUnknown();
+
+        TimeSpan duration = TimeSpan.Zero; // grrrrr YT, why DO YOU NOT PROVIDE A DURATION GAWD DAMN??=?=!" i will not make this nullabel just because of this bullshit!!!!
+
+        bool isExplicit = item
+            .GetPropertyOrNull("badges")
+            .SelectContainsExplicitBadge();
+
+        string playsInfo = descriptionRuns
+            .GetElementAt(artists.Length * 2 + 2)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        Radio? radio = menuItems
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, radio);
+    }
+
+
 
     /// <summary>
     /// The artists of this song.

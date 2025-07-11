@@ -76,6 +76,49 @@ public class PodcastSearchResult(
         return new(name, id, thumbnails, browseId, host);
     }
 
+    /// <summary>
+    /// Parses the JSON element into a <see cref="PodcastSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static PodcastSearchResult ParseSuggestion(
+        JsonElement item)
+    {
+        JsonElement flexColumns = item
+            .GetProperty("flexColumns");
+
+
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("overlay")
+            .SelectOverlayNavigationPlaylistId();
+
+        string browseId = item
+            .SelectNavigationBrowseId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        YouTubeMusicEntity host = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(2)
+            .SelectArtist();
+
+        return new(name, id, thumbnails, browseId, host);
+    }
+
 
     /// <summary>
     /// The host of this podcast.

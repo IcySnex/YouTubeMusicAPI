@@ -5,11 +5,13 @@
 /// </summary>
 /// <param name="name">The name of this search result.</param>
 /// <param name="id">The ID of this search result.</param>
+/// <param name="browseId">The browse ID of this search result.</param>
 /// <param name="thumbnails">The thumbnails of this search result.</param>
 public abstract class SearchResult(
     string name,
     string id,
-    Thumbnail[] thumbnails) : YouTubeMusicEntity(name, id)
+    string? browseId,
+    Thumbnail[] thumbnails) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// The ID of this search result.

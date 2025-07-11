@@ -17,7 +17,7 @@ public class ProfileSearchResult(
     string name,
     string id,
     Thumbnail[] thumbnails,
-    string handle) : SearchResult(name, id, thumbnails)
+    string handle) : SearchResult(name, id, id, thumbnails)
 {
     /// <summary>
     /// Parses the JSON element into a <see cref="ProfileSearchResult"/>.

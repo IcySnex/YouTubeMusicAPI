@@ -27,7 +27,7 @@ public class AlbumSearchResult(
     int? releaseYear,
     bool isExplicit,
     AlbumType type,
-    Radio? radio) : SearchResult(name, id, thumbnails)
+    Radio? radio) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
     /// Parses the JSON element into a <see cref="AlbumSearchResult"/>.
@@ -151,11 +151,6 @@ public class AlbumSearchResult(
         return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
     }
 
-
-    /// <summary>
-    /// The browse ID of this album.
-    /// </summary>
-    public string BrowseId { get; } = browseId;
 
     /// <summary>
     /// The artists of this album.

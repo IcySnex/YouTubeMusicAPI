@@ -27,7 +27,7 @@ public class SongSearchResult(
     TimeSpan duration,
     bool isExplicit,
     string playsInfo,
-    Radio? radio) : SearchResult(name, id, thumbnails)
+    Radio? radio) : SearchResult(name, id, null, thumbnails)
 {
     /// <summary>
     /// Parses the JSON element into a <see cref="SongSearchResult"/>.
@@ -88,9 +88,9 @@ public class SongSearchResult(
         YouTubeMusicEntity album = hasKnownAlbum
             ? descriptionRuns
                 .GetElementAt(descriptionStartIndex + artists.Length * 2)
-                .SelectYouTubeMusicEntity()
+                .SelectAlbum()
             : menuItems
-                .SelectUnknownAlbum();
+                .SelectAlbumUnknown();
 
         TimeSpan duration = descriptionRuns
             .GetElementAt(descriptionStartIndex + artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
@@ -154,7 +154,7 @@ public class SongSearchResult(
             .SelectArtists(2);
 
         YouTubeMusicEntity album = menuItems
-            .SelectUnknownAlbum();
+            .SelectAlbumUnknown();
 
         TimeSpan duration = descriptionRuns
             .GetElementAt(artists.Length * 2 + 2)

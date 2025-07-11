@@ -23,7 +23,7 @@ public class PlaylistSearchResult(
     string browseId,
     YouTubeMusicEntity creator,
     string viewsInfo,
-    Radio? radio) : SearchResult(name, id, thumbnails)
+    Radio? radio) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
     /// Parses the JSON element into a <see cref="PlaylistSearchResult"/>.
@@ -75,7 +75,7 @@ public class PlaylistSearchResult(
 
         YouTubeMusicEntity creator = descriptionRuns
             .GetElementAt(descriptionStartIndex)
-            .SelectYouTubeMusicEntity();
+            .SelectArtist();
 
         string viewsInfo = descriptionRuns
             .GetElementAt(descriptionStartIndex + 2)
@@ -123,7 +123,7 @@ public class PlaylistSearchResult(
 
         YouTubeMusicEntity creator = descriptionRuns
             .GetElementAt(2)
-            .SelectYouTubeMusicEntity();
+            .SelectArtist();
 
         string viewsInfo = "N/A views";
 
@@ -134,11 +134,6 @@ public class PlaylistSearchResult(
         return new(name, id, thumbnails, browseId, creator, viewsInfo, radio);
     }
 
-
-    /// <summary>
-    /// The browse ID of this playlist.
-    /// </summary>
-    public string BrowseId { get; } = browseId;
 
     /// <summary>
     /// The creator of this playlist.

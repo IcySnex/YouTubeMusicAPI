@@ -19,7 +19,7 @@ public class ArtistSearchResult(
     string id,
     Thumbnail[] thumbnails,
     string audienceInfo,
-    Radio? radio) : SearchResult(name, id, thumbnails)
+    Radio? radio) : SearchResult(name, id, id, thumbnails)
 {
     /// <summary>
     /// Parses the JSON element into an <see cref="ArtistSearchResult"/>.

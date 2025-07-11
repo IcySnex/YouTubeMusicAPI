@@ -13,25 +13,6 @@ public class SearchServiceTests
 
 
     [Test]
-    public void Should_search_for_all()
-    {
-        // Act
-        SearchPage? result = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            result = await client.Search.AllAsync(TestData.SearchQuery);
-        });
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Items, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(result);
-    }
-
-
-    [Test]
     public void Should_search_for_songs()
     {
         // Act
@@ -181,5 +162,42 @@ public class SearchServiceTests
         Assert.That(results, Is.Not.Null.Or.Empty);
 
         TestData.WriteResult(results);
+    }
+
+
+    [Test]
+    public void Should_search_for_all()
+    {
+        // Act
+        SearchPage? result = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            result = await client.Search.AllAsync(TestData.SearchQuery);
+        });
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Items, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(result);
+    }
+
+
+    [Test]
+    public void Should_get_suggestions()
+    {
+        // Act
+        SearchSuggestions? result = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            result = await client.Search.GetSuggestionsAsync(TestData.SearchQuery);
+        });
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+
+        TestData.WriteResult(result);
     }
 }

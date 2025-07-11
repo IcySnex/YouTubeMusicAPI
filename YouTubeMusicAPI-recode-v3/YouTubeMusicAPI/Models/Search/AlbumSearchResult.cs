@@ -151,6 +151,73 @@ public class AlbumSearchResult(
         return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
     }
 
+    /// <summary>
+    /// Parses the JSON element into a <see cref="AlbumSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static AlbumSearchResult ParseSuggestion(
+        JsonElement item)
+    {
+        JsonElement menuItems = item
+            .SelectMenuItems();
+
+        JsonElement flexColumns = item
+            .GetProperty("flexColumns");
+
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = menuItems
+            .SelectPlaylistId()
+            .OrThrow();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        string browseId = item
+            .SelectNavigationBrowseId();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists(2);
+
+        int? releaseYear = descriptionRuns
+            .GetElementAtOrNull(artists.Length * 2 + 2)
+            ?.GetPropertyOrNull("text")
+            ?.GetString()
+            .ToInt32();
+
+        bool isExplicit = item
+            .GetPropertyOrNull("badges")
+            .SelectContainsExplicitBadge();
+
+        AlbumType type = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .ToAlbumType()
+            .OrThrow();
+
+        Radio? radio = menuItems
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
+    }
+
 
     /// <summary>
     /// The artists of this album.

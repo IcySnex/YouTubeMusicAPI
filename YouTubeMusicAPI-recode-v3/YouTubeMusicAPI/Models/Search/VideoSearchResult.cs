@@ -144,6 +144,65 @@ public class VideoSearchResult(
         return new(name, id, thumbnails, artists, duration, viewsInfo, radio);
     }
 
+    /// <summary>
+    /// Parses the JSON element into a <see cref="VideoSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static VideoSearchResult ParseSuggestion(
+        JsonElement item)
+    {
+        JsonElement flexColumns = item
+            .GetProperty("flexColumns");
+
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("overlay")
+            .SelectOverlayNavigationVideoId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        bool hasKnownArtist = descriptionRuns
+            .GetArrayLength()
+            .If(3, false, true);
+
+        YouTubeMusicEntity[] artists = hasKnownArtist
+            ? descriptionRuns
+                .SelectArtists(2)
+            : [new("N/A", null, null)]; // fr im gonna crash out bruh, why WHY DO YOU SOMETIMES NOT RETURN AN ARTIST??
+
+        TimeSpan duration = TimeSpan.Zero; // grrrrr YT, why DO YOU NOT PROVIDE A DURATION GAWD DAMN??=?=!" i will not make this nullable just because of this bullshit!!!!
+
+        string viewsInfo = descriptionRuns
+            .GetElementAt(artists.Length * 2 + (hasKnownArtist ? 2 : 0))
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, artists, duration, viewsInfo, radio);
+    }
+
 
     /// <summary>
     /// The artists of this video.

@@ -77,11 +77,13 @@ public class PlaylistSearchResult(
             .GetElementAt(descriptionStartIndex)
             .SelectArtist();
 
-        string viewsInfo = descriptionRuns
-            .GetElementAt(descriptionStartIndex + 2)
-            .GetProperty("text")
-            .GetString()
-            .OrThrow();
+        string viewsSongsInfo = (descriptionRuns
+            .GetElementAtOrNull(descriptionStartIndex + 2)
+            ?.GetPropertyOrNull("text")
+            ?.GetString())
+            .Or("N/A views");
+
+        string viewsInfo = viewsSongsInfo.EndsWith(" songs") ? "N/A views" : viewsSongsInfo; // bruh automated playlists dont have a "view count"
 
         Radio? radio = item
             .SelectMenuItems()
@@ -133,6 +135,69 @@ public class PlaylistSearchResult(
 
         return new(name, id, thumbnails, browseId, creator, viewsInfo, radio);
     }
+
+    /// <summary>
+    /// Parses the JSON element into a <see cref="PlaylistSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static PlaylistSearchResult ParseSuggestion(
+        JsonElement item)
+    {
+        JsonElement flexColumns = item
+            .GetProperty("flexColumns");
+
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+        int descriptionStartIndex = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow()
+            .If("Playlist", 2, 0);
+
+
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("overlay")
+            .SelectOverlayNavigationPlaylistId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .SelectThumbnails();
+
+        string browseId = item
+            .SelectNavigationBrowseId();
+
+        YouTubeMusicEntity creator = descriptionRuns
+            .GetElementAt(descriptionStartIndex)
+            .SelectArtist();
+
+        string viewsInfo = (descriptionRuns
+            .GetElementAtOrNull(descriptionStartIndex + 2)
+            ?.GetPropertyOrNull("text")
+            ?.GetString())
+            .Or("N/A views");
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, browseId, creator, viewsInfo, radio);
+    }
+
 
 
     /// <summary>

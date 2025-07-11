@@ -23,7 +23,7 @@ public class EpisodeSearchResult(
     string browseId,
     DateTime releasedAt,
     YouTubeMusicEntity podcast,
-    bool isRatingsAllowed) : SearchResult(name, id, thumbnails)
+    bool isRatingsAllowed) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
     /// Parses the JSON element into a <see cref="EpisodeSearchResult"/>.
@@ -84,7 +84,7 @@ public class EpisodeSearchResult(
 
         YouTubeMusicEntity podcast = descriptionRuns
             .GetElementAt(descriptionStartIndex + 2)
-            .SelectYouTubeMusicEntity(4);
+            .SelectPodcast();
 
         bool isRatingsAllowed = item
             .GetProperty("menu")
@@ -138,18 +138,13 @@ public class EpisodeSearchResult(
 
         YouTubeMusicEntity podcast = descriptionRuns
             .GetElementAt(4)
-            .SelectYouTubeMusicEntity(4);
+            .SelectPodcast();
 
         bool isRatingsAllowed = true;
 
         return new(name, id, thumbnails, browseId, releasedAt, podcast, isRatingsAllowed);
     }
 
-
-    /// <summary>
-    /// The browse ID of this podcast episode.
-    /// </summary>
-    public string BrowseId { get; } = browseId;
 
     /// <summary>
     /// The release data of this podcast episode.

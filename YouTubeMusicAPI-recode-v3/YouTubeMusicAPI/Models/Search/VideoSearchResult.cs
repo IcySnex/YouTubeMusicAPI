@@ -23,7 +23,7 @@ public class VideoSearchResult(
     YouTubeMusicEntity[] artists,
     TimeSpan duration,
     string viewsInfo,
-    Radio? radio) : SearchResult(name, id, thumbnails)
+    Radio? radio) : SearchResult(name, id, null, thumbnails)
 {
     /// <summary>
     /// Parses the JSON element into a <see cref="VideoSearchResult"/>.

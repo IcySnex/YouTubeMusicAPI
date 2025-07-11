@@ -19,7 +19,7 @@ public class PodcastSearchResult(
     string id,
     Thumbnail[] thumbnails,
     string browseId,
-    YouTubeMusicEntity host) : SearchResult(name, id, thumbnails)
+    YouTubeMusicEntity host) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
     /// Parses the JSON element into a <see cref="PodcastSearchResult"/>.
@@ -71,16 +71,11 @@ public class PodcastSearchResult(
 
         YouTubeMusicEntity host = descriptionRuns
             .GetElementAt(descriptionStartIndex)
-            .SelectYouTubeMusicEntity();
+            .SelectArtist();
 
         return new(name, id, thumbnails, browseId, host);
     }
 
-
-    /// <summary>
-    /// The browse ID of this podcast.
-    /// </summary>
-    public string BrowseId { get; } = browseId;
 
     /// <summary>
     /// The host of this podcast.

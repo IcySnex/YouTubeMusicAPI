@@ -5,17 +5,24 @@
 /// </summary>
 /// <param name="name">The name of this entity.</param>
 /// <param name="id">The ID of this entity.</param>
+/// <param name="browseId">The browse ID of this entity.</param>
 public class YouTubeMusicEntity(
     string name,
-    string? id)
+    string? id,
+    string? browseId)
 {
     /// <summary>
-    /// The name of this entity
+    /// The name of this entity.
     /// </summary>
     public string Name { get; } = name;
 
     /// <summary>
-    /// The ID of this entity
+    /// The ID of this entity.
     /// </summary>
     public virtual string? Id { get; } = id;
+
+    /// <summary>
+    /// The browse ID of this entity.
+    /// </summary>
+    public virtual string? BrowseId { get; } = browseId;
 }

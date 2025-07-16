@@ -16,7 +16,7 @@ public sealed class SearchService : YouTubeMusicService
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchService"/> class.
     /// </summary>
-    /// <param name="requestHandler"></param>
+    /// <param name="requestHandler">The request handler.</param>
     /// <param name="logger">The logger used to provide progress and error messages.</param>
     internal SearchService(
         RequestHandler requestHandler,

@@ -19,6 +19,7 @@ public class YouTubeMusicClient
 
         RequestHandler requestHandler = new(Config.GeographicalLocation, Config.Authenticator, Config.HttpClient, Config.Logger);
         Search = new(requestHandler, Config.Logger);
+        Info = new(requestHandler, Config.Logger);
     }
 
 
@@ -27,8 +28,14 @@ public class YouTubeMusicClient
     /// </summary>
     public YouTubeMusicConfig Config { get; }
 
+
     /// <summary>
     /// The service used to search on YouTube Music.
     /// </summary>
     public SearchService Search { get; }
+
+    /// <summary>
+    /// The service used to get information from YouTube Music.
+    /// </summary>
+    public InfoService Info { get; }
 }

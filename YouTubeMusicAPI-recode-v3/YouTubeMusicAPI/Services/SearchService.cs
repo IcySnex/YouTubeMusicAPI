@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Text.Json;
 using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Http;
@@ -431,7 +432,7 @@ public sealed class SearchService : YouTubeMusicService
     /// Gets search, history and result suggestions for a specific input.
     /// </summary>
     /// <remarks>
-    /// For history suggestions, an user must be authenticated.
+    /// For history suggestions, the user must be authenticated.
     /// </remarks>
     /// <param name="input">The input to get suggestions for.</param>
     /// <param name="cancellationToken">The token to cancel this action.</param>
@@ -558,5 +559,91 @@ public sealed class SearchService : YouTubeMusicService
         }
 
         return new(search, history, results);
+    }
+
+
+    /// <summary>
+    /// Removes the specific input from the search history.
+    /// </summary>
+    /// <remarks>
+    /// The user must be authenticated.
+    /// </remarks>
+    /// <param name="input">The input to get remove from the suggestions.</param>
+    /// <param name="cancellationToken">The token to cancel this action.</param>
+    /// <exception cref="ArgumentException">Occurrs when the string is <see langword="null"/> or empty.</exception>
+    /// <exception cref="InvalidOperationException">Occurrs when the user is not authenticated.</exception>
+    /// <exception cref="NullReferenceException">Occurrs when a the input could not be found in the search history suggestions.</exception>
+    /// <exception cref="KeyNotFoundException">Occurrs when no property in the JSON was found with the requested name.</exception>
+    /// <exception cref="IndexOutOfRangeException">Occurrs when an index in the JSON is out of bounds.</exception>
+    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    public async Task RemoveSuggestionAsync(
+        string input,
+        CancellationToken cancellationToken = default)
+    {
+        Ensure.NotNullOrEmpty(input, nameof(input));
+        Ensure.IsAuthenticated(requestHandler);
+
+        // Get suggestions
+        KeyValuePair<string, object?>[] suggestionsPayload =
+        [
+            new("input", input)
+        ];
+
+        string suggestionsResponse = await requestHandler.PostAsync(Endpoints.SearchSuggestions, suggestionsPayload, ClientType.WebMusic, cancellationToken);
+
+        // Parse suggestions response
+        using JsonDocument suggestionsJson = JsonDocument.Parse(suggestionsResponse);
+        JsonElement suggestionsRootElement = suggestionsJson.RootElement;
+
+        string feedbackToken = ((suggestionsRootElement
+            .GetPropertyOrNull("contents")
+            ?.GetElementAtOrNull(0)
+            ?.GetPropertyOrNull("searchSuggestionsSectionRenderer")
+            ?.GetPropertyOrNull("contents")
+            ?.EnumerateArray()
+            .FirstOrDefault(item =>
+            {
+                if (!item.TryGetProperty("historySuggestionRenderer", out JsonElement itemContent))
+                    return false;
+
+                string? suggestionText = itemContent
+                    .GetPropertyOrNull("suggestion")
+                    ?.GetPropertyOrNull("runs")
+                    ?.GetElementAtOrNull(0)
+                    ?.GetPropertyOrNull("text")
+                    ?.GetString();
+
+                return suggestionText == input;
+            }))
+            ?.GetPropertyOrNull("historySuggestionRenderer")
+            ?.GetPropertyOrNull("serviceEndpoint")
+            ?.GetPropertyOrNull("feedbackEndpoint")
+            ?.GetPropertyOrNull("feedbackToken")
+            ?.GetString())
+            .OrThrow();
+
+
+        // Remove
+        KeyValuePair<string, object?>[] payload =
+        [
+            new("feedbackTokens", new string[] { feedbackToken })
+        ];
+
+        string response = await requestHandler.PostAsync(Endpoints.Feedback, payload, ClientType.WebMusic, cancellationToken);
+
+        // Parse response
+        using JsonDocument json = JsonDocument.Parse(response);
+        JsonElement rootElement = json.RootElement;
+
+        bool isProcessed = rootElement
+            .GetPropertyOrNull("feedbackResponses")
+            ?.GetElementAtOrNull(0)
+            ?.GetPropertyOrNull("isProcessed")
+            ?.GetBoolean() ?? false;
+
+        if (!isProcessed)
+            logger?.LogWarning("[SearchService-RemoveSuggestionAsync] Remove search suggestion '{input}' not processed.", input);
     }
 }

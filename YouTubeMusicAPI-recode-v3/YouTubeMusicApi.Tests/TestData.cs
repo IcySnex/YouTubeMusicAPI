@@ -103,7 +103,7 @@ internal static class TestData
 
 
     // Test Data
-    public const string SearchQuery = "Pasha";
+    public const string SearchQuery = "pashanims";
 
     public const int FetchOffset = 0;
     public const int FetchLimit = 20;

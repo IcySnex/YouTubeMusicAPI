@@ -200,4 +200,14 @@ public class SearchServiceTests
 
         TestData.WriteResult(result);
     }
+
+    [Test]
+    public void Should_remove_suggestion()
+    {
+        // Act
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            await client.Search.RemoveSuggestionAsync(TestData.SearchQuery);
+        });
+    }
 }

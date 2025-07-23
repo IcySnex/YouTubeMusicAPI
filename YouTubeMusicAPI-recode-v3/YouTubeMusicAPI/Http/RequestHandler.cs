@@ -29,6 +29,9 @@ internal sealed class RequestHandler(
     };
 
 
+    public bool IsAuthenticated => authenticator is CookieAuthenticator cookieAuthenticator && cookieAuthenticator.Container.Count > 1;
+
+
     /// <summary>
     /// Sends an asynchronous request using the provided HTTP method.
     /// </summary>

@@ -67,6 +67,7 @@ public class PodcastSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity host = descriptionRuns
@@ -106,6 +107,7 @@ public class PodcastSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity host = flexColumns

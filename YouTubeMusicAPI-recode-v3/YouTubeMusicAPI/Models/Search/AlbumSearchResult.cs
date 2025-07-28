@@ -65,6 +65,7 @@ public class AlbumSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string browseId = item
@@ -123,6 +124,7 @@ public class AlbumSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string browseId = item
@@ -187,6 +189,7 @@ public class AlbumSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string browseId = item

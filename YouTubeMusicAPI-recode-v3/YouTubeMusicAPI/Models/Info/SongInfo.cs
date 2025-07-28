@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Info;
@@ -15,12 +14,12 @@ namespace YouTubeMusicAPI.Models.Info;
 /// <param name="thumbnails">The thumbnails of this song.</param>
 /// <param name="relatedBrowseId">The browse ID related to this song for full navigation.</param>
 /// <param name="lyricsBrowseId">The browse ID used to fetch lyrics for this song, if available.</param>
-/// <param name="creditsBrowseId">The browse ID used to fetch credits for this song, if available.</param>
 /// <param name="artists">The artists who performed this song.</param>
 /// <param name="album">The album of this song.</param>
 /// <param name="duration">The duration of this song.</param>
 /// <param name="isExplicit">Indicates whether this song is marked as explicit.</param>
 /// <param name="releaseYear">The year this song was released.</param>
+/// <param name="isCreditsAvailable">Whether credits are available to fetch for this song.</param>
 /// <param name="isRatingsAllowed">Whether ratings are allowed for this song.</param>
 /// <param name="radio">The radio related to this song, if available.</param>
 public class SongInfo(
@@ -29,12 +28,12 @@ public class SongInfo(
     Thumbnail[] thumbnails,
     string relatedBrowseId,
     string? lyricsBrowseId,
-    string? creditsBrowseId,
     YouTubeMusicEntity[] artists,
     YouTubeMusicEntity album,
     TimeSpan duration,
     bool isExplicit,
-    int releaseYear,
+    int? releaseYear,
+    bool isCreditsAvailable,
     bool isRatingsAllowed,
     Radio? radio) : EntityInfo(name, id, null, thumbnails)
 {
@@ -103,7 +102,7 @@ public class SongInfo(
         bool isLyricsUnavailable = (lyrics
             .GetPropertyOrNull("unselectable")
             ?.GetBoolean())
-            .Or(true);
+            .Or(false);
 
         string? lyricsBrowseId = isLyricsUnavailable
             ? null
@@ -112,9 +111,6 @@ public class SongInfo(
                 .GetProperty("browseEndpoint")
                 .GetProperty("browseId")
                 .GetString();
-
-        string? creditsBrowseId = menuItems
-            .SelectCreditsBrowseIdOrNull();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists();
@@ -144,12 +140,14 @@ public class SongInfo(
             .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 
-        int releaseYear = descriptionRuns
-            .GetElementAt(artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
-            .GetProperty("text")
-            .GetString()
-            .ToInt32()
-            .OrThrow();
+        int? releaseYear = descriptionRuns
+            .GetElementAtOrNull(artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
+            ?.GetPropertyOrNull("text")
+            ?.GetString()
+            ?.ToInt32();
+
+        bool isCreditsAvailable = menuItems
+            .SelectIsCreditsAvailable();
 
         bool isRatingsAllowed = element
             .GetProperty("playerOverlays")
@@ -163,25 +161,24 @@ public class SongInfo(
         Radio? radio = menuItems
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, creditsBrowseId, artists, album, duration, isExplicit, releaseYear, isRatingsAllowed, radio);
+        return new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, isRatingsAllowed, radio);
     }
 
 
     /// <summary>
     /// The browse ID for related content associated with this song.
     /// </summary>
-    internal string RelatedBrowseId { get; } = relatedBrowseId;
+    public string RelatedBrowseId { get; } = relatedBrowseId;
 
     /// <summary>
     /// The browse ID for lyrics associated with this song, if available.
     /// </summary>
-    internal string? LyricsBrowseId { get; } = lyricsBrowseId;
+    public string? LyricsBrowseId { get; } = lyricsBrowseId;
 
     /// <summary>
-    /// The browse ID for credits associated with this song, if available.
+    /// Whether credits are available to fetch for this song.
     /// </summary>
-    internal string? CreditsBrowseId { get; } = creditsBrowseId;
-
+    public bool IsCreditsAvailable { get; } = isCreditsAvailable;
 
     /// <summary>
     /// The artists of this song.
@@ -206,7 +203,7 @@ public class SongInfo(
     /// <summary>
     /// The year this song was released.
     /// </summary>
-    public int ReleaseYear { get; } = releaseYear;
+    public int? ReleaseYear { get; } = releaseYear;
 
     /// <summary>
     /// Whether ratings are allowed for this song.

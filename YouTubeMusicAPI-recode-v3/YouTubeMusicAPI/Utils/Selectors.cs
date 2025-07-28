@@ -49,44 +49,18 @@ internal static class Selectors
             .OrThrow();
 
     /// <summary>
-    /// Selects the song credits browse endpoint ID from a JSON element.
+    /// Selects the navigation watch endpoint ID from a JSON element.
     /// </summary>
-    /// <param name="element">The array element.</param>
+    /// <param name="element">The element containing "navigationEndpoint.watchEndpoint.videoId".</param>
     /// <returns></returns>
-    public static string? SelectCreditsBrowseIdOrNull(
-        this JsonElement element)
-    {
-        foreach (JsonElement item in element.EnumerateArray())
-        {
-            JsonElement? menu = item
-                .GetPropertyOrNull("menuNavigationItemRenderer");
-
-            if (menu is null)
-                continue;
-
-            string type = menu.Value
-                .GetProperty("text")
-                .GetProperty("runs")
-                .GetElementAt(0)
-                .GetProperty("text")
-                .GetString()
-                .OrThrow();
-
-            if (type != "View song credits")
-                continue;
-
-
-            string? browseId = menu.Value
-                .GetPropertyOrNull("navigationEndpoint")
-                ?.GetPropertyOrNull("browseEndpoint")
-                ?.GetPropertyOrNull("browseId")
-                ?.GetString();
-
-            return browseId;
-        }
-
-        return null;
-    }
+    public static string SelectNavigationVideoId(
+        this JsonElement element) =>
+        element
+            .GetProperty("navigationEndpoint")
+            .GetProperty("watchEndpoint")
+            .GetProperty("videoId")
+            .GetString()
+            .OrThrow();
 
     /// <summary>
     /// Selects the overlay navigation playlist endpoint ID from a JSON element.
@@ -428,5 +402,46 @@ internal static class Selectors
             .SelectNavigationBrowseIdOrNull();
 
         return new(text, id?.Substring(4), id);
+    }
+
+
+    /// <summary>
+    /// Selects weither credits are available to fetch for a song from a JSON element.
+    /// </summary>
+    /// <param name="element">The array element.</param>
+    /// <returns>A boolean weither credits are available.</returns>
+    public static bool SelectIsCreditsAvailable(
+        this JsonElement element)
+    {
+        foreach (JsonElement item in element.EnumerateArray())
+        {
+            JsonElement? menu = item
+                .GetPropertyOrNull("menuNavigationItemRenderer");
+
+            if (menu is null)
+                continue;
+
+            string type = menu.Value
+                .GetProperty("text")
+                .GetProperty("runs")
+                .GetElementAt(0)
+                .GetProperty("text")
+                .GetString()
+                .OrThrow();
+
+            if (type != "View song credits")
+                continue;
+
+
+            string? browseId = menu.Value
+                .GetPropertyOrNull("navigationEndpoint")
+                ?.GetPropertyOrNull("browseEndpoint")
+                ?.GetPropertyOrNull("browseId")
+                ?.GetString();
+
+            return browseId is not null;
+        }
+
+        return false;
     }
 }

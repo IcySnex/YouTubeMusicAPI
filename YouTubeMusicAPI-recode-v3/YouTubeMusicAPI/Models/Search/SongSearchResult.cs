@@ -17,6 +17,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// <param name="duration">The duration of this song.</param>
 /// <param name="isExplicit">Whether this song is explicit or not.</param>
 /// <param name="playsInfo">The information about the numbers of plays this song has.</param>
+/// <param name="isCreditsAvailable">Whether credits are available to fetch for this song.</param>
 /// <param name="radio">The radio associated with this song, if available.</param>
 public class SongSearchResult(
     string name,
@@ -27,6 +28,7 @@ public class SongSearchResult(
     TimeSpan duration,
     bool isExplicit,
     string playsInfo,
+    bool isCreditsAvailable,
     Radio? radio) : SearchResult(name, id, null, thumbnails)
 {
     /// <summary>
@@ -114,10 +116,13 @@ public class SongSearchResult(
             .GetString()
             .OrThrow();
 
+        bool isCreditsAvailable = menuItems
+            .SelectIsCreditsAvailable();
+
         Radio? radio = menuItems
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, radio);
+        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, isCreditsAvailable, radio);
     }
 
     /// <summary>
@@ -171,10 +176,13 @@ public class SongSearchResult(
 
         string playsInfo = "N/A plays";
 
+        bool isCreditsAvailable = menuItems
+            .SelectIsCreditsAvailable();
+
         Radio? radio = menuItems
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, radio);
+        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, isCreditsAvailable, radio);
     }
 
     /// <summary>
@@ -248,10 +256,13 @@ public class SongSearchResult(
             .GetString()
             .OrThrow();
 
+        bool isCreditsAvailable = menuItems
+            .SelectIsCreditsAvailable();
+
         Radio? radio = menuItems
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, radio);
+        return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, isCreditsAvailable, radio);
     }
 
 
@@ -280,6 +291,11 @@ public class SongSearchResult(
     /// The information about the numbers of plays this song has.
     /// </summary>
     public string PlaysInfo { get; } = playsInfo;
+
+    /// <summary>
+    /// Whether credits are available to fetch for this song.
+    /// </summary>
+    public bool IsCreditsAvailable { get; } = isCreditsAvailable;
 
     /// <summary>
     /// The radio associated with this song, if available.

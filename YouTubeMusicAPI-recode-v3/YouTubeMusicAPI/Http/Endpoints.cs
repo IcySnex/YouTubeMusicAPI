@@ -27,4 +27,9 @@ internal static class Endpoints
     /// The path to the next endpoint.
     /// </summary>
     public const string Next = MusicApiUrl + "/next";
+
+    /// <summary>
+    /// The path to the browse endpoint.
+    /// </summary>
+    public const string Browse = MusicApiUrl + "/browse";
 }

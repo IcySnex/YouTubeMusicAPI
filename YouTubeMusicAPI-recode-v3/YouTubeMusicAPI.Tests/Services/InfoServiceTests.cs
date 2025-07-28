@@ -1,4 +1,5 @@
-﻿using YouTubeMusicAPI.Models.Search;
+﻿using YouTubeMusicAPI.Models.Info;
+using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Tests.Services;
@@ -16,19 +17,17 @@ public class InfoServiceTests
     public void Should_get_song_info()
     {
         // Act
-        IReadOnlyList<SongSearchResult>? results = null;
+        SongInfo? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            PaginatedAsyncEnumerable<SongSearchResult> response = client.Search.SongsAsync(TestData.SearchQuery);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+            result = await client.Info.GetSongAsync(TestData.SongId);
         });
 
         // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
+        Assert.That(result, Is.Not.Null);
 
-        TestData.WriteResult(results);
+        TestData.WriteResult(result);
     }
 
 }

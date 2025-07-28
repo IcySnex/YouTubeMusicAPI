@@ -19,7 +19,6 @@
 
 	<ItemGroup>
 		<Folder Include="Models\Library\" />
-		<Folder Include="Models\Info\" />
 		<Folder Include="Models\Streaming\" />
 	</ItemGroup>
 </Project>

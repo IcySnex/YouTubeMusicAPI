@@ -49,6 +49,46 @@ internal static class Selectors
             .OrThrow();
 
     /// <summary>
+    /// Selects the song credits browse endpoint ID from a JSON element.
+    /// </summary>
+    /// <param name="element">The array element.</param>
+    /// <returns></returns>
+    public static string? SelectCreditsBrowseIdOrNull(
+        this JsonElement element)
+    {
+        foreach (JsonElement item in element.EnumerateArray())
+        {
+            JsonElement? menu = item
+                .GetPropertyOrNull("menuNavigationItemRenderer");
+
+            if (menu is null)
+                continue;
+
+            string type = menu.Value
+                .GetProperty("text")
+                .GetProperty("runs")
+                .GetElementAt(0)
+                .GetProperty("text")
+                .GetString()
+                .OrThrow();
+
+            if (type != "View song credits")
+                continue;
+
+
+            string? browseId = menu.Value
+                .GetPropertyOrNull("navigationEndpoint")
+                ?.GetPropertyOrNull("browseEndpoint")
+                ?.GetPropertyOrNull("browseId")
+                ?.GetString();
+
+            return browseId;
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Selects the overlay navigation playlist endpoint ID from a JSON element.
     /// </summary>
     /// <param name="element">The element containing "musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId".</param>
@@ -105,7 +145,6 @@ internal static class Selectors
         this JsonElement element)
     {
         JsonElement thumbnails = element
-            .GetProperty("musicThumbnailRenderer")
             .GetProperty("thumbnail")
             .GetProperty("thumbnails");
 

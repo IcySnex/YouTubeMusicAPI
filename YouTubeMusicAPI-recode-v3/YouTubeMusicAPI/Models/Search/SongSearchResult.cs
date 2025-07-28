@@ -75,6 +75,7 @@ public class SongSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
@@ -148,6 +149,7 @@ public class SongSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
@@ -218,6 +220,7 @@ public class SongSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns

@@ -61,6 +61,7 @@ public class ProfileSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string handle = descriptionRuns

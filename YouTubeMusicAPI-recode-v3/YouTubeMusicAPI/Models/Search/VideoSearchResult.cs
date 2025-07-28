@@ -68,6 +68,7 @@ public class VideoSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
@@ -119,6 +120,7 @@ public class VideoSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
@@ -177,6 +179,7 @@ public class VideoSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         bool hasKnownArtist = descriptionRuns

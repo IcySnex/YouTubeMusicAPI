@@ -63,6 +63,7 @@ public class ArtistSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string audienceInfo = (descriptionRuns
@@ -98,6 +99,7 @@ public class ArtistSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string audienceInfo = (item
@@ -138,6 +140,7 @@ public class ArtistSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string audienceInfo = "N/A subscribers";

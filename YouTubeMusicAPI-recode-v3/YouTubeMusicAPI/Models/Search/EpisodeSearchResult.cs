@@ -73,6 +73,7 @@ public class EpisodeSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         DateTime releasedAt = descriptionRuns
@@ -124,6 +125,7 @@ public class EpisodeSearchResult(
 
         Thumbnail[] thumbnails = item
             .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string browseId = item

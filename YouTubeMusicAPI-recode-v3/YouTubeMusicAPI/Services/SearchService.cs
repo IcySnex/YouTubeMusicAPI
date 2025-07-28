@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using System.Text.Json;
 using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Http;

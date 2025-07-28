@@ -106,7 +106,9 @@ internal static class TestData
     public const int FetchOffset = 0;
     public const int FetchLimit = 20;
 
-    public const string SearchQuery = "pashanims";
+    //  Search
+    public const string SearchQuery = "Cutty Vibez";
 
-    public const string SongId = "n1IMD3gJgUY";
+    //  Info
+    public const string SongId = "W7AodMdYLos";
 }

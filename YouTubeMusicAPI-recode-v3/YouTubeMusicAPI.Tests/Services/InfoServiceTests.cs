@@ -1,4 +1,5 @@
-﻿using YouTubeMusicAPI.Models.Info;
+﻿using YouTubeMusicAPI.Models;
+using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Pagination;
 
@@ -14,7 +15,7 @@ public class InfoServiceTests
 
 
     [Test]
-    public void Should_get_song_info()
+    public void Should_get_song()
     {
         // Act
         SongInfo? result = null;
@@ -22,6 +23,23 @@ public class InfoServiceTests
         Assert.DoesNotThrowAsync(async () =>
         {
             result = await client.Info.GetSongAsync(TestData.SongId);
+        });
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+
+        TestData.WriteResult(result);
+    }
+
+    [Test]
+    public void Should_get_song_credits()
+    {
+        // Act
+        SongCredits? result = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            result = await client.Info.GetSongCreditsAsync(TestData.SongId);
         });
 
         // Assert

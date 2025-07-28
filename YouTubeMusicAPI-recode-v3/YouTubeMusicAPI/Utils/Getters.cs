@@ -35,6 +35,7 @@ internal static class Getters
         this JsonElement element,
         int index) =>
         element[index];
+
     /// <summary>
     /// Looks for a property at a specific index or returns null if not found.
     /// </summary>

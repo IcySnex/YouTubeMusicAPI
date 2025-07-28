@@ -13,15 +13,18 @@ internal static class Endpoints
     /// </summary>
     public const string Search = MusicApiUrl + "/search";
 
-
     /// <summary>
     /// The path to the search suggestions endpoint.
     /// </summary>
     public const string SearchSuggestions = MusicApiUrl + "/music/get_search_suggestions";
 
-
     /// <summary>
     /// The path to the feedback endpoint.
     /// </summary>
     public const string Feedback = MusicApiUrl + "/feedback";
+
+    /// <summary>
+    /// The path to the next endpoint.
+    /// </summary>
+    public const string Next = MusicApiUrl + "/next";
 }

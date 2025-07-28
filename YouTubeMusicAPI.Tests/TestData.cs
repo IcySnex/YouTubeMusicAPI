@@ -10,7 +10,7 @@ internal abstract class TestData
     /// <summary>
     /// Test geographical location for requests
     /// </summary>
-    public const string GeographicalLocation = "US";
+    public const string GeographicalLocation = "DE";
 
     /// <summary>
     /// Test visitor data for requests
@@ -45,7 +45,7 @@ internal abstract class TestData
     /// <summary>
     /// Test query for search requests
     /// </summary>
-    public const string SearchQuery = "pasha";
+    public const string SearchQuery = "Cutty Vibez";
 
 
     /// <summary>

@@ -22,13 +22,10 @@ public class ProfileSearchResult(
     /// <summary>
     /// Parses the JSON element into a <see cref="ProfileSearchResult"/>.
     /// </summary>
-    /// <param name="element">The JSON element containing "musicResponsiveListItemRenderer".</param>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
     internal static ProfileSearchResult Parse(
-        JsonElement element)
+        JsonElement item)
     {
-        JsonElement item = element
-            .GetProperty("musicResponsiveListItemRenderer");
-
         JsonElement flexColumns = item
             .GetProperty("flexColumns");
 

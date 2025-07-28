@@ -24,13 +24,10 @@ public class ArtistSearchResult(
     /// <summary>
     /// Parses the JSON element into an <see cref="ArtistSearchResult"/>.
     /// </summary>
-    /// <param name="element">The JSON element containing "musicResponsiveListItemRenderer".</param>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
     internal static ArtistSearchResult Parse(
-        JsonElement element)
+        JsonElement item)
     {
-        JsonElement item = element
-            .GetProperty("musicResponsiveListItemRenderer");
-
         JsonElement flexColumns = item
             .GetProperty("flexColumns");
 

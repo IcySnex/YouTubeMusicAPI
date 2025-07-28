@@ -30,7 +30,7 @@ public sealed class SearchService : YouTubeMusicService
     /// <param name="query">The query to search for.</param>
     /// <param name="continuationToken">The token used to continue a previous search.</param>
     /// <param name="queryParams">The query params to filter.</param>
-    /// <param name="categoryTitle">The title of the shelf category.</param>
+    /// <param name="category">The title of the shelf category.</param>
     /// <param name="parse">The function to parse JSON elements to a search result.</param>
     /// <param name="cancellationToken">The token to cancel this action.</param>
     /// <returns>A page of search results.</returns>
@@ -43,7 +43,7 @@ public sealed class SearchService : YouTubeMusicService
         string query,
         string? continuationToken,
         string queryParams,
-        string categoryTitle,
+        string category,
         Func<JsonElement, T> parse,
         CancellationToken cancellationToken = default) where T : SearchResult
     {
@@ -76,12 +76,12 @@ public sealed class SearchService : YouTubeMusicService
                 .GetProperty("sectionListRenderer")
                 .GetProperty("contents")
                 .EnumerateArray()
-                .First(content =>
+                .FirstOrDefault(content =>
                 {
                     if (!content.TryGetProperty("musicShelfRenderer", out JsonElement shelf))
                         return false;
 
-                    string category = shelf
+                    string categoryTitle = shelf
                         .GetProperty("title")
                         .GetProperty("runs")
                         .GetElementAt(0)
@@ -90,19 +90,29 @@ public sealed class SearchService : YouTubeMusicService
                         .OrThrow();
 
                     return category == categoryTitle;
-                })
-                .GetProperty("musicShelfRenderer");
+                });
+        if (shelf.ValueKind == JsonValueKind.Undefined)
+            return new([], null);
+        if (!isContinued)
+            shelf = shelf.GetProperty("musicShelfRenderer");
 
         string? nextContinuationToken = shelf
-                .GetPropertyOrNull("continuations")
-                ?.GetElementAtOrNull(0)
-                ?.GetPropertyOrNull("nextContinuationData")
-                ?.GetPropertyOrNull("continuation")
-                ?.GetString();
+            .GetPropertyOrNull("continuations")
+            ?.GetElementAtOrNull(0)
+            ?.GetPropertyOrNull("nextContinuationData")
+            ?.GetPropertyOrNull("continuation")
+            ?.GetString();
 
         List<T> result = [];
-        foreach (JsonElement item in shelf.GetProperty("contents").EnumerateArray())
+        foreach (JsonElement content in shelf.GetProperty("contents").EnumerateArray())
         {
+            JsonElement item = content
+                .GetProperty("musicResponsiveListItemRenderer");
+
+            // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
+            if (item.SelectIsPodcastEvenThoItShouldnt(category))
+                continue;
+
             T searchResult = parse(item);
             result.Add(searchResult);
         }
@@ -326,12 +336,12 @@ public sealed class SearchService : YouTubeMusicService
                 // Related
                 if (cardShelf.TryGetProperty("contents", out JsonElement cardShelfContents))
                 {
-                    foreach (JsonElement item in cardShelfContents.EnumerateArray())
+                    foreach (JsonElement cardContent in cardShelfContents.EnumerateArray())
                     {
-                        if (!item.TryGetProperty("musicResponsiveListItemRenderer", out JsonElement itemContent))
+                        if (!cardContent.TryGetProperty("musicResponsiveListItemRenderer", out JsonElement item))
                             continue;
 
-                        JsonElement descriptionRuns = itemContent
+                        JsonElement descriptionRuns = item
                             .GetProperty("flexColumns")
                             .GetElementAt(1)
                             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
@@ -355,7 +365,7 @@ public sealed class SearchService : YouTubeMusicService
                             "Artist" => null, // never found any top result artist; If u did, CREATE AN ISSUE plz :3
                             "Profile" => null, // never found any top result profile; If u did, CREATE AN ISSUE plz :3
                             "Podcast" => null, // never found any top result podcast; If u did, CREATE AN ISSUE plz :3
-                            "Episode" => EpisodeSearchResult.ParseTopResult,
+                            "Episode" => EpisodeSearchResult.Parse,
                             _ => null
                         };
                         if (parseItem is null && // bruh; YT cmon why dont u write "Video" for videos??? now i gotta do that random ahh fallback >:(
@@ -378,6 +388,10 @@ public sealed class SearchService : YouTubeMusicService
                             logger?.LogWarning("[SearchService-AllAsync] Could not parse related top result. Unsupported caegory: {category}.", itemCategory);
                             continue;
                         }
+
+                        // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
+                        if (item.SelectIsPodcastEvenThoItShouldnt(category))
+                            continue;
 
                         SearchResult searchResult = parseItem(item);
                         relatedTopResults.Add(searchResult);
@@ -415,8 +429,15 @@ public sealed class SearchService : YouTubeMusicService
                     continue;
                 }
 
-                foreach (JsonElement item in shelf.GetProperty("contents").EnumerateArray())
+                foreach (JsonElement shelfContent in shelf.GetProperty("contents").EnumerateArray())
                 {
+                    if (!shelfContent.TryGetProperty("musicResponsiveListItemRenderer", out JsonElement item))
+                        continue;
+
+                    // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
+                    if (item.SelectIsPodcastEvenThoItShouldnt(category))
+                        continue;
+
                     SearchResult searchResult = parse(item);
                     items.Add(searchResult);
                 }

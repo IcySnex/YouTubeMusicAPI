@@ -24,13 +24,10 @@ public class PodcastSearchResult(
     /// <summary>
     /// Parses the JSON element into a <see cref="PodcastSearchResult"/>.
     /// </summary>
-    /// <param name="element">The JSON element containing "musicResponsiveListItemRenderer".</param>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
     internal static PodcastSearchResult Parse(
-        JsonElement element)
+        JsonElement item)
     {
-        JsonElement item = element
-            .GetProperty("musicResponsiveListItemRenderer");
-
         JsonElement flexColumns = item
             .GetProperty("flexColumns");
 

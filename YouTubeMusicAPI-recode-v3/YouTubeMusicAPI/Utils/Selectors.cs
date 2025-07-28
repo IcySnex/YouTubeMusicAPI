@@ -444,4 +444,22 @@ internal static class Selectors
 
         return false;
     }
+
+
+    /// <summary>
+    /// Selects weither a JSON element is an episode even though IT SHOULD NOT BE!!!!.
+    /// </summary>
+    /// <param name="element">The array element.</param>
+    /// <param name="categoryTitle">The title of the shelf category.</param>
+    /// <returns>A boolean weither the JSON element is a podcast.</returns>
+    public static bool SelectIsPodcastEvenThoItShouldnt(
+        this JsonElement element,
+        string categoryTitle)
+    {
+        JsonElement menuItems = element
+            .GetProperty("menu")
+            .GetProperty("menuRenderer");
+
+        return menuItems.TryGetProperty("topLevelButtons", out JsonElement items) && categoryTitle != "Episodes";
+    }
 }

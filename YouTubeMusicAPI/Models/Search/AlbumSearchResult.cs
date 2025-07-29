@@ -1,48 +1,246 @@
-﻿namespace YouTubeMusicAPI.Models.Search;
+﻿using System.Text.Json;
+using YouTubeMusicAPI.Utils;
+
+namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a YouTube Music album search result
+/// Represents an album search result on YouTube Music.
 /// </summary>
-/// <param name="name">The name of this search result</param>
-/// <param name="id">The id of this search result</param>
-/// <param name="artists">The artists of this album</param>
-/// <param name="releaseYear">The release year of this album</param>
-/// <param name="isSingle">Weither this album is a single or not</param>
-/// <param name="isEp">Weither this album is an EP or not</param>
-/// <param name="radio">The radio channel of this album</param>
-/// <param name="thumbnails">The thumbnails of this search result</param>
+/// <remarks>
+/// Creates a new instance of <see cref="AlbumSearchResult"/>.
+/// </remarks>
+/// <param name="name">The name of this album.</param>
+/// <param name="id">The ID of this album.</param>
+/// <param name="thumbnails">The thumbnails of this album.</param>
+/// <param name="browseId">The browse ID of this album.</param>
+/// <param name="artists">The artists of this album.</param>
+/// <param name="releaseYear">The year this alvbum was released in.</param>
+/// <param name="isExplicit">Whether this album is explicit or not.</param>
+/// <param name="type">The type of this album, e.g. Album, Single, EP.</param>
+/// <param name="radio">The radio associated with this album, if available.</param>
 public class AlbumSearchResult(
     string name,
     string id,
-    NamedEntity[] artists,
-    int releaseYear,
-    bool isSingle,
-    bool isEp,
-    Radio radio,
-    Thumbnail[] thumbnails) : SearchResult(name, id, thumbnails, SearchCategory.Albums)
+    Thumbnail[] thumbnails,
+    string browseId,
+    YouTubeMusicEntity[] artists,
+    int? releaseYear,
+    bool isExplicit,
+    AlbumType type,
+    Radio? radio) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
-    /// The artists of this album
+    /// Parses the JSON element into a <see cref="AlbumSearchResult"/>.
     /// </summary>
-    public NamedEntity[] Artists { get; } = artists;
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static AlbumSearchResult Parse(
+        JsonElement item)
+    {
+        JsonElement flexColumns = item
+            .GetProperty("flexColumns");
+
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("overlay")
+            .SelectOverlayNavigationPlaylistId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
+            .SelectThumbnails();
+
+        string browseId = item
+            .SelectNavigationBrowseId();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists(2);
+
+        int? releaseYear = descriptionRuns
+            .GetElementAtOrNull(artists.Length * 2 + 2)
+            ?.GetPropertyOrNull("text")
+            ?.GetString()
+            .ToInt32();
+
+        bool isExplicit = item
+            .GetPropertyOrNull("badges")
+            .SelectContainsExplicitBadge();
+
+        AlbumType type = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .ToAlbumType()
+            .OrThrow();
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
+    }
 
     /// <summary>
-    /// The release year of this album
+    /// Parses the JSON item into an <see cref="AlbumSearchResult"/>.
     /// </summary>
-    public int ReleaseYear { get; } = releaseYear;
+    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    internal static AlbumSearchResult ParseTopResult(
+        JsonElement item)
+    {
+        JsonElement descriptionRuns = item
+            .GetProperty("subtitle")
+            .GetProperty("runs");
+
+
+        string name = item
+            .GetProperty("title")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .GetProperty("thumbnailOverlay")
+            .SelectOverlayNavigationPlaylistId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
+            .SelectThumbnails();
+
+        string browseId = item
+            .SelectTapBrowseId();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists(2);
+
+        int? releaseYear = null;
+
+        bool isExplicit = item
+            .GetPropertyOrNull("subtitleBadges")
+            .SelectContainsExplicitBadge();
+
+        AlbumType type = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .ToAlbumType()
+            .OrThrow();
+
+        Radio? radio = item
+            .SelectMenuItems()
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
+    }
 
     /// <summary>
-    /// Weither this album is a single or not
+    /// Parses the JSON element into a <see cref="AlbumSearchResult"/>.
     /// </summary>
-    public bool IsSingle { get; } = isSingle;
-    
-    /// <summary>
-    /// Weither this album is an EP or not
-    /// </summary>
-    public bool IsEp { get; } = isEp;
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static AlbumSearchResult ParseSuggestion(
+        JsonElement item)
+    {
+        JsonElement menuItems = item
+            .SelectMenuItems();
+
+        JsonElement flexColumns = item
+            .GetProperty("flexColumns");
+
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = menuItems
+            .SelectPlaylistIdOrNull()
+            .OrThrow();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
+            .SelectThumbnails();
+
+        string browseId = item
+            .SelectNavigationBrowseId();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists(2);
+
+        int? releaseYear = descriptionRuns
+            .GetElementAtOrNull(artists.Length * 2 + 2)
+            ?.GetPropertyOrNull("text")
+            ?.GetString()
+            .ToInt32();
+
+        bool isExplicit = item
+            .GetPropertyOrNull("badges")
+            .SelectContainsExplicitBadge();
+
+        AlbumType type = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .ToAlbumType()
+            .OrThrow();
+
+        Radio? radio = menuItems
+            .SelectRadioOrNull();
+
+        return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
+    }
+
 
     /// <summary>
-    /// The radio channel of this album
+    /// The artists of this album.
     /// </summary>
-    public Radio Radio { get; } = radio;
+    public YouTubeMusicEntity[] Artists { get; } = artists;
+
+    /// <summary>
+    /// The year this alvbum was released in.
+    /// </summary>
+    public int? ReleaseYear { get; } = releaseYear;
+
+    /// <summary>
+    /// Whether this album is explicit or not.
+    /// </summary>
+    public bool IsExplicit { get; } = isExplicit;
+
+    /// <summary>
+    /// The type of this album, e.g. Album, Single, EP.
+    /// </summary>
+    public AlbumType Type { get; } = type;
+
+    /// <summary>
+    /// The radio associated with this album, if available.
+    /// </summary>
+    public Radio? Radio { get; } = radio;
 }

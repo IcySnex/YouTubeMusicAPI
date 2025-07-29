@@ -1,20 +1,78 @@
-﻿namespace YouTubeMusicAPI.Models.Search;
+﻿using System.Text.Json;
+using YouTubeMusicAPI.Utils;
+
+namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a YouTube Music profile search result
+/// Represents a profile search result on YouTube Music.
 /// </summary>
-/// <param name="name">The name of this search result</param>
-/// <param name="id">The id of this search result</param>
-/// <param name="handle">The handle of this profile</param>
-/// <param name="thumbnails">The thumbnails of this search result</param>
+/// <remarks>
+/// Creates a new instance of <see cref="ProfileSearchResult"/>.
+/// </remarks>
+/// <param name="name">The name of this profile.</param>
+/// <param name="id">The ID of this profile.</param>
+/// <param name="thumbnails">The thumbnails of this profile.</param>
+/// <param name="handle">The handle of this profile.</param>
 public class ProfileSearchResult(
     string name,
     string id,
-    string handle,
-    Thumbnail[] thumbnails) : SearchResult(name, id, thumbnails, SearchCategory.Profiles)
+    Thumbnail[] thumbnails,
+    string handle) : SearchResult(name, id, id, thumbnails)
 {
     /// <summary>
-    /// The handle of this profile
+    /// Parses the JSON element into a <see cref="ProfileSearchResult"/>.
+    /// </summary>
+    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    internal static ProfileSearchResult Parse(
+        JsonElement item)
+    {
+        JsonElement flexColumns = item
+            .GetProperty("flexColumns");
+
+        JsonElement descriptionRuns = flexColumns
+            .GetElementAt(1)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs");
+
+        int descriptionStartIndex = descriptionRuns
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow()
+            .If("Profile", 2, 0);
+
+
+        string name = flexColumns
+            .GetElementAt(0)
+            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
+            .GetProperty("text")
+            .GetProperty("runs")
+            .GetElementAt(0)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        string id = item
+            .SelectNavigationBrowseId();
+
+        Thumbnail[] thumbnails = item
+            .GetProperty("thumbnail")
+            .GetProperty("musicThumbnailRenderer")
+            .SelectThumbnails();
+
+        string handle = descriptionRuns
+            .GetElementAt(descriptionStartIndex)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+        return new(name, id, thumbnails, handle);
+    }
+
+
+    /// <summary>
+    /// The handle of this profile.
     /// </summary>
     public string Handle { get; } = handle;
 }

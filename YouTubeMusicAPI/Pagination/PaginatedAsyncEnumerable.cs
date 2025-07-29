@@ -1,49 +1,80 @@
 ﻿namespace YouTubeMusicAPI.Pagination;
 
 /// <summary>
-/// Provides an asynchronous way to iterate through paginated results
+/// Provides an asynchronous way to iterate through paginated items.
 /// </summary>
-/// <typeparam name="T">The type of items</typeparam>
-/// <param name="fetchDelegate">The delegate for fetching a page</param>
+/// <typeparam name="T">The type of the items.</typeparam>
+/// <param name="fetchDelegate">Delegate to fetch a page of items.</param>
 public class PaginatedAsyncEnumerable<T>(
     FetchPageDelegate<T> fetchDelegate) : IAsyncEnumerable<T>
 {
     readonly FetchPageDelegate<T> fetchDelegate = fetchDelegate;
-    string? continuationToken = null;
+    readonly Stack<string?> previousContinuationTokens = new();
+
+    string? nextContinuationToken = null;
 
 
     /// <summary>
-    /// Weither there are more pages to fetch
+    /// Weither there are previous pages to fetch.
+    /// </summary>
+    public bool HasPrevious => previousContinuationTokens.Count > 1;
+
+    /// <summary>
+    /// Weither there are more pages to fetch.
     /// </summary>
     public bool HasMore { get; private set; } = true;
 
 
     /// <summary>
-    /// Fetches the next page of results
+    /// Fetches the previous page of items.
     /// </summary>
-    /// <param name="cancellationToken">The token to cancel this action</param>
-    /// <returns>A list containing the items of the next page</returns>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>A list containing the items.</returns>
+    public async Task<IReadOnlyList<T>> FetchPreviousPageAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (!HasPrevious)
+            return [];
+
+        previousContinuationTokens.Pop();
+        string? previousContinuationToken = previousContinuationTokens.Peek();
+
+        Page<T> page = await fetchDelegate(previousContinuationToken, cancellationToken);
+
+        nextContinuationToken = page.ContinuationToken;
+        HasMore = nextContinuationToken is not null;
+
+        return page.Items;
+    }
+
+    /// <summary>
+    /// Fetches the next page of items.
+    /// </summary>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>A list containing the items.</returns>
     public async Task<IReadOnlyList<T>> FetchNextPageAsync(
         CancellationToken cancellationToken = default)
     {
         if (!HasMore)
             return [];
 
-        Page<T> page = await fetchDelegate(continuationToken, cancellationToken);
+        Page<T> page = await fetchDelegate(nextContinuationToken, cancellationToken);
 
-        continuationToken = page.ContinuationToken;
-        HasMore = !string.IsNullOrEmpty(continuationToken);
+        previousContinuationTokens.Push(nextContinuationToken);
+
+        nextContinuationToken = page.ContinuationToken;
+        HasMore = nextContinuationToken is not null;
 
         return page.Items;
     }
 
     /// <summary>
-    /// Fetches the items of all pages in the specified range
+    /// Fetches the items of all pages in the specified range.
     /// </summary>
-    /// <param name="offset">The number of items to skip (pages will be fetched but not added to the result)</param>
-    /// <param name="limit">The maximum items to fetch (null to get all)</param>
-    /// <param name="cancellationToken">The token to cancel this action</param>
-    /// <returns>A list of items within the range</returns>
+    /// <param name="offset">The number of items to skip. Pages will still be fetched but not added to the result.</param>
+    /// <param name="limit">The maximum items to fetch. Leave this <see langword="null"/> to fetch all items - may run indefinitely.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>A list containing the items within the range.</returns>
     public async Task<IReadOnlyList<T>> FetchItemsAsync(
         int offset = 0,
         int? limit = null,
@@ -66,20 +97,20 @@ public class PaginatedAsyncEnumerable<T>(
 
 
     /// <summary>
-    /// Resets the paginator to the first page
+    /// Resets the paginator to the first page.
     /// </summary>
     public void Reset()
     {
-        continuationToken = null;
+        nextContinuationToken = null;
         HasMore = true;
     }
 
 
     /// <summary>
-    /// Returns an enumerator that iterates asynchronously through the collection
+    /// Returns an enumerator that iterates asynchronously through the items.
     /// </summary>
-    /// <param name="cancellationToken">A System.Threading.CancellationToken that may be used to cancel the asynchronous iteration</param>
-    /// <returns>An enumerator that can be used to iterate asynchronously through the collection</returns>
+    /// <param name="cancellationToken">The token to cancel the asynchronous iteration.</param>
+    /// <returns>An enumerator that can be used to iterate asynchronously through the collection.</returns>
     public async IAsyncEnumerator<T> GetAsyncEnumerator(
         CancellationToken cancellationToken = default)
     {

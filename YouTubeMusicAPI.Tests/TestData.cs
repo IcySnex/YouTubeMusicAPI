@@ -1,104 +1,114 @@
-﻿using System.Net;
+﻿#pragma warning disable CS0162 // Unreachable code detected
+
+using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Text.Json;
+using YouTubeMusicAPI.Authentication;
+using YouTubeSessionGenerator;
+using YouTubeSessionGenerator.Js.Environments;
 
 namespace YouTubeMusicAPI.Tests;
 
-/// <summary>
-/// Contains test data for tests
-/// </summary>
-internal abstract class TestData
+internal static class TestData
 {
-    /// <summary>
-    /// Test geographical location for requests
-    /// </summary>
-    public const string GeographicalLocation = "DE";
+    // Write Output
+    static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
-    /// <summary>
-    /// Test visitor data for requests
-    /// </summary>
+    public static void WriteResult<T>(
+        T result)
+    {
+        string json = JsonSerializer.Serialize(result, JsonOptions);
+        TestContext.Out.WriteLine("Result: {0}", json);
+    }
+
+
+    // Random
+    public static string RandomString() =>
+        Guid.NewGuid().ToString();
+
+    public static Cookie[] RandomCookies() =>
+        [
+            new Cookie("__Secure-3PAPISID", RandomString()) { Domain = ".youtube.com" },
+            new Cookie("SAPISID", RandomString()) { Domain = ".youtube.com" },
+            new Cookie("SSID", RandomString()) { Domain = ".youtube.com" }
+            //...
+        ];
+
+
+    // Session
+    public const bool GenerateSession = false;
+
     public const string? VisitorData = null;
 
-    /// <summary>
-    /// Test po token for requests
-    /// </summary>
-    public const string? PoToken = null;
+    public const string? RolloutToken = null;
 
-    /// <summary>
-    /// Test cookies for authentication
-    /// </summary>
-    public static IEnumerable<Cookie>? Cookies
+    public const string? ProofOfOriginToken = null;
+
+    public const string? Cookies = null;
+
+
+    // Client
+    public const string GeographicalLocation = "DE";
+
+    public static async Task<YouTubeMusicClient> CreateClientAsync()
     {
-        get
-        {
-            string? cookies = null;
+        // Logging
+        ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+        ILogger logger = factory.CreateLogger<Program>();
 
-            return cookies?
-                .Split(';')
+        // Session
+        IAuthenticator authenticator;
+
+        if (GenerateSession)
+        {
+            using NodeEnvironment nodeEnvironment = new();
+
+            YouTubeSessionConfig sessionConfig = new()
+            {
+                Logger = logger,
+                JsEnvironment = nodeEnvironment
+            };
+            YouTubeSessionCreator sessionCreator = new(sessionConfig);
+
+            string visitorData = await sessionCreator.VisitorDataAsync();
+            string rolloutTOken = await sessionCreator.RolloutTokenAsync();
+            string proofOfOriginToken = await sessionCreator.ProofOfOriginTokenAsync(visitorData);
+
+            authenticator = new AnonymousAuthenticator(visitorData, rolloutTOken, proofOfOriginToken);
+        }
+        else
+        {
+            IEnumerable<Cookie>? cookies = Cookies
+                ?.Split(';')
                 .Select(cookieString =>
                 {
                     string[] parts = cookieString.Split("=");
                     return new Cookie(parts[0], parts[1]) { Domain = ".youtube.com" };
-                }) ?? null;
+                });
+
+            authenticator = cookies is null
+                ? new AnonymousAuthenticator(VisitorData, RolloutToken, ProofOfOriginToken)
+                : new CookieAuthenticator(cookies, VisitorData, RolloutToken, ProofOfOriginToken);
         }
+
+        // Client
+        YouTubeMusicConfig clientConfig = new()
+        {
+            GeographicalLocation = GeographicalLocation,
+            Logger = logger,
+            Authenticator = authenticator
+        };
+        return new(clientConfig);
     }
 
 
-    /// <summary>
-    /// Test query for search requests
-    /// </summary>
-    public const string SearchQuery = "Cutty Vibez";
-
-
-    /// <summary>
-    /// Test offset from which items should be retruened for fetch requests
-    /// </summary>
+    // Test Data
     public const int FetchOffset = 0;
-
-    /// <summary>
-    /// Test maximum items of items which should be retruened for fetch requests
-    /// </summary>
     public const int FetchLimit = 20;
 
+    //  Search
+    public const string SearchQuery = "Cutty Vibez";
 
-    /// <summary>
-    /// Test song or video id
-    /// </summary>
-    public const string SongVideoId = "3b97cGKN_1A";
-
-    /// <summary>
-    /// Test album id
-    /// </summary>
-    public const string AlbumId = "OLAK5uy_muEnh0WPCqRdkgV3Qg24ttvmZTP1_RBTo";
-
-    /// <summary>
-    /// Test playlist id
-    /// </summary>
-    public const string PlaylistId = "PLuvXOFt0CoEbwWSQj5LmzPhIVKS0SvJ-1";
-
-
-    /// <summary>
-    /// Test album browse id
-    /// </summary>
-    public const string AlbumBrowseId = "MPREb_H2RWN4XY0Ny";
-
-    /// <summary>
-    /// Test playlist browse id
-    /// </summary>
-    public const string PlaylistBrowseId = "RDAMVMnP4Q-iszqb0";
-
-    /// <summary>
-    /// Test artist browse id
-    /// </summary>
-    public const string ArtistBrowseId = "UC5_H9CxsfukWbjYeYepADsw";
-
-
-    /// <summary>
-    /// Test watch time for update requests
-    /// </summary>
-    public static TimeSpan WatchTime = TimeSpan.FromMinutes(1.2);
-
-
-    /// <summary>
-    /// File path to download test media stream
-    /// </summary>
-    public static string FilePath = @$"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\test.mp4";
+    //  Info
+    public const string SongId = "W7AodMdYLos";
 }

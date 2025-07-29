@@ -1,24 +1,26 @@
 ﻿namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
-/// Contains detailed information about a YouTube Music entity
+/// Represents a full entity on YouTube Music.
 /// </summary>
-/// <param name="name">The name of this entity</param>
-/// <param name="id">The id of this entity</param>
-/// <param name="thumbnails">The thumbnails of this entity</param>
-public class EntityInfo(
+/// <param name="name">The name of this full entity.</param>
+/// <param name="id">The ID of this full entity.</param>
+/// <param name="browseId">The browse ID of this full entity.</param>
+/// <param name="thumbnails">The thumbnails of this full entity.</param>
+public abstract class EntityInfo(
     string name,
     string id,
-    Thumbnail[] thumbnails) : NamedEntity(name, id)
+    string? browseId,
+    Thumbnail[] thumbnails) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
-    /// The id of this entity
+    /// The ID of this full entity.
     /// </summary>
     public override string Id { get; } = id;
 
 
     /// <summary>
-    /// The thumbnails of this entity
+    /// The thumbnails of this full entity.
     /// </summary>
     public Thumbnail[] Thumbnails { get; } = thumbnails;
 }

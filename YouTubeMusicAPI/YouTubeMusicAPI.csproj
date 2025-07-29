@@ -1,55 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<LangVersion>12</LangVersion>
+		<TargetFramework>net9.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>3.0.3-alpha</Version>
-		<AssemblyVersion>3.0.3</AssemblyVersion>
-		<FileVersion>3.0.3</FileVersion>
-
-		<Title>YouTube Music API</Title>
-		<Authors>IcySnex</Authors>
-		<Company />
-		<Description>YouTube Music Web API Wrapper for C#</Description>
-		<PackageProjectUrl>https://github.com/IcySnex/YouTubeMusicAPI</PackageProjectUrl>
-		<PackageIcon>icon.png</PackageIcon>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<RepositoryUrl>https://github.com/IcySnex/YouTubeMusicAPI/tree/main</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageTags>youtube;youtubemusic;music</PackageTags>
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageReleaseNotes>
-			- Fixed Video-Search not being fully implemented
-			- Fixed parsing of duration for Video-Search
-		</PackageReleaseNotes>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
-	  <None Include="..\icon.png">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
-	  <None Include="..\LICENSE">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
-	  <None Include="..\README.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
+		<InternalsVisibleTo Include="YouTubeMusicAPI.Tests" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
-	  <PackageReference Include="Jint" Version="4.2.2" />
-	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.4" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
 	</ItemGroup>
-	
+
+	<ItemGroup>
+		<Folder Include="Models\Library\" />
+		<Folder Include="Models\Streaming\" />
+	</ItemGroup>
 </Project>

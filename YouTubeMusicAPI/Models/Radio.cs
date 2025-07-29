@@ -1,21 +1,21 @@
 ﻿namespace YouTubeMusicAPI.Models;
 
 /// <summary>
-/// Represents a YouTube Music radio channel
+/// Represents a radio channel on YouTube Music.
 /// </summary>
-/// <param name="playlistId">The id of the playlist associated with this radio channel</param>
-/// <param name="videoId">The id of the starting video associated with this radio channel</param>
+/// <param name="playlistId">The id of the auto-generated playlist that serves as the radio.</param>
+/// <param name="songVideoId">The id of the song/video that the radio is based on.</param>
 public class Radio(
     string playlistId,
-    string? videoId)
+    string? songVideoId = null)
 {
     /// <summary>
-    /// The id of the playlist associated with this radio channel
+    /// The id of the auto-generated playlist that serves as the radio.
     /// </summary>
     public string PlaylistId { get; } = playlistId;
 
     /// <summary>
-    /// The id of the starting video associated with this radio channel
+    /// The id of the song/video that the radio is based on.
     /// </summary>
-    public string? VideoId { get; } = videoId;
+    public string? SongVideoId { get; } = songVideoId;
 }

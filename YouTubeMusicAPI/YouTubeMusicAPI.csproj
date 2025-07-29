@@ -46,9 +46,9 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <PackageReference Include="Jint" Version="4.2.2" />
-	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.4" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
+	  <PackageReference Include="Jint" Version="4.4.1" />
+	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.7" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 	

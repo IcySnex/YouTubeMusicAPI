@@ -49,7 +49,7 @@
 			- Optimized getting streaming data when authenticated
 			- Improved JS parsing performance for getting streaming data
 			- Fixed Video-Search not being fully implemented
-			- Fixed parsing of duration for Video-Search
+			- Fixed various Video-Search parsing issues
 			- Updated packages
 			
 			A complete overhaul of YouTubeMusicAPI is currently underway!

@@ -8,11 +8,31 @@ namespace YouTubeMusicAPI.Utils;
 /// </summary>
 internal static class Selectors
 {
-    /// <summary>
-    /// Selects the navigation browse endpoint ID from a JSON element.
-    /// </summary>
-    /// <param name="element">The element containing "navigationEndpoint.browseEndpoint.browseId".</param>
-    /// <returns></returns>
+    public static JsonElement SelectRuns(
+        this JsonElement element,
+        string propertyName) =>
+        element
+            .GetProperty(propertyName)
+            .GetProperty("runs");
+
+    public static string SelectRunText(
+        this JsonElement runs,
+        int index) =>
+        runs
+            .GetElementAt(index)
+            .GetProperty("text")
+            .GetString()
+            .OrThrow();
+
+    public static string SelectRunTextAt(
+        this JsonElement element,
+        string propertyName,
+        int index = 0) =>
+        element
+            .SelectRuns(propertyName)
+            .SelectRunText(index);
+
+
     public static string SelectNavigationBrowseId(
         this JsonElement element) =>
         element
@@ -21,11 +41,6 @@ internal static class Selectors
             .GetProperty("browseId")
             .GetString()
             .OrThrow();
-    /// <summary>
-    /// Selects the navigation browse endpoint ID from a JSON element or null if not found.
-    /// </summary>
-    /// <param name="element">The element containing "navigationEndpoint.browseEndpoint.browseId".</param>
-    /// <returns></returns>
     public static string? SelectNavigationBrowseIdOrNull(
         this JsonElement element) =>
         element
@@ -34,11 +49,6 @@ internal static class Selectors
             ?.GetPropertyOrNull("browseId")
             ?.GetString();
 
-    /// <summary>
-    /// Selects the onTap browse endpoint ID from a JSON element.
-    /// </summary>
-    /// <param name="element">The element containing "onTap.browseEndpoint.browseId".</param>
-    /// <returns></returns>
     public static string SelectTapBrowseId(
         this JsonElement element) =>
         element
@@ -48,11 +58,6 @@ internal static class Selectors
             .GetString()
             .OrThrow();
 
-    /// <summary>
-    /// Selects the navigation watch endpoint ID from a JSON element.
-    /// </summary>
-    /// <param name="element">The element containing "navigationEndpoint.watchEndpoint.videoId".</param>
-    /// <returns></returns>
     public static string SelectNavigationVideoId(
         this JsonElement element) =>
         element
@@ -62,11 +67,6 @@ internal static class Selectors
             .GetString()
             .OrThrow();
 
-    /// <summary>
-    /// Selects the overlay navigation playlist endpoint ID from a JSON element.
-    /// </summary>
-    /// <param name="element">The element containing "musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchPlaylistEndpoint.playlistId".</param>
-    /// <returns></returns>
     public static string SelectOverlayNavigationPlaylistId(
         this JsonElement element) =>
         element
@@ -79,11 +79,6 @@ internal static class Selectors
             .GetString()
             .OrThrow();
 
-    /// <summary>
-    /// Selects the overlay navigation video endpoint ID from a JSON element.
-    /// </summary>
-    /// <param name="element">The element containing "musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId".</param>
-    /// <returns></returns>
     public static string SelectOverlayNavigationVideoId(
         this JsonElement element) =>
         element
@@ -97,11 +92,6 @@ internal static class Selectors
             .OrThrow();
 
 
-    /// <summary>
-    /// Selects the menu items from a JSON element.
-    /// </summary>
-    /// <param name="element">The element containing "menu.menuRenderer.items".</param>
-    /// <returns></returns>
     public static JsonElement SelectMenuItems(
         this JsonElement element) =>
         element
@@ -110,16 +100,12 @@ internal static class Selectors
             .GetProperty("items");
 
 
-    /// <summary>
-    /// Selects the thumbnails from a JSON element.
-    /// </summary>
-    /// <param name="element">The elemnt containing "musicThumbnailRenderer.thumbnail.thumbnails".</param>
-    /// <returns>An array containing the thumbnails.</returns>
     public static Thumbnail[] SelectThumbnails(
-        this JsonElement element)
+        this JsonElement element,
+        string propertyName = "thumbnail")
     {
         JsonElement thumbnails = element
-            .GetProperty("thumbnail")
+            .GetProperty(propertyName)
             .GetProperty("thumbnails");
 
         List<Thumbnail> result = [];
@@ -132,11 +118,6 @@ internal static class Selectors
         return [.. result];
     }
 
-    /// <summary>
-    /// Selects a radio from a JSON element.
-    /// </summary>
-    /// <param name="element">The array element.</param>
-    /// <returns>An radio, if found.</returns>
     public static Radio? SelectRadioOrNull(
         this JsonElement element)
     {
@@ -190,11 +171,6 @@ internal static class Selectors
         return null;
     }
 
-    /// <summary>
-    /// Selects a playlist ID from a JSON element.
-    /// </summary>
-    /// <param name="element">The array element.</param>
-    /// <returns>A playlist ID, if found.</returns>
     public static string? SelectPlaylistIdOrNull(
         this JsonElement element)
     {
@@ -236,11 +212,6 @@ internal static class Selectors
         return null;
     }
 
-    /// <summary>
-    /// Selects whether the given JSON element contains an explicit badge.
-    /// </summary>
-    /// <param name="element">The element containing "musicInlineBadgeRenderer.icon.iconType".</param>
-    /// <returns>A boolean indicating wether a explicit badge is contained.</returns>
     public static bool SelectContainsExplicitBadge(
         this JsonElement? element)
     {
@@ -261,11 +232,6 @@ internal static class Selectors
     }
 
 
-    /// <summary>
-    /// Selects an artist from a JSON element
-    /// </summary>
-    /// <param name="element">The element containing "text" and "navigationEndpoint.browseEndpoint.browseId".</param>
-    /// <returns>An artist.</returns>
     public static YouTubeMusicEntity SelectArtist(
         this JsonElement element)
     {
@@ -280,12 +246,6 @@ internal static class Selectors
         return new(text, id, id);
     }
 
-    /// <summary>
-    /// Selects the artists from a JSON element.
-    /// </summary>
-    /// <param name="element">The array element.</param>
-    /// <param name="startIndex">The index to start from.</param>
-    /// <returns>An array containing the artists.</returns>
     public static YouTubeMusicEntity[] SelectArtists(
         this JsonElement element,
         int startIndex = 0)
@@ -323,11 +283,6 @@ internal static class Selectors
     }
 
 
-    /// <summary>
-    /// Selects an album from a JSON element
-    /// </summary>
-    /// <param name="element">The element containing "text" and "navigationEndpoint.browseEndpoint.browseId".</param>
-    /// <returns>An album.</returns>
     public static YouTubeMusicEntity SelectAlbum(
         this JsonElement element)
     {
@@ -342,11 +297,6 @@ internal static class Selectors
         return new(text, null, id);
     }
 
-    /// <summary>
-    /// Selects an unknown album (only id) from a JSON element.
-    /// </summary>
-    /// <param name="element">The array element.</param>
-    /// <returns>An album with the name 'N/A'.</returns>
     public static YouTubeMusicEntity SelectAlbumUnknown(
         this JsonElement element)
     {
@@ -385,11 +335,6 @@ internal static class Selectors
     }
 
 
-    /// <summary>
-    /// Selects a podcast from a JSON element
-    /// </summary>
-    /// <param name="element">The element containing "text" and "navigationEndpoint.browseEndpoint.browseId".</param>
-    /// <returns>A podcast.</returns>
     public static YouTubeMusicEntity SelectPodcast(
         this JsonElement element)
     {
@@ -405,11 +350,6 @@ internal static class Selectors
     }
 
 
-    /// <summary>
-    /// Selects weither credits are available to fetch for a song from a JSON element.
-    /// </summary>
-    /// <param name="element">The array element.</param>
-    /// <returns>A boolean weither credits are available.</returns>
     public static bool SelectIsCreditsAvailable(
         this JsonElement element)
     {
@@ -446,12 +386,6 @@ internal static class Selectors
     }
 
 
-    /// <summary>
-    /// Selects weither a JSON element is an episode even though IT SHOULD NOT BE!!!!.
-    /// </summary>
-    /// <param name="element">The array element.</param>
-    /// <param name="categoryTitle">The title of the shelf category.</param>
-    /// <returns>A boolean weither the JSON element is a podcast.</returns>
     public static bool SelectIsPodcastEvenThoItShouldnt(
         this JsonElement element,
         string categoryTitle)

@@ -9,6 +9,11 @@ internal static class Endpoints
 
 
     /// <summary>
+    /// The path to the account menu endpoint.
+    /// </summary>
+    public const string AccountMenu = MusicApiUrl + "/account/account_menu";
+
+    /// <summary>
     /// The path to the search endpoint.
     /// </summary>
     public const string Search = MusicApiUrl + "/search";

@@ -4,7 +4,7 @@ YouTubeMusicAPI is a simple and efficient C# wrapper for the YouTube Music Web A
 
 ---
 
-> ⚠️ **Major Update in Progress: v3 Recode**
+> ⚠️ **Major Update in Progress: v4 Recode**
 > 
 > A **complete overhaul** of **YouTubeMusicAPI** is currently underway!
 > 

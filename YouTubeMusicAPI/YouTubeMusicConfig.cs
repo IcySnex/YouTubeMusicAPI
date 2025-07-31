@@ -6,6 +6,9 @@ namespace YouTubeMusicAPI;
 /// <summary>
 /// Contains configuration options for the YouTube Music client.
 /// </summary>
+/// <remarks>
+/// Create an instance of the <see cref="YouTubeMusicConfig"/> class.
+/// </remarks>
 public class YouTubeMusicConfig
 {
     /// <summary>

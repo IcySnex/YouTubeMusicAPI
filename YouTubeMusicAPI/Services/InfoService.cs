@@ -15,13 +15,22 @@ public sealed class InfoService : YouTubeMusicService
     /// <summary>
     /// Initializes a new instance of the <see cref="InfoService"/> class.
     /// </summary>
-    /// <param name="requestHandler">The request handler.</param>
+    /// <param name="requestHandler">The handler for all outgoing HTTP requests.</param>
     /// <param name="logger">The logger used to provide progress and error messages.</param>
     internal InfoService(
         RequestHandler requestHandler,
         ILogger? logger = null) : base(requestHandler, logger) { }
 
 
+    /// <summary>
+    /// Gets detailed information about a song from YouTube Music.
+    /// </summary>
+    /// <param name="id">The ID of the song.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The <see cref="SongInfo"/> containing the information.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the <c>id</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SongInfo> GetSongAsync(
         string id,
         CancellationToken cancellationToken = default)
@@ -53,6 +62,15 @@ public sealed class InfoService : YouTubeMusicService
         return song;
     }
 
+    /// <summary>
+    /// Gets the credits (like performers, writers, producers etc.) of a song from YouTube Music.
+    /// </summary>
+    /// <param name="id">The ID of the song.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The <see cref="SongCredits"/> containing the information about the credits.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the <c>id</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SongCredits> GetSongCreditsAsync(
         string id,
         CancellationToken cancellationToken = default)

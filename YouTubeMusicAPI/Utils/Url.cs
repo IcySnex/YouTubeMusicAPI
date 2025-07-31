@@ -11,6 +11,7 @@ internal static class Url
     /// <param name="url">The URL from which the query parameter should be removed.</param>
     /// <param name="key">The key of the query parameter to remove.</param>
     /// <returns>The URL with the specified query parameter removed. If the parameter is not found, the original URL is returned.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the <c>url</c> or <c>key</c> is <see langword="null"/> or empty.</exception>
     public static string RemoveQueryParameter(
         string url,
         string key)
@@ -44,12 +45,14 @@ internal static class Url
     /// <param name="key">The key of the query parameter to add or update.</param>
     /// <param name="value">The value of the query parameter to associate with the specified key.</param>
     /// <returns>A new URL with the specified query parameter added or updated. If the key already exists in the query string, its value is replaced.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the <c>url</c> or <c>key</c> is <see langword="null"/> or empty.</exception>
     public static string SetQueryParameter(
         string url,
         string key,
         string value)
     {
         Ensure.NotNullOrEmpty(url, nameof(url));
+        Ensure.NotNullOrEmpty(key, nameof(key));
 
         if (!url.Contains('?'))
             return url + '?' + key + '=' + value;

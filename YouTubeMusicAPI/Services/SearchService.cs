@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Pagination;
@@ -16,7 +15,7 @@ public sealed class SearchService : YouTubeMusicService
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchService"/> class.
     /// </summary>
-    /// <param name="requestHandler">The request handler.</param>
+    /// <param name="requestHandler">The handler for all outgoing HTTP requests.</param>
     /// <param name="logger">The logger used to provide progress and error messages.</param>
     internal SearchService(
         RequestHandler requestHandler,
@@ -32,11 +31,8 @@ public sealed class SearchService : YouTubeMusicService
     /// <param name="queryParams">The query params to filter.</param>
     /// <param name="category">The title of the shelf category.</param>
     /// <param name="parse">The function to parse JSON elements to a search result.</param>
-    /// <param name="cancellationToken">The token to cancel this action.</param>
+    /// <param name="cancellationToken">The token to cancel this tas.</param>
     /// <returns>A page of search results.</returns>
-    /// <exception cref="KeyNotFoundException">Occurrs when no property in the JSON was found with the requested name.</exception>
-    /// <exception cref="IndexOutOfRangeException">Occurrs when an index in the JSON is out of bounds.</exception>
-    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     async Task<Page<T>> FetchPageAsync<T>(
@@ -129,7 +125,7 @@ public sealed class SearchService : YouTubeMusicService
     /// <param name="categoryTitle">The title of the shelf category.</param>
     /// <param name="parse">The function to parse JSON elements to a search result.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     PaginatedAsyncEnumerable<T> CreatePaginatorAsync<T>(
         string query,
         string queryParams,
@@ -144,11 +140,11 @@ public sealed class SearchService : YouTubeMusicService
 
 
     /// <summary>
-    /// Searches for songs on YouTube Music.
+    /// Creates a paginator that searches for songs on YouTube Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SongSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<SongSearchResult> SongsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -158,11 +154,11 @@ public sealed class SearchService : YouTubeMusicService
             SongSearchResult.Parse);
 
     /// <summary>
-    /// Searches for videos on YouTube Music.
+    /// Creates a paginator that searches for videos on YouTube Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="VideoSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<VideoSearchResult> VideosAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -172,11 +168,11 @@ public sealed class SearchService : YouTubeMusicService
             VideoSearchResult.Parse);
 
     /// <summary>
-    /// Searches for playlists on YouTube Music.
+    /// Creates a paginator that searches for playlists on YouTube Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PlaylistSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<PlaylistSearchResult> PlaylistsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -186,11 +182,11 @@ public sealed class SearchService : YouTubeMusicService
             PlaylistSearchResult.Parse);
 
     /// <summary>
-    /// Searches for albums on YouTube Music.
+    /// Creates a paginator that searches for albums on YouTube Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="AlbumSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<AlbumSearchResult> AlbumsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -200,11 +196,11 @@ public sealed class SearchService : YouTubeMusicService
             AlbumSearchResult.Parse);
 
     /// <summary>
-    /// Searches for artists on YouTube Music.
+    /// Creates a paginator that searches for artists on YouTube Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ArtistSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<ArtistSearchResult> ArtistsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -214,11 +210,11 @@ public sealed class SearchService : YouTubeMusicService
             ArtistSearchResult.Parse);
 
     /// <summary>
-    /// Searches for profiles on YouTube Music.
+    /// Creates a paginator that searches for profiles on YouTube Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ProfileSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<ProfileSearchResult> ProfilesAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -228,11 +224,11 @@ public sealed class SearchService : YouTubeMusicService
             ProfileSearchResult.Parse);
 
     /// <summary>
-    /// Searches for podcasts on YouTube Music.
+    /// Creates a paginator that searches for podcasts on YouTube Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PodcastSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<PodcastSearchResult> PodcastsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -242,11 +238,11 @@ public sealed class SearchService : YouTubeMusicService
             PodcastSearchResult.Parse);
 
     /// <summary>
-    /// Searches for podcast episodes on YouTube Music.
+    /// Creates a paginator that searches for episodes on YouTube Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="EpisodeSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<EpisodeSearchResult> EpisodesAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -260,12 +256,9 @@ public sealed class SearchService : YouTubeMusicService
     /// Searches for all kind of results on YouTUbe Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
-    /// <param name="cancellationToken">The token to cancel this action.</param>
-    /// <returns>A page containing all search results, including the top result.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the query is <see langword="null"/> or empty.</exception>
-    /// <exception cref="KeyNotFoundException">Occurrs when no property in the JSON was found with the requested name.</exception>
-    /// <exception cref="IndexOutOfRangeException">Occurrs when an index in the JSON is out of bounds.</exception>
-    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>A <see cref="SearchPage"/> containing all items, including the top result.</returns>
+    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SearchPage> AllAsync(
@@ -296,7 +289,7 @@ public sealed class SearchService : YouTubeMusicService
             .GetProperty("sectionListRenderer")
             .GetProperty("contents");
 
-        List<SearchResult> items = [];
+        List<SearchResult> results = [];
         SearchResult? topResult = null;
         List<SearchResult> relatedTopResults = [];
         foreach (JsonElement content in contents.EnumerateArray())
@@ -439,12 +432,12 @@ public sealed class SearchService : YouTubeMusicService
                         continue;
 
                     SearchResult searchResult = parse(item);
-                    items.Add(searchResult);
+                    results.Add(searchResult);
                 }
             }
         }
 
-        return new(items, topResult, relatedTopResults);
+        return new(results, topResult, relatedTopResults);
     }
 
 
@@ -455,11 +448,8 @@ public sealed class SearchService : YouTubeMusicService
     /// For history suggestions, the user must be authenticated.
     /// </remarks>
     /// <param name="input">The input to get suggestions for.</param>
-    /// <param name="cancellationToken">The token to cancel this action.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>Search suggestions, including search, history and result suggestions.</returns>
-    /// <exception cref="KeyNotFoundException">Occurrs when no property in the JSON was found with the requested name.</exception>
-    /// <exception cref="IndexOutOfRangeException">Occurrs when an index in the JSON is out of bounds.</exception>
-    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SearchSuggestions> GetSuggestionsAsync(
@@ -583,19 +573,16 @@ public sealed class SearchService : YouTubeMusicService
 
 
     /// <summary>
-    /// Removes the specific input from the search history.
+    /// Removes the specific input from the search history suggestions.
     /// </summary>
     /// <remarks>
     /// The user must be authenticated.
     /// </remarks>
     /// <param name="input">The input to get remove from the suggestions.</param>
     /// <param name="cancellationToken">The token to cancel this action.</param>
-    /// <exception cref="ArgumentException">Occurrs when the string is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurrs when the <c>input</c> is <see langword="null"/> or empty.</exception>
     /// <exception cref="InvalidOperationException">Occurrs when the user is not authenticated.</exception>
-    /// <exception cref="NullReferenceException">Occurrs when a the input could not be found in the search history suggestions.</exception>
-    /// <exception cref="KeyNotFoundException">Occurrs when no property in the JSON was found with the requested name.</exception>
-    /// <exception cref="IndexOutOfRangeException">Occurrs when an index in the JSON is out of bounds.</exception>
-    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <exception cref="NullReferenceException">Occurrs when a the <c>input</c> could not be found in the search history suggestions.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task RemoveSuggestionAsync(

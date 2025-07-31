@@ -15,6 +15,9 @@
 /// <param name="deviceMake">The make of the device on which the client is running.</param>
 /// <param name="deviceModel">The model of the device on which the client is running.</param>
 /// <param name="utcOffsetMinutes">The UTC offset in minutes for the client's time zone.</param>
+/// <remarks>
+/// Creates a new instance of the <see cref="Client"/> class.
+/// </remarks>
 internal sealed class Client(
     string hl,
     string gl,

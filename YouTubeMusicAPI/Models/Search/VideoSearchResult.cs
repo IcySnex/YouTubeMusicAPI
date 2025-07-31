@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// Represents a video search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="VideoSearchResult"/>.
+/// Creates a new instance of the <see cref="VideoSearchResult"/> class.
 /// </remarks>
 /// <param name="name">The name of this video.</param>
 /// <param name="id">The ID of this video.</param>
@@ -26,13 +26,13 @@ public class VideoSearchResult(
     Radio? radio) : SearchResult(name, id, null, thumbnails)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="VideoSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="VideoSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static VideoSearchResult Parse(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -59,11 +59,11 @@ public class VideoSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationVideoId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -84,7 +84,7 @@ public class VideoSearchResult(
             .GetString()
             .OrThrow();
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 
@@ -92,18 +92,18 @@ public class VideoSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON item into an <see cref="VideoSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="VideoSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
     internal static VideoSearchResult ParseTopResult(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement descriptionRuns = item
+        JsonElement descriptionRuns = element
             .GetProperty("subtitle")
             .GetProperty("runs");
 
 
-        string name = item
+        string name = element
             .GetProperty("title")
             .GetProperty("runs")
             .GetElementAt(0)
@@ -111,11 +111,11 @@ public class VideoSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("thumbnailOverlay")
             .SelectOverlayNavigationVideoId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -136,7 +136,7 @@ public class VideoSearchResult(
             .GetString()
             .OrThrow();
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 
@@ -144,13 +144,13 @@ public class VideoSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON element into a <see cref="VideoSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="VideoSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static VideoSearchResult ParseSuggestion(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -170,11 +170,11 @@ public class VideoSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationVideoId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -196,7 +196,7 @@ public class VideoSearchResult(
             .GetString()
             .OrThrow();
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 

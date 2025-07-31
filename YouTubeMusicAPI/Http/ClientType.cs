@@ -1,7 +1,7 @@
 ﻿namespace YouTubeMusicAPI.Http;
 
 /// <summary>
-/// Represents the type of YouTube Music client to be used when making API requests.
+/// Represents the type of YouTube Music client used for making API requests.
 /// </summary>
 internal enum ClientType
 {
@@ -25,7 +25,7 @@ internal enum ClientType
     /// <remarks>
     /// Notes:<br/>
     /// - Account cookies not supported.<br/>
-    /// - Provides HLS (m3u8) streaming formats .
+    /// - Provides HLS (m3u8) streaming formats.
     /// </remarks>
     IOS,
 

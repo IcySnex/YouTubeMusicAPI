@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// Represents a playlist search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="PlaylistSearchResult"/>.
+/// Creates a new instance of the <see cref="PlaylistSearchResult"/> class.
 /// </remarks>
 /// <param name="name">The name of this playlist.</param>
 /// <param name="id">The ID of this playlist.</param>
@@ -26,13 +26,13 @@ public class PlaylistSearchResult(
     Radio? radio) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="PlaylistSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="PlaylistSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static PlaylistSearchResult Parse(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -59,16 +59,16 @@ public class PlaylistSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationPlaylistId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        string browseId = item
+        string browseId = element
             .SelectNavigationBrowseId();
 
         YouTubeMusicEntity creator = descriptionRuns
@@ -83,7 +83,7 @@ public class PlaylistSearchResult(
 
         string viewsInfo = viewsSongsInfo.EndsWith(" songs") ? "N/A views" : viewsSongsInfo; // bruh automated playlists dont have a "view count"
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 
@@ -91,18 +91,18 @@ public class PlaylistSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON item into an <see cref="PlaylistSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="PlaylistSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
     internal static PlaylistSearchResult ParseTopResult(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement descriptionRuns = item
+        JsonElement descriptionRuns = element
             .GetProperty("subtitle")
             .GetProperty("runs");
 
 
-        string name = item
+        string name = element
             .GetProperty("title")
             .GetProperty("runs")
             .GetElementAt(0)
@@ -110,16 +110,16 @@ public class PlaylistSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("thumbnailOverlay")
             .SelectOverlayNavigationPlaylistId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        string browseId = item
+        string browseId = element
             .SelectTapBrowseId();
 
         YouTubeMusicEntity creator = descriptionRuns
@@ -128,7 +128,7 @@ public class PlaylistSearchResult(
 
         string viewsInfo = "N/A views";
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 
@@ -136,13 +136,13 @@ public class PlaylistSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON element into a <see cref="PlaylistSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="PlaylistSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static PlaylistSearchResult ParseSuggestion(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -169,16 +169,16 @@ public class PlaylistSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationPlaylistId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        string browseId = item
+        string browseId = element
             .SelectNavigationBrowseId();
 
         YouTubeMusicEntity creator = descriptionRuns
@@ -191,7 +191,7 @@ public class PlaylistSearchResult(
             ?.GetString())
             .Or("N/A views");
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 

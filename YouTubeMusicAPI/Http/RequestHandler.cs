@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using YouTubeMusicAPI.Authentication;
-using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Http;
@@ -11,6 +10,9 @@ namespace YouTubeMusicAPI.Http;
 /// <summary>
 /// Handles all outgoing HTTP requests.
 /// </summary>
+/// <remarks>
+/// Creates an instance of the <see cref="RequestHandler"/> class.
+/// </remarks>
 internal sealed class RequestHandler(
     string geographicalLocation,
     IAuthenticator authenticator,
@@ -29,19 +31,22 @@ internal sealed class RequestHandler(
     };
 
 
-    public bool IsAuthenticated => authenticator is CookieAuthenticator cookieAuthenticator && cookieAuthenticator.Container.Count > 1;
+    /// <summary>
+    /// Whether the request handler is authenticated.
+    /// </summary>
+    public bool IsAuthenticated => authenticator is not AnonymousAuthenticator;
 
 
     /// <summary>
-    /// Sends an asynchronous request using the provided HTTP method.
+    /// Sends an asynchronous request and validates that it is succsessful.
     /// </summary>
     /// <param name="url">The target URL for the HTTP request.</param>
     /// <param name="method">The HTTP method to use for the request.</param>
     /// <param name="payload">An optional array of key-value pairs representing the request payload.</param>
     /// <param name="clientType">The type of client to use for the request.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
-    /// <returns>The request response.</returns>
-    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <returns>The request response parsed as a <see langword="string"/>.</returns>
+    /// <exception cref="ArgumentException">Occurs when an invalid client type is passed.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     async Task<string> SendAsync(
@@ -63,7 +68,7 @@ internal sealed class RequestHandler(
             body["context"] = new { client };
 
             if (authenticator.ProofOfOriginToken is string poToken)
-                body["serviceIntegrityDimensions"] = new { poToken };
+                body["serviceIntegrityDimensions"] = new { poToken = authenticator.ProofOfOriginToken };
 
             request.Headers.Add("User-Agent", client.UserAgent);
         }
@@ -86,7 +91,7 @@ internal sealed class RequestHandler(
         if (!response.IsSuccessStatusCode)
         {
             logger?.LogError("[RequestHandler-SendAsync] HTTP request failed. Statuscode: {statusCode}.", response.StatusCode);
-            throw new HttpRequestException($"HTTP request failed..", new(content), response.StatusCode);
+            throw new HttpRequestException($"HTTP request failed.", new(content), response.StatusCode);
         }
 
         return content;
@@ -94,14 +99,14 @@ internal sealed class RequestHandler(
 
 
     /// <summary>
-    /// Sends an asynchronous GET request.
+    /// Sends an asynchronous GET request and validates that it is succsessful.
     /// </summary>
     /// <param name="url">The target URL for the HTTP request.</param>
     /// <param name="payload">An optional array of key-value pairs representing the request payload.</param>
     /// <param name="clientType">The type of client to use for the request.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
-    /// <returns>The request response.</returns>
-    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <returns>The request response parsed as a <see langword="string"/>.</returns>
+    /// <exception cref="ArgumentException">Occurs when an invalid client type is passed.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public Task<string> GetAsync(
@@ -112,14 +117,14 @@ internal sealed class RequestHandler(
         SendAsync(url, HttpMethod.Get, payload, clientType, cancellationToken);
 
     /// <summary>
-    /// Sends an asynchronous POST request.
+    /// Sends an asynchronous POST request and validates that it is succsessful.
     /// </summary>
     /// <param name="url">The target URL for the HTTP request.</param>
     /// <param name="payload">An optional array of key-value pairs representing the request payload.</param>
     /// <param name="clientType">The type of client to use for the request.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
-    /// <returns>The request response.</returns>
-    /// <exception cref="AuthenticationException">Occurrs when applying authentication fails.</exception>
+    /// <returns>The request response parsed as a <see langword="string"/>.</returns>
+    /// <exception cref="ArgumentException">Occurs when an invalid client type is passed.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public Task<string> PostAsync(

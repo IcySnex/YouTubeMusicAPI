@@ -19,8 +19,8 @@ namespace YouTubeMusicAPI.Models.Search;
 public class EpisodeSearchResult(
     string name,
     string id,
-    Thumbnail[] thumbnails,
     string browseId,
+    Thumbnail[] thumbnails,
     DateTime releasedAt,
     YouTubeMusicEntity podcast,
     bool isRatingsAllowed) : SearchResult(name, id, browseId, thumbnails)
@@ -93,7 +93,7 @@ public class EpisodeSearchResult(
             .GetProperty("likesAllowed")
             .GetBoolean();
 
-        return new(name, id, thumbnails, browseId, releasedAt, podcast, isRatingsAllowed);
+        return new(name, id, browseId, thumbnails, releasedAt, podcast, isRatingsAllowed);
     }
 
     /// <summary>
@@ -120,13 +120,13 @@ public class EpisodeSearchResult(
             .GetProperty("thumbnailOverlay")
             .SelectOverlayNavigationVideoId();
 
+        string browseId = element
+            .SelectTapBrowseId();
+
         Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
-
-        string browseId = element
-            .SelectTapBrowseId();
 
         DateTime releasedAt = descriptionRuns
             .GetElementAt(2)
@@ -141,8 +141,14 @@ public class EpisodeSearchResult(
 
         bool isRatingsAllowed = true;
 
-        return new(name, id, thumbnails, browseId, releasedAt, podcast, isRatingsAllowed);
+        return new(name, id, browseId, thumbnails, releasedAt, podcast, isRatingsAllowed);
     }
+
+
+    /// <summary>
+    /// The browse ID of this podcast episode.
+    /// </summary>
+    public override string BrowseId { get; } = browseId;
 
 
     /// <summary>

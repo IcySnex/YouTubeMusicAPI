@@ -72,6 +72,12 @@ public class ProfileSearchResult(
 
 
     /// <summary>
+    /// The browse ID of this profile.
+    /// </summary>
+    public override string BrowseId { get; } = id;
+
+
+    /// <summary>
     /// The handle of this profile.
     /// </summary>
     public string Handle { get; } = handle;

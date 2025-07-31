@@ -1,8 +1,11 @@
 ﻿namespace YouTubeMusicAPI.Models;
 
 /// <summary>
-/// Represents a identifiable named entity on YouTube Music.
+/// Represents an identifiable named entity on YouTube Music.
 /// </summary>
+/// <remarks>
+/// Creates a new instance of the <see cref="YouTubeMusicEntity"/> class.
+/// </remarks>
 /// <param name="name">The name of this entity.</param>
 /// <param name="id">The ID of this entity.</param>
 /// <param name="browseId">The browse ID of this entity.</param>

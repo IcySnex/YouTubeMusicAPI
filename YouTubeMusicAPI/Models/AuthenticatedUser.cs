@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Models;
 /// Represents an authenticated user on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="AuthenticatedUser"/>.
+/// Creates a new instance of the <see cref="AuthenticatedUser"/> class.
 /// </remarks>
 /// <param name="name">The name of this authenticated user.</param>
 /// <param name="id">The ID of this authenticated user.</param>
@@ -22,9 +22,9 @@ public class AuthenticatedUser(
     bool isPremium) : YouTubeMusicEntity(name, id, id)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="AuthenticatedUser"/>.
+    /// Parses a <see cref="JsonElement"/> into an <see cref="AuthenticatedUser"/>.
     /// </summary>
-    /// <param name="element">The JSON item "multiPageMenuRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> 'multiPageMenuRenderer' to parse.</param>
     internal static AuthenticatedUser Parse(
         JsonElement element)
     {

@@ -178,7 +178,7 @@ public class SearchServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Items, Is.Not.Null.Or.Empty);
+        Assert.That(result.Results, Is.Not.Null.Or.Empty);
 
         TestData.WriteResult(result);
     }

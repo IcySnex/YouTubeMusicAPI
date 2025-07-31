@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Exceptions;
-
-namespace YouTubeMusicAPI.Authentication;
+﻿namespace YouTubeMusicAPI.Authentication;
 
 /// <summary>
 /// Handles the authentication of HTTP requests sent to YouTube Music.
@@ -8,17 +6,17 @@ namespace YouTubeMusicAPI.Authentication;
 public interface IAuthenticator
 {
     /// <summary>
-    /// A unique identifier used to authenticate and link YouTube requests to a user.
+    /// A unique identifier used to link and fingerprint YouTube requests to a session.
     /// </summary>
     public string? VisitorData { get; }
 
     /// <summary>
-    /// A unique rollout token used to validate the YouTube client.
+    /// An opaque token that controls feature flag rollouts and UI experiment states.
     /// </summary>
     public string? RolloutToken { get; }
 
     /// <summary>
-    /// A unique security token used to verify the authenticity of a client for YouTube requests.
+    /// A cryptographically signed token issued by YouTube’s BotGuard challenge system to prove the client is legitimate.
     /// </summary>
     /// <remarks>
     /// May be required when fetching streaming data.
@@ -29,8 +27,7 @@ public interface IAuthenticator
     /// <summary>
     /// Applies the authentication to the given HTTP request.
     /// </summary>
-    /// <param name="request">The HTTP request to which the authentication will be applied.</param>
-    /// <exception cref="AuthenticationException">Occurrs when applying the authentication fails.</exception>
+    /// <param name="request">The HTTP request to authenticate.</param>
     public void Apply(
         HttpRequestMessage request);
 }

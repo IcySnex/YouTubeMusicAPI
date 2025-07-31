@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// Represents an artist search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="ArtistSearchResult"/>.
+/// Creates a new instance of the <see cref="ArtistSearchResult"/> class.
 /// </remarks>
 /// <param name="name">The name of this artist.</param>
 /// <param name="id">The ID of this artist.</param>
@@ -22,13 +22,13 @@ public class ArtistSearchResult(
     Radio? radio) : SearchResult(name, id, id, thumbnails)
 {
     /// <summary>
-    /// Parses the JSON element into an <see cref="ArtistSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into an <see cref="ArtistSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static ArtistSearchResult Parse(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -55,10 +55,10 @@ public class ArtistSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .SelectNavigationBrowseId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -69,7 +69,7 @@ public class ArtistSearchResult(
             ?.GetString())
             .Or("N/A subscribers");
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 
@@ -77,13 +77,13 @@ public class ArtistSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON item into an <see cref="ArtistSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="ArtistSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
     internal static ArtistSearchResult ParseTopResult(
-        JsonElement item)
+        JsonElement element)
     {
-        string name = item
+        string name = element
             .GetProperty("title")
             .GetProperty("runs")
             .GetElementAt(0)
@@ -91,15 +91,15 @@ public class ArtistSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .SelectTapBrowseId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        string audienceInfo = (item
+        string audienceInfo = (element
             .GetProperty("subtitle")
             .GetProperty("runs")
             .GetElementAtOrNull(2)
@@ -107,7 +107,7 @@ public class ArtistSearchResult(
             ?.GetString())
             .Or("N/A subscribers");
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 
@@ -115,13 +115,13 @@ public class ArtistSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON item into an <see cref="ArtistSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into an <see cref="ArtistSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static ArtistSearchResult ParseSuggestion(
-        JsonElement item)
+        JsonElement element)
     {
-        string name = item
+        string name = element
             .GetProperty("flexColumns")
             .GetElementAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
@@ -132,17 +132,17 @@ public class ArtistSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .SelectNavigationBrowseId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string audienceInfo = "N/A subscribers";
 
-        Radio? radio = item
+        Radio? radio = element
             .SelectMenuItems()
             .SelectRadioOrNull();
 

@@ -4,10 +4,10 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicAPI.Models;
 
 /// <summary>
-/// Represents a YouTube Music thumbnail.
+/// Represents a thumbnail on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="Thumbnail"/>.
+/// Creates a new instance of the <see cref="Thumbnail"/> class.
 /// </remarks>
 /// <param name="url">The URL of this thumbnail.</param>
 /// <param name="width">The pixels width of this thumbnail.</param>
@@ -18,9 +18,9 @@ public class Thumbnail(
     int height)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="Thumbnail"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="Thumbnail"/>.
     /// </summary>
-    /// <param name="element">The JSON element to parse.</param>
+    /// <param name="element">The <see cref="JsonElement"/> to parse.</param>
     internal static Thumbnail Parse(
         JsonElement element)
     {

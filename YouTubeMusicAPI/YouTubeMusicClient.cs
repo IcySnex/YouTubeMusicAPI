@@ -12,7 +12,7 @@ namespace YouTubeMusicAPI;
 /// </summary>
 public class YouTubeMusicClient
 {
-    RequestHandler requestHandler;
+    readonly RequestHandler requestHandler;
 
     /// <summary>
     /// Creates a new instance of the <see cref="YouTubeMusicClient"/> class.
@@ -50,7 +50,9 @@ public class YouTubeMusicClient
     /// Gets the currently authenticated user on YouTube Music.
     /// </summary>
     /// <param name="cancellationToken">The token to cancel this action.</param>
-    /// <returns>An <see cref="AuthenticatedUser"/> if the user is authenticated; otherwise, <c>null</c>.</returns>
+    /// <returns>An <see cref="AuthenticatedUser"/> if the user is authenticated, otherwise <see langword="null"/>.</returns>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<AuthenticatedUser?> GetAuthenticatedUserAsync(
         CancellationToken cancellationToken = default)
     {
@@ -60,10 +62,10 @@ public class YouTubeMusicClient
             return null;
         }
 
-        // Send request
+        // Send
         string response = await requestHandler.PostAsync(Endpoints.AccountMenu, null, ClientType.WebMusic, cancellationToken);
 
-        // Parse response
+        // Parse
         using JsonDocument json = JsonDocument.Parse(response);
         JsonElement rootElement = json.RootElement;
 

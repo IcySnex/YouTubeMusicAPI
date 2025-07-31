@@ -4,7 +4,7 @@ using YouTubeMusicAPI.Http;
 namespace YouTubeMusicAPI.Services;
 
 /// <summary>
-/// Base class for YouTube Music service components.
+/// Base class for YouTube Music services.
 /// </summary>
 public abstract class YouTubeMusicService
 {
@@ -14,7 +14,7 @@ public abstract class YouTubeMusicService
     /// <summary>
     /// Initializes a new instance of the <see cref="YouTubeMusicService"/> class.
     /// </summary>
-    /// <param name="requestHandler">The request handler.</param>
+    /// <param name="requestHandler">The handler for all outgoing HTTP requests.</param>
     /// <param name="logger">The logger used to provide progress and error messages.</param>
     internal YouTubeMusicService(
         RequestHandler requestHandler,

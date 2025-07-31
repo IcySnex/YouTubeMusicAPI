@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// Represents a podcast search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="PodcastSearchResult"/>.
+/// Creates a new instance of the <see cref="PodcastSearchResult"/> class.
 /// </remarks>
 /// <param name="name">The name of this podcast.</param>
 /// <param name="id">The ID of this podcast.</param>
@@ -22,13 +22,13 @@ public class PodcastSearchResult(
     YouTubeMusicEntity host) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="PodcastSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="PodcastSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static PodcastSearchResult Parse(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -55,14 +55,14 @@ public class PodcastSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationPlaylistId();
 
-        string browseId = item
+        string browseId = element
             .SelectNavigationBrowseId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -75,13 +75,13 @@ public class PodcastSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON element into a <see cref="PodcastSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="PodcastSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static PodcastSearchResult ParseSuggestion(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
 
@@ -95,14 +95,14 @@ public class PodcastSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationPlaylistId();
 
-        string browseId = item
+        string browseId = element
             .SelectNavigationBrowseId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();

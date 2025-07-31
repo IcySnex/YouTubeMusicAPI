@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// Represents a profile search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="ProfileSearchResult"/>.
+/// Creates a new instance of the <see cref="ProfileSearchResult"/> class.
 /// </remarks>
 /// <param name="name">The name of this profile.</param>
 /// <param name="id">The ID of this profile.</param>
@@ -20,13 +20,13 @@ public class ProfileSearchResult(
     string handle) : SearchResult(name, id, id, thumbnails)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="ProfileSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="ProfileSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static ProfileSearchResult Parse(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -53,10 +53,10 @@ public class ProfileSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .SelectNavigationBrowseId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();

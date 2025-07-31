@@ -15,12 +15,12 @@ public class PaginatedAsyncEnumerable<T>(
 
 
     /// <summary>
-    /// Weither there are previous pages to fetch.
+    /// Whether there are previous pages to fetch.
     /// </summary>
     public bool HasPrevious => previousContinuationTokens.Count > 1;
 
     /// <summary>
-    /// Weither there are more pages to fetch.
+    /// Whether there are more pages to fetch.
     /// </summary>
     public bool HasMore { get; private set; } = true;
 
@@ -72,7 +72,7 @@ public class PaginatedAsyncEnumerable<T>(
     /// Fetches the items of all pages in the specified range.
     /// </summary>
     /// <param name="offset">The number of items to skip. Pages will still be fetched but not added to the result.</param>
-    /// <param name="limit">The maximum items to fetch. Leave this <see langword="null"/> to fetch all items - may run indefinitely.</param>
+    /// <param name="limit">The maximum items to fetch. Leave this <see langword="null"/> to fetch all items. May run indefinitely!</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>A list containing the items within the range.</returns>
     public async Task<IReadOnlyList<T>> FetchItemsAsync(
@@ -107,10 +107,10 @@ public class PaginatedAsyncEnumerable<T>(
 
 
     /// <summary>
-    /// Returns an enumerator that iterates asynchronously through the items.
+    /// Returns an enumerator that iterates asynchronously through all items.
     /// </summary>
     /// <param name="cancellationToken">The token to cancel the asynchronous iteration.</param>
-    /// <returns>An enumerator that can be used to iterate asynchronously through the collection.</returns>
+    /// <returns>An <see cref="IAsyncEnumerator&lt;T&gt;"/> to iterate asynchronously through all items.</returns>
     public async IAsyncEnumerator<T> GetAsyncEnumerator(
         CancellationToken cancellationToken = default)
     {

@@ -5,29 +5,29 @@ namespace YouTubeMusicAPI.Authentication;
 /// <summary>
 /// Represents an anonymous session used to authenticate HTTP requests sent to YouTube Music.
 /// </summary>
-/// <param name="visitorData">A unique identifier used to authenticate and link YouTube requests to a user.</param>
-/// <param name="rolloutToken">A unique rollout token used to validate the YouTube client.</param>
-/// <param name="prooOfOriginToken">A unique security token used to verify the authenticity of a client for YouTube requests. May be required when fetching streaming data.</param>
+/// <remarks>
+/// Creates a new instance of the <see cref="AnonymousAuthenticator"/> class.
+/// </remarks>
+/// <param name="visitorData">A unique identifier used to link and fingerprint YouTube requests to a session.</param>
+/// <param name="rolloutToken">An opaque token that controls feature flag rollouts and UI experiment states.</param>
+/// <param name="prooOfOriginToken">A cryptographically signed token issued by YouTube’s BotGuard challenge system to prove the client is legitimate. May be required when fetching streaming data.</param>
 public class AnonymousAuthenticator(
     string? visitorData = null,
     string? rolloutToken = null,
     string? prooOfOriginToken = null) : IAuthenticator
 {
     /// <summary>
-    /// A unique identifier used to authenticate and link YouTube requests to a user.
+    /// A unique identifier used to link and fingerprint YouTube requests to a session.
     /// </summary>
-    /// <remarks>
-    /// Leave this <see langword="null"/> to use randomly generated visitor data.
-    /// </remarks>
     public string? VisitorData { get; } = visitorData;
 
     /// <summary>
-    /// A unique rollout token used to validate the YouTube client.
+    /// An opaque token that controls feature flag rollouts and UI experiment states.
     /// </summary>
     public string? RolloutToken { get; } = rolloutToken;
 
     /// <summary>
-    /// A unique security token used to verify the authenticity of a client for YouTube requests.
+    /// A cryptographically signed token issued by YouTube’s BotGuard challenge system to prove the client is legitimate.
     /// </summary>
     /// <remarks>
     /// May be required when fetching streaming data.
@@ -38,8 +38,8 @@ public class AnonymousAuthenticator(
     /// <summary>
     /// Applies the authentication to the given HTTP request.
     /// </summary>
-    /// <param name="request">The HTTP request to which the authentication will be applied.</param>
-    /// <exception cref="ArgumentNullException">Occurrs when the RequestUri of the request is <see langword="null"/>./></exception>
+    /// <param name="request">The HTTP request to authenticate.</param>
+    /// <exception cref="ArgumentNullException">Occurrs when the <c>request.RequestUri</c> is <see langword="null"/>./></exception>
     public virtual void Apply(
         HttpRequestMessage request)
     {

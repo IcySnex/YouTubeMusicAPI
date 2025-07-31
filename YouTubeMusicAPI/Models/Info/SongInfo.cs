@@ -35,12 +35,12 @@ public class SongInfo(
     int? releaseYear,
     bool isCreditsAvailable,
     bool isRatingsAllowed,
-    Radio? radio) : EntityInfo(name, id, null, thumbnails)
+    Radio? radio) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="SongInfo"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="SongInfo"/>.
     /// </summary>
-    /// <param name="element">The JSON element containing "contents" and "playerOverlays".</param>
+    /// <param name="element">The <see cref="JsonElement"/> '{}' to parse.</param>
     internal static SongInfo Parse(
         JsonElement element)
     {
@@ -164,6 +164,11 @@ public class SongInfo(
         return new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, isRatingsAllowed, radio);
     }
 
+
+    /// <summary>
+    /// The thumbnails of this song.
+    /// </summary>
+    public Thumbnail[] Thumbnails { get; } = thumbnails;
 
     /// <summary>
     /// The browse ID for related content associated with this song.

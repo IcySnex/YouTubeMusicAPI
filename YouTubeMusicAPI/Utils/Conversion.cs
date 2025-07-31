@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using YouTubeMusicAPI.Exceptions;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Models;
 
@@ -11,11 +10,11 @@ namespace YouTubeMusicAPI.Utils;
 internal static class Conversion
 {
     /// <summary>
-    /// Converts a client type to a <see cref="Client"/>.
+    /// Converts a <see cref="ClientType"/> to a <see cref="Client"/>.
     /// </summary>
     /// <param name="type">The client type.</param>
-    /// <returns>A Client representing the type.</returns>
-    /// <exception cref="UnknownClientException">Occurs when an invalid client type is passed.</exception>
+    /// <returns>A <see cref="Client"/> representing the type.</returns>
+    /// <exception cref="ArgumentException">Occurs when an invalid client type is passed.</exception>
     public static Client? ToClient(
         this ClientType type) =>
         type switch
@@ -24,15 +23,14 @@ internal static class Conversion
             ClientType.WebMusic => Client.WebMusic.Clone(),
             ClientType.IOS => Client.IOS.Clone(),
             ClientType.Tv => Client.Tv.Clone(),
-            _ => throw new UnknownClientException(type)
+            _ => throw new ArgumentException($"Invalid client type: {type}.", nameof(type))
         };
 
-
     /// <summary>
-    /// Converts a string to a <see cref="TimeSpan"/>.
+    /// Converts a <see langword="string"/> to a <see cref="TimeSpan"/>.
     /// </summary>
     /// <param name="text">The text to convert.</param>
-    /// <returns>A TimeSpan representing the string.</returns>
+    /// <returns>A <see cref="TimeSpan"/> representing the text.</returns>
     public static TimeSpan? ToTimeSpan(
         this string? text)
     {
@@ -48,12 +46,11 @@ internal static class Conversion
         return null;
     }
 
-
     /// <summary>
-    /// Converts a string to a <see cref="DateTime"/>.
+    /// Converts a <see langword="string"/> to a <see cref="DateTime"/>.
     /// </summary>
     /// <param name="text">The text to convert.</param>
-    /// <returns>A DateTime representing the string.</returns>
+    /// <returns>A  <see cref="DateTime"/> representing the text.</returns>
     public static DateTime? ToDateTime(
         this string? text)
     {
@@ -77,12 +74,11 @@ internal static class Conversion
         };
     }
 
-
     /// <summary>
-    /// Converts a string to a <see cref="int"/>.
+    /// Converts a <see langword="string"/> to a <see cref="int"/>.
     /// </summary>
     /// <param name="text">The text to convert.</param>
-    /// <returns>An Int32 representing the string.</returns>
+    /// <returns>An <see cref="int"/> representing the text.</returns>
     public static int? ToInt32(
         this string? text)
     {
@@ -92,12 +88,11 @@ internal static class Conversion
         return null;
     }
 
-
     /// <summary>
-    /// Converts a string to a <see cref="int"/>.
+    /// Converts a <see langword="string"/> to a <see cref="AlbumType"/>.
     /// </summary>
     /// <param name="text">The text to convert.</param>
-    /// <returns>An Int32 representing the string.</returns>
+    /// <returns>An <see cref="AlbumType"/> representing the text.</returns>
     public static AlbumType? ToAlbumType(
         this string? text) =>
         text switch

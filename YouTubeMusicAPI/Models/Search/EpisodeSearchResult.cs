@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// Represents a podcast episode search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="EpisodeSearchResult"/>.
+/// Creates a new instance of the <see cref="EpisodeSearchResult"/> class.
 /// </remarks>
 /// <param name="name">The name of this podcast episode.</param>
 /// <param name="id">The ID of this podcast episode.</param>
@@ -26,13 +26,13 @@ public class EpisodeSearchResult(
     bool isRatingsAllowed) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="EpisodeSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="EpisodeSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static EpisodeSearchResult Parse(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement titleRun = flexColumns
@@ -61,14 +61,14 @@ public class EpisodeSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationVideoId();
 
         string browseId = titleRun
             .SelectNavigationBrowseId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -84,7 +84,7 @@ public class EpisodeSearchResult(
             .GetElementAt(descriptionStartIndex + 2)
             .SelectPodcast();
 
-        bool isRatingsAllowed = item
+        bool isRatingsAllowed = element
             .GetProperty("menu")
             .GetProperty("menuRenderer")
             .GetProperty("topLevelButtons")
@@ -97,18 +97,18 @@ public class EpisodeSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON item into an <see cref="EpisodeSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="EpisodeSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
     internal static EpisodeSearchResult ParseTopResult(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement descriptionRuns = item
+        JsonElement descriptionRuns = element
             .GetProperty("subtitle")
             .GetProperty("runs");
 
 
-        string name = item
+        string name = element
             .GetProperty("title")
             .GetProperty("runs")
             .GetElementAt(0)
@@ -116,16 +116,16 @@ public class EpisodeSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("thumbnailOverlay")
             .SelectOverlayNavigationVideoId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        string browseId = item
+        string browseId = element
             .SelectTapBrowseId();
 
         DateTime releasedAt = descriptionRuns

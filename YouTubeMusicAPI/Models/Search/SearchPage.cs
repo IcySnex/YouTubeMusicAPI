@@ -1,20 +1,26 @@
-﻿using YouTubeMusicAPI.Pagination;
-
-namespace YouTubeMusicAPI.Models.Search;
+﻿namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
 /// Represents a search page for all kind of results on YouTube Music.
 /// </summary>
-/// <param name="items">The list containing the items.</param>
-/// <param name="topResult">The top result.</param>
+/// <remarks>
+/// Creates a new instance of the <see cref="SearchPage"/> class.
+/// </remarks>
+/// <param name="results">The list containing the search results.</param>
+/// <param name="topResult">The most relevant search result.</param>
 /// <param name="telatedTopResults">The list containing the related top results.</param>
 public class SearchPage(
-    IReadOnlyList<SearchResult> items,
+    IReadOnlyList<SearchResult> results,
     SearchResult? topResult,
-    IReadOnlyList<SearchResult> telatedTopResults) : Page<SearchResult>(items, null)
+    IReadOnlyList<SearchResult> telatedTopResults)
 {
     /// <summary>
-    /// The top result.
+    /// The list containing the items.
+    /// </summary>
+    public IReadOnlyList<SearchResult> Results { get; } = results;
+
+    /// <summary>
+    /// The most relevant search result.
     /// </summary>
     public SearchResult? TopResult { get; } = topResult;
 

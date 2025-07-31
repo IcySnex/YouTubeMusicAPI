@@ -7,7 +7,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// Represents a song search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="SongSearchResult"/>.
+/// Creates a new instance of the <see cref="SongSearchResult"/> class.
 /// </remarks>
 /// <param name="name">The name of this song.</param>
 /// <param name="id">The ID of this song.</param>
@@ -32,16 +32,16 @@ public class SongSearchResult(
     Radio? radio) : SearchResult(name, id, null, thumbnails)
 {
     /// <summary>
-    /// Parses the JSON element into a <see cref="SongSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="SongSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static SongSearchResult Parse(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement menuItems = item
+        JsonElement menuItems = element
             .SelectMenuItems();
 
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -68,11 +68,11 @@ public class SongSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationVideoId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -99,7 +99,7 @@ public class SongSearchResult(
             .ToTimeSpan()
             .OrThrow();
 
-        bool isExplicit = item
+        bool isExplicit = element
             .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 
@@ -123,21 +123,21 @@ public class SongSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON item into an <see cref="SongSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="SongSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
     internal static SongSearchResult ParseTopResult(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement menuItems = item
+        JsonElement menuItems = element
             .SelectMenuItems();
 
-        JsonElement descriptionRuns = item
+        JsonElement descriptionRuns = element
             .GetProperty("subtitle")
             .GetProperty("runs");
 
 
-        string name = item
+        string name = element
             .GetProperty("title")
             .GetProperty("runs")
             .GetElementAt(0)
@@ -145,11 +145,11 @@ public class SongSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("thumbnailOverlay")
             .SelectOverlayNavigationVideoId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -167,7 +167,7 @@ public class SongSearchResult(
             .ToTimeSpan()
             .OrThrow();
 
-        bool isExplicit = item
+        bool isExplicit = element
             .GetPropertyOrNull("subtitleBadges")
             .SelectContainsExplicitBadge();
 
@@ -183,16 +183,16 @@ public class SongSearchResult(
     }
 
     /// <summary>
-    /// Parses the JSON element into a <see cref="SongSearchResult"/>.
+    /// Parses a <see cref="JsonElement"/> into a <see cref="SongSearchResult"/>.
     /// </summary>
-    /// <param name="item">The JSON item "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
     internal static SongSearchResult ParseSuggestion(
-        JsonElement item)
+        JsonElement element)
     {
-        JsonElement menuItems = item
+        JsonElement menuItems = element
             .SelectMenuItems();
 
-        JsonElement flexColumns = item
+        JsonElement flexColumns = element
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
@@ -219,11 +219,11 @@ public class SongSearchResult(
             .GetString()
             .OrThrow();
 
-        string id = item
+        string id = element
             .GetProperty("overlay")
             .SelectOverlayNavigationVideoId();
 
-        Thumbnail[] thumbnails = item
+        Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
@@ -243,7 +243,7 @@ public class SongSearchResult(
 
         TimeSpan duration = TimeSpan.Zero; // grrrrr YT, why DO YOU NOT PROVIDE A DURATION GAWD DAMN??=?=!" i will not make this nullabel just because of this bullshit!!!!
 
-        bool isExplicit = item
+        bool isExplicit = element
             .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 

@@ -17,8 +17,8 @@ namespace YouTubeMusicAPI.Models.Search;
 public class PodcastSearchResult(
     string name,
     string id,
-    Thumbnail[] thumbnails,
     string browseId,
+    Thumbnail[] thumbnails,
     YouTubeMusicEntity host) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
@@ -71,7 +71,7 @@ public class PodcastSearchResult(
             .GetElementAt(descriptionStartIndex)
             .SelectArtist();
 
-        return new(name, id, thumbnails, browseId, host);
+        return new(name, id, browseId, thumbnails, host);
     }
 
     /// <summary>
@@ -115,8 +115,14 @@ public class PodcastSearchResult(
             .GetElementAt(2)
             .SelectArtist();
 
-        return new(name, id, thumbnails, browseId, host);
+        return new(name, id, browseId, thumbnails, host);
     }
+
+
+    /// <summary>
+    /// The browse ID of this podcast.
+    /// </summary>
+    public override string BrowseId { get; } = browseId;
 
 
     /// <summary>

@@ -21,8 +21,8 @@ namespace YouTubeMusicAPI.Models.Search;
 public class AlbumSearchResult(
     string name,
     string id,
-    Thumbnail[] thumbnails,
     string browseId,
+    Thumbnail[] thumbnails,
     YouTubeMusicEntity[] artists,
     int? releaseYear,
     bool isExplicit,
@@ -60,13 +60,13 @@ public class AlbumSearchResult(
             .GetProperty("overlay")
             .SelectOverlayNavigationPlaylistId();
 
+        string browseId = element
+            .SelectNavigationBrowseId();
+
         Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
-
-        string browseId = element
-            .SelectNavigationBrowseId();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(2);
@@ -92,7 +92,7 @@ public class AlbumSearchResult(
             .SelectMenuItems()
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
+        return new(name, id, browseId, thumbnails, artists, releaseYear, isExplicit, type, radio);
     }
 
     /// <summary>
@@ -119,13 +119,13 @@ public class AlbumSearchResult(
             .GetProperty("thumbnailOverlay")
             .SelectOverlayNavigationPlaylistId();
 
+        string browseId = element
+            .SelectTapBrowseId();
+
         Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
-
-        string browseId = element
-            .SelectTapBrowseId();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(2);
@@ -147,7 +147,7 @@ public class AlbumSearchResult(
             .SelectMenuItems()
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
+        return new(name, id, browseId, thumbnails, artists, releaseYear, isExplicit, type, radio);
     }
 
     /// <summary>
@@ -184,13 +184,13 @@ public class AlbumSearchResult(
             .SelectPlaylistIdOrNull()
             .OrThrow();
 
+        string browseId = element
+            .SelectNavigationBrowseId();
+
         Thumbnail[] thumbnails = element
             .GetProperty("thumbnail")
             .GetProperty("musicThumbnailRenderer")
             .SelectThumbnails();
-
-        string browseId = element
-            .SelectNavigationBrowseId();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(2);
@@ -215,8 +215,14 @@ public class AlbumSearchResult(
         Radio? radio = menuItems
             .SelectRadioOrNull();
 
-        return new(name, id, thumbnails, browseId, artists, releaseYear, isExplicit, type, radio);
+        return new(name, id, browseId, thumbnails, artists, releaseYear, isExplicit, type, radio);
     }
+
+
+    /// <summary>
+    /// The browse ID of this album.
+    /// </summary>
+    public override string BrowseId { get; } = browseId;
 
 
     /// <summary>

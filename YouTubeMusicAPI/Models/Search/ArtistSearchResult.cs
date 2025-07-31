@@ -151,6 +151,12 @@ public class ArtistSearchResult(
 
 
     /// <summary>
+    /// The browse ID of this artist.
+    /// </summary>
+    public override string BrowseId { get; } = id;
+
+
+    /// <summary>
     /// The information about the audience of this artist (e.g. subscribers, monthly listeners).
     /// </summary>
     public string AudienceInfo { get; } = audienceInfo;

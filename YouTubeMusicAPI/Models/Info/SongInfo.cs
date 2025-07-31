@@ -166,6 +166,12 @@ public class SongInfo(
 
 
     /// <summary>
+    /// The ID of this song.
+    /// </summary>
+    public override string Id { get; } = id;
+
+
+    /// <summary>
     /// The thumbnails of this song.
     /// </summary>
     public Thumbnail[] Thumbnails { get; } = thumbnails;

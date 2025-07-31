@@ -12,7 +12,8 @@ namespace YouTubeMusicAPI;
 /// </summary>
 public class YouTubeMusicClient
 {
-    readonly RequestHandler requestHandler;
+    internal readonly RequestHandler RequestHandler;
+    internal readonly ILogger? Logger;
 
     /// <summary>
     /// Creates a new instance of the <see cref="YouTubeMusicClient"/> class.
@@ -23,9 +24,11 @@ public class YouTubeMusicClient
     {
         Config = config ?? new();
 
-        requestHandler = new(Config.GeographicalLocation, Config.Authenticator, Config.HttpClient, Config.Logger);
-        Search = new(requestHandler, Config.Logger);
-        Info = new(requestHandler, Config.Logger);
+        RequestHandler = new(Config.GeographicalLocation, Config.Authenticator, Config.HttpClient, Config.Logger);
+        Logger = Config.Logger;
+
+        Search = new(this);
+        Info = new(this);
     }
 
 
@@ -56,20 +59,20 @@ public class YouTubeMusicClient
     public async Task<AuthenticatedUser?> GetAuthenticatedUserAsync(
         CancellationToken cancellationToken = default)
     {
-        if (!requestHandler.IsAuthenticated)
+        if (!RequestHandler.IsAuthenticated)
         {
-            Config.Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] Could not get authenticated user: RequestHandler not authenticated.");
+            Config.Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] Skipping request: Not authenticated.");
             return null;
         }
 
         // Send
-        string response = await requestHandler.PostAsync(Endpoints.AccountMenu, null, ClientType.WebMusic, cancellationToken);
+        string response = await RequestHandler.PostAsync(Endpoints.AccountMenu, null, ClientType.WebMusic, cancellationToken);
 
         // Parse
+        Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
-        JsonElement rootElement = json.RootElement;
 
-        JsonElement menuRenderer = rootElement
+        JsonElement menuRenderer = json.RootElement
             .GetProperty("actions")
             .GetElementAt(0)
             .GetProperty("openPopupAction")
@@ -78,7 +81,7 @@ public class YouTubeMusicClient
 
         if (!menuRenderer.TryGetProperty("header", out _))
         {
-            Config.Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] Could not get authenticated user: User not logged in.");
+            Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] User not authenticated: No 'header' in 'multiPageMenuRenderer'.");
             return null;
         }
 

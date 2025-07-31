@@ -10,16 +10,14 @@ namespace YouTubeMusicAPI.Services;
 /// <summary>
 /// Service used to search on YouTube Music.
 /// </summary>
-public sealed class SearchService : YouTubeMusicService
+/// <remarks>
+/// Creates a new instance of the <see cref="SearchService"/> class.
+/// </remarks>
+/// <param name="client">The shared base client.</param>
+public sealed class SearchService(
+    YouTubeMusicClient client)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SearchService"/> class.
-    /// </summary>
-    /// <param name="requestHandler">The handler for all outgoing HTTP requests.</param>
-    /// <param name="logger">The logger used to provide progress and error messages.</param>
-    internal SearchService(
-        RequestHandler requestHandler,
-        ILogger? logger = null) : base(requestHandler, logger) { }
+    readonly YouTubeMusicClient client = client;
 
 
     /// <summary>
@@ -50,19 +48,20 @@ public sealed class SearchService : YouTubeMusicService
             new("params", queryParams),
             new("continuation", continuationToken)
         ];
-
-        string response = await requestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
+        
+        string response = await client.RequestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
 
         // Parse response
+        client.Logger?.LogInformation("[SearchService-FetchPageAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
-        JsonElement rootElement = json.RootElement;
 
-        bool isContinued = rootElement.TryGetProperty("continuationContents", out JsonElement continuationContents);
+        bool isContinued = json.RootElement
+            .TryGetProperty("continuationContents", out JsonElement continuationContents);
 
         JsonElement shelf = isContinued
             ? continuationContents
                 .GetProperty("musicShelfContinuation")
-            : rootElement
+            : json.RootElement
                 .GetProperty("contents")
                 .GetProperty("tabbedSearchResultsRenderer")
                 .GetProperty("tabs")
@@ -134,6 +133,7 @@ public sealed class SearchService : YouTubeMusicService
     {
         Ensure.NotNullOrEmpty(query, nameof(query));
 
+        client.Logger?.LogInformation("[SearchService-CreatePaginatorAsync] Creating '{categoryTitle}' paginator: '{query}'.", categoryTitle, query);
         return new((contiuationToken, cancellationToken) =>
             FetchPageAsync(query, contiuationToken, queryParams, categoryTitle, parse, cancellationToken));
     }
@@ -273,13 +273,13 @@ public sealed class SearchService : YouTubeMusicService
             new("query", query)
         ];
 
-        string response = await requestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
+        string response = await client.RequestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
 
         // Parse response
+        client.Logger?.LogInformation("[SearchService-AllAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
-        JsonElement rootElement = json.RootElement;
 
-        JsonElement contents = rootElement
+        JsonElement contents = json.RootElement
             .GetProperty("contents")
             .GetProperty("tabbedSearchResultsRenderer")
             .GetProperty("tabs")
@@ -297,16 +297,17 @@ public sealed class SearchService : YouTubeMusicService
             // Top Result
             if (content.TryGetProperty("musicCardShelfRenderer", out JsonElement cardShelf))
             {
-                string category = cardShelf
+                string categoryTitle = cardShelf
                     .GetProperty("subtitle")
                     .GetProperty("runs")
                     .GetElementAt(0)
                     .GetProperty("text")
                     .GetString()
                     .OrThrow();
+                client.Logger?.LogInformation("[SearchService-AllAsync] Parsing '{categoryTitle}' top result...", categoryTitle);
 
                 // Primary
-                Func<JsonElement, SearchResult>? parseTopResult = category switch
+                Func<JsonElement, SearchResult>? parseTopResult = categoryTitle switch
                 {
                     "Song" => SongSearchResult.ParseTopResult,
                     "Video" => VideoSearchResult.ParseTopResult,
@@ -320,7 +321,7 @@ public sealed class SearchService : YouTubeMusicService
                 };
                 if (parseTopResult is null)
                 {
-                    logger?.LogWarning("[SearchService-AllAsync] Could not parse top result. Unsupported caegory: {category}.", category);
+                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse top result. Unsupported category: {categoryTitle}.", categoryTitle);
                     continue;
                 }
 
@@ -378,12 +379,12 @@ public sealed class SearchService : YouTubeMusicService
                             parseItem = VideoSearchResult.Parse;
                         if (parseItem is null)
                         {
-                            logger?.LogWarning("[SearchService-AllAsync] Could not parse related top result. Unsupported caegory: {category}.", itemCategory);
+                            client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse related top result. Unsupported caegory: {category}.", itemCategory);
                             continue;
                         }
 
                         // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
-                        if (item.SelectIsPodcastEvenThoItShouldnt(category))
+                        if (item.SelectIsPodcastEvenThoItShouldnt(categoryTitle))
                             continue;
 
                         SearchResult searchResult = parseItem(item);
@@ -396,15 +397,16 @@ public sealed class SearchService : YouTubeMusicService
             // Shelf
             if (content.TryGetProperty("musicShelfRenderer", out JsonElement shelf))
             {
-                string category = shelf
+                string categoryTitle = shelf
                     .GetProperty("title")
                     .GetProperty("runs")
                     .GetElementAt(0)
                     .GetProperty("text")
                     .GetString()
                     .OrThrow();
+                client.Logger?.LogInformation("[SearchService-AllAsync] Parsing '{categoryTitle}' shelf...", categoryTitle);
 
-                Func<JsonElement, SearchResult>? parse = category switch
+                Func<JsonElement, SearchResult>? parse = categoryTitle switch
                 {
                     "Songs" => SongSearchResult.Parse,
                     "Videos" => VideoSearchResult.Parse,
@@ -418,7 +420,7 @@ public sealed class SearchService : YouTubeMusicService
                 };
                 if (parse is null)
                 {
-                    logger?.LogWarning("[SearchService-AllAsync] Could not parse item. Unsupported caegory: {category}.", category);
+                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse search result. Unsupported caegory: {category}.", categoryTitle);
                     continue;
                 }
 
@@ -428,7 +430,7 @@ public sealed class SearchService : YouTubeMusicService
                         continue;
 
                     // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
-                    if (item.SelectIsPodcastEvenThoItShouldnt(category))
+                    if (item.SelectIsPodcastEvenThoItShouldnt(categoryTitle))
                         continue;
 
                     SearchResult searchResult = parse(item);
@@ -462,16 +464,17 @@ public sealed class SearchService : YouTubeMusicService
             new("input", input)
         ];
 
-        string response = await requestHandler.PostAsync(Endpoints.SearchSuggestions, payload, ClientType.WebMusic, cancellationToken);
+        string response = await client.RequestHandler.PostAsync(Endpoints.SearchSuggestions, payload, ClientType.WebMusic, cancellationToken);
 
         // Parse response
+        client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
-        JsonElement rootElement = json.RootElement;
 
-        if (!rootElement.TryGetProperty("contents", out JsonElement contents))
+        if (!json.RootElement.TryGetProperty("contents", out JsonElement contents))
             return new([], [], []);
 
         // Text Suggestions
+        client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing text suggestions...");
         JsonElement textSuggestions = contents
             .GetElementAt(0)
             .GetProperty("searchSuggestionsSectionRenderer")
@@ -512,6 +515,7 @@ public sealed class SearchService : YouTubeMusicService
         }
 
         // Result Suggestions
+        client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing result suggestions...");
         JsonElement? resultSuggestions = contents
             .GetElementAtOrNull(1)
             ?.GetPropertyOrNull("searchSuggestionsSectionRenderer")
@@ -560,7 +564,7 @@ public sealed class SearchService : YouTubeMusicService
                 parseItem = ArtistSearchResult.ParseSuggestion;
             if (parseItem is null)
             {
-                logger?.LogWarning("[SearchService-AllAsync] Could not parse search suggestion result. Unsupported caegory: {category}.", itemCategory);
+                client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse search suggestion result. Unsupported caegory: {category}.", itemCategory);
                 continue;
             }
 
@@ -590,21 +594,22 @@ public sealed class SearchService : YouTubeMusicService
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrEmpty(input, nameof(input));
-        Ensure.IsAuthenticated(requestHandler);
+        Ensure.IsAuthenticated(client.RequestHandler);
 
         // Get suggestions
+        client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Getting suggestions...");
         KeyValuePair<string, object?>[] suggestionsPayload =
         [
             new("input", input)
         ];
 
-        string suggestionsResponse = await requestHandler.PostAsync(Endpoints.SearchSuggestions, suggestionsPayload, ClientType.WebMusic, cancellationToken);
+        string suggestionsResponse = await client.RequestHandler.PostAsync(Endpoints.SearchSuggestions, suggestionsPayload, ClientType.WebMusic, cancellationToken);
 
         // Parse suggestions response
+        client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Parsing suggestions response...");
         using JsonDocument suggestionsJson = JsonDocument.Parse(suggestionsResponse);
-        JsonElement suggestionsRootElement = suggestionsJson.RootElement;
 
-        string feedbackToken = ((suggestionsRootElement
+        string feedbackToken = ((suggestionsJson.RootElement
             .GetPropertyOrNull("contents")
             ?.GetElementAtOrNull(0)
             ?.GetPropertyOrNull("searchSuggestionsSectionRenderer")
@@ -633,24 +638,28 @@ public sealed class SearchService : YouTubeMusicService
 
 
         // Remove
+        client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Removing suggestion...");
         KeyValuePair<string, object?>[] payload =
         [
             new("feedbackTokens", new string[] { feedbackToken })
         ];
 
-        string response = await requestHandler.PostAsync(Endpoints.Feedback, payload, ClientType.WebMusic, cancellationToken);
+        string removeResponse = await client.RequestHandler.PostAsync(Endpoints.Feedback, payload, ClientType.WebMusic, cancellationToken);
 
         // Parse response
-        using JsonDocument json = JsonDocument.Parse(response);
-        JsonElement rootElement = json.RootElement;
+        client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Parsing remove response...");
+        using JsonDocument removeJson = JsonDocument.Parse(removeResponse);
 
-        bool isProcessed = rootElement
+        bool isProcessed = removeJson.RootElement
             .GetPropertyOrNull("feedbackResponses")
             ?.GetElementAtOrNull(0)
             ?.GetPropertyOrNull("isProcessed")
             ?.GetBoolean() ?? false;
 
         if (!isProcessed)
-            logger?.LogWarning("[SearchService-RemoveSuggestionAsync] Remove search suggestion '{input}' not processed.", input);
+        {
+            client.Logger?.LogError("[SearchService-RemoveSuggestionAsync] Remove search suggestion '{input}' not processed.", input);
+            throw new NotSupportedException($"Remove search suggestion '{input}' not processed.");
+        }
     }
 }

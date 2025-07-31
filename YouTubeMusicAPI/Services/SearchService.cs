@@ -48,7 +48,7 @@ public sealed class SearchService(
             new("params", queryParams),
             new("continuation", continuationToken)
         ];
-        
+
         string response = await client.RequestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
 
         // Parse response

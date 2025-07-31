@@ -1,7 +1,4 @@
-﻿using System.Net;
-using YouTubeMusicAPI.Authentication;
-using YouTubeMusicAPI.Models;
-using YouTubeMusicAPI.Models.Info;
+﻿using YouTubeMusicAPI.Models;
 
 namespace YouTubeMusicAPI.Tests.Authentication;
 

@@ -31,7 +31,7 @@ public class AuthenticatedUser(
         JsonElement headerRenderer = element
             .GetProperty("header")
             .GetProperty("activeAccountHeaderRenderer");
-        
+
         JsonElement items = element
             .GetProperty("sections")
             .GetElementAt(0)

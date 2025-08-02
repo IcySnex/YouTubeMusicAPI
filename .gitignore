@@ -13,8 +13,5 @@ YouTubeMusicAPI/obj/
 YouTubeMusicAPI.Tests/bin/
 YouTubeMusicAPI.Tests/obj/
 
-YouTubeMusicAPI-recode-v3/YouTubeMusicAPI/bin/
-YouTubeMusicAPI-recode-v3/YouTubeMusicAPI/obj/
-
-YouTubeMusicAPI-recode-v3/YouTubeMusicAPI.Tests/bin/
-YouTubeMusicAPI-recode-v3/YouTubeMusicAPI.Tests/obj/
+Samples/YouTubeMusicAPI.Sample.WPF/bin/
+Samples/YouTubeMusicAPI.Sample.WPF/obj/

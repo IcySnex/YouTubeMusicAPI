@@ -1,0 +1,163 @@
+﻿<Window
+    x:Class="YouTubeMusicAPI.Sample.WPF.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:YouTubeMusicAPI.Sample.WPF"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:YouTubeMusicAPI.Sample.WPF.ViewModels"
+    Title="YouTubeMusicAPI Sample: WPF"
+    Width="1100"
+    Height="679"
+    Icon="pack://application:,,,/icon.ico"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="24" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="650" />
+        </Grid.ColumnDefinitions>
+
+        <!--  Logging  -->
+        <TextBlock
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            FontWeight="Medium"
+            Text="Log Messages:" />
+        <ListBox
+            Grid.Row="1"
+            Grid.RowSpan="5"
+            Grid.Column="2"
+            Margin="0,12,0,0"
+            FontFamily="Consolas"
+            ItemsSource="{Binding LogMessages}" />
+
+
+        <!--  Session  -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                VerticalAlignment="Center"
+                FontWeight="Medium"
+                Text="Session:" />
+            <TextBlock
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Opacity="0.8"
+                Text="{Binding IsSessionAuthenticated, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Is Authenticated|Not Auhtenticated'}" />
+
+
+            <Button
+                Grid.Column="4"
+                Command="{Binding ToggleAuthenticationCommand}"
+                Content="{Binding IsSessionAuthenticated, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Remove|Login'}" />
+        </Grid>
+
+        <Rectangle Grid.Row="1" Height="2" />
+
+        <!--  Search  -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                VerticalAlignment="Center"
+                FontWeight="Medium"
+                Text="Song/Video ID:" />
+            <TextBox
+                Name="SongVideoIdTextbox"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Opacity="0.8" />
+
+            <Button
+                Grid.Column="4"
+                Command="{Binding SearchSongVideoCommand}"
+                CommandParameter="{Binding ElementName=SongVideoIdTextbox, Path=Text}"
+                Content="Search" />
+        </Grid>
+
+        <Grid Grid.Row="4" Visibility="{Binding SongVideo, Converter={StaticResource NullToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="24" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="12" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!--  Song/Video Info  -->
+            <Rectangle
+                Width="60"
+                Height="60"
+                HorizontalAlignment="Left"
+                Fill="{Binding SongVideo.Thumbnails[0].Url, FallbackValue=Gray, Converter={StaticResource UrlToBrushConverter}}" />
+            <TextBlock
+                Margin="64,10,0,0"
+                FontWeight="Medium"
+                Text="{Binding SongVideo.Name, FallbackValue='N/A'}" />
+            <TextBlock Margin="64,30,0,0" Text="{Binding SongVideo.Artists, FallbackValue='N/A', Converter={StaticResource SongVideoArtistsToStringConverter}}" />
+
+            <Rectangle Grid.Row="1" Height="2" />
+
+            <!--  Streaming Info  -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontWeight="Medium"
+                    Text="Streaming Info:" />
+
+                <Button
+                    Grid.Column="3"
+                    Command="{Binding GetStreamingDataCommand}"
+                    Content="Get"
+                    IsEnabled="{Binding SongVideo, Converter={StaticResource NullToBoolConverter}}" />
+            </Grid>
+            <TextBox
+                Grid.Row="3"
+                Height="347"
+                Margin="0,12,0,0"
+                IsReadOnly="True"
+                Text="{Binding StreamingData, Converter={StaticResource StreamingDataToStringConverter}}" />
+
+            <!--  Download  -->
+            <Button
+                Grid.Row="5"
+                Command="{Binding DownloadCommand}"
+                Content="Download"
+                IsEnabled="{Binding StreamingData, Converter={StaticResource NullToBoolConverter}}" />
+        </Grid>
+    </Grid>
+</Window>

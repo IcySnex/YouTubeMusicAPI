@@ -61,8 +61,6 @@ partial class MainViewModel : ObservableObject
         foreach (Cookie cookie in cookies)
             cookieContainer.Add(cookie);
 
-        string headerCookies = cookieContainer.GetCookieHeader(new("https://music.youtube.com"));
-
         // Get visitorData & poToken
         using HttpClient httpClient = new(new HttpClientHandler() { CookieContainer = cookieContainer });
         using NodeEnvironment jsEnvironment = new();

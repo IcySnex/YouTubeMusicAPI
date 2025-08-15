@@ -40,7 +40,7 @@ public class AuthenticatedUser(
 
 
         string name = headerRenderer
-            .SelectRunTextAt("accountName");
+            .SelectRunTextAt("accountName", 0);
 
         string id = items
             .GetPropertyAt(0)
@@ -51,12 +51,12 @@ public class AuthenticatedUser(
             .SelectThumbnails("accountPhoto");
 
         string handle = headerRenderer
-            .SelectRunTextAt("channelHandle");
+            .SelectRunTextAt("channelHandle", 0);
 
         bool isPremium = items
             .GetPropertyAt(1)
             .GetProperty("compactLinkRenderer")
-            .SelectRunTextAt("title")
+            .SelectRunTextAt("title", 0)
             .If("Paid Memberships", true, false);
 
         return new(name, id, thumbnails, handle, isPremium);

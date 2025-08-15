@@ -395,8 +395,10 @@ public sealed class SearchService(
             }
 
             // Shelf
-            if (content.TryGetProperty("musicShelfRenderer", out JsonElement shelf))
+            if (content.TryGetProperty("musicShelfRenderer", out JsonElement shelf)) // bruh sometimes yt crashes this shi
             {
+                var s = shelf.ToString();
+
                 string categoryTitle = shelf
                     .GetProperty("title")
                     .GetProperty("runs")

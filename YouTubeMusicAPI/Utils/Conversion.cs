@@ -57,12 +57,20 @@ internal static class Conversion
         if (text is null)
             return null;
 
-        if (!text.Contains(" ago") && DateTime.TryParse(text, CultureInfo.InvariantCulture, out DateTime result))
+        if (!text.Contains("ago") && DateTime.TryParse(text, CultureInfo.InvariantCulture, out DateTime result))
             return result;
 
-        string[] timeSpanParts = text.Split(' ');
-        int timeSpanValue = int.Parse(timeSpanParts[0]);
-        string timeSpanKind = timeSpanParts[1];
+        text = text.Replace(" ago", "").Trim();
+
+        int i = 0;
+        while (i < text.Length && char.IsDigit(text[i]))
+            i++;
+
+        if (i == 0)
+            return null;
+
+        int timeSpanValue = int.Parse(text.Substring(0, i));
+        string timeSpanKind = text.Substring(i).Trim();
 
         return timeSpanKind[0] switch
         {

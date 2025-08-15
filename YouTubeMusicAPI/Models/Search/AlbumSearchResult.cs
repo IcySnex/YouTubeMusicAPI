@@ -78,7 +78,6 @@ public class AlbumSearchResult(
             .ToInt32();
 
         bool isExplicit = element
-            .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 
         AlbumType type = descriptionRuns
@@ -133,8 +132,7 @@ public class AlbumSearchResult(
         int? releaseYear = null;
 
         bool isExplicit = element
-            .GetPropertyOrNull("subtitleBadges")
-            .SelectContainsExplicitBadge();
+            .SelectContainsExplicitBadge("subtitleBadges");
 
         AlbumType type = descriptionRuns
             .GetPropertyAt(0)
@@ -202,7 +200,6 @@ public class AlbumSearchResult(
             .ToInt32();
 
         bool isExplicit = element
-            .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 
         AlbumType type = descriptionRuns

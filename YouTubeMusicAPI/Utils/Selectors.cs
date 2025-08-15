@@ -8,13 +8,6 @@ namespace YouTubeMusicAPI.Utils;
 /// </summary>
 internal static class Selectors
 {
-    public static JsonElement SelectRuns(
-        this JsonElement element,
-        string propertyName) =>
-        element
-            .GetProperty(propertyName)
-            .GetProperty("runs");
-
     public static string SelectRunText(
         this JsonElement runs,
         int index) =>
@@ -27,9 +20,10 @@ internal static class Selectors
     public static string SelectRunTextAt(
         this JsonElement element,
         string propertyName,
-        int index = 0) =>
+        int index) =>
         element
-            .SelectRuns(propertyName)
+            .GetProperty(propertyName)
+            .GetProperty("runs")
             .SelectRunText(index);
 
 
@@ -102,134 +96,71 @@ internal static class Selectors
 
     public static Thumbnail[] SelectThumbnails(
         this JsonElement element,
-        string propertyName = "thumbnail")
-    {
-        JsonElement thumbnails = element
+        string propertyName = "thumbnail") =>
+        element
             .GetProperty(propertyName)
-            .GetProperty("thumbnails");
-
-        List<Thumbnail> result = [];
-        foreach (JsonElement item in thumbnails.EnumerateArray())
-        {
-            Thumbnail thumbnail = Thumbnail.Parse(item);
-            result.Add(thumbnail);
-        }
-
-        return [.. result];
-    }
+            .GetProperty("thumbnails")
+            .EnumerateArray()
+            .Select(Thumbnail.Parse)
+            .ToArray();
 
     public static Radio? SelectRadioOrNull(
         this JsonElement element)
     {
-        foreach (JsonElement item in element.EnumerateArray())
-        {
-            JsonElement? menu = item
-                .GetPropertyOrNull("menuNavigationItemRenderer");
+        JsonElement? watchEndpoint = element
+            .EnumerateArray()
+            .FirstOrDefault(item =>
+                item.TryGetProperty("menuNavigationItemRenderer", out JsonElement menu) &&
+                menu.SelectRunTextAt("text", 0) == "Start radio")
+            .AsNullable()
+            ?.GetProperty("menuNavigationItemRenderer")
+            .GetPropertyOrNull("navigationEndpoint")
+            ?.Coalesce(
+                item => item.GetPropertyOrNull("watchEndpoint"),
+                item => item.GetPropertyOrNull("watchPlaylistEndpoint"));
 
-            if (menu is null)
-                continue;
+        string? playlistId = watchEndpoint
+            ?.GetPropertyOrNull("playlistId")
+            ?.GetString();
 
-            string type = menu.Value
-                .GetProperty("text")
-                .GetProperty("runs")
-                .GetPropertyAt(0)
-                .GetProperty("text")
-                .GetString()
-                .OrThrow();
+        if (playlistId is null)
+            return null;
 
-            if (type != "Start radio")
-                continue;
+        string? songVideoId = watchEndpoint
+            ?.GetPropertyOrNull("videoId")
+            ?.GetString();
 
-
-            JsonElement navigationEndpoint = menu.Value
-                .GetProperty("navigationEndpoint");
-
-            JsonElement? watchEndpoint =
-                navigationEndpoint
-                    .GetPropertyOrNull("watchEndpoint")
-                ?? navigationEndpoint
-                    .GetPropertyOrNull("watchPlaylistEndpoint");
-
-            if (watchEndpoint is null)
-                return null;
-
-
-            string? playlistId = watchEndpoint
-                ?.GetPropertyOrNull("playlistId")
-                ?.GetString();
-
-            if (playlistId is null)
-                return null;
-
-            string? songVideoId = watchEndpoint
-                ?.GetPropertyOrNull("videoId")
-                ?.GetString();
-
-            return new(playlistId, songVideoId);
-        }
-
-        return null;
+        return new(playlistId, songVideoId);
     }
 
     public static string? SelectPlaylistIdOrNull(
-        this JsonElement element)
-    {
-        foreach (JsonElement item in element.EnumerateArray())
-        {
-            JsonElement? menu = item
-                .GetPropertyOrNull("menuNavigationItemRenderer");
-
-            if (menu is null)
-                continue;
-
-            string type = menu.Value
-                .GetProperty("text")
-                .GetProperty("runs")
-                .GetPropertyAt(0)
-                .GetProperty("text")
-                .GetString()
-                .OrThrow();
-
-            if (type != "Shuffle play")
-                continue;
-
-
-            JsonElement? watchEndpoint = menu.Value
-                .GetProperty("navigationEndpoint")
-                .GetPropertyOrNull("watchPlaylistEndpoint");
-
-            if (watchEndpoint is null)
-                return null;
-
-
-            string? playlistId = watchEndpoint
-                ?.GetPropertyOrNull("playlistId")
-                ?.GetString();
-
-            return playlistId;
-        }
-
-        return null;
-    }
+        this JsonElement element) =>
+        element
+            .EnumerateArray()
+            .FirstOrDefault(item =>
+                item.TryGetProperty("menuNavigationItemRenderer", out JsonElement menu) &&
+                menu.SelectRunTextAt("text", 0) == "Shuffle play")
+            .AsNullable()
+            ?.GetProperty("menuNavigationItemRenderer")
+            .GetPropertyOrNull("navigationEndpoint")
+            ?.GetPropertyOrNull("watchPlaylistEndpoint")
+            ?.GetPropertyOrNull("playlistId")
+            ?.GetString();
 
     public static bool SelectContainsExplicitBadge(
-        this JsonElement? element)
-    {
-        if (element.HasValue)
-            foreach (JsonElement badge in element.Value.EnumerateArray())
-            {
-                string? iconType = badge
-                    .GetPropertyOrNull("musicInlineBadgeRenderer")
-                    ?.GetPropertyOrNull("icon")
-                    ?.GetPropertyOrNull("iconType")
-                    ?.GetString();
-
-                if (iconType == "MUSIC_EXPLICIT_BADGE")
-                    return true;
-            }
-
-        return false;
-    }
+        this JsonElement element,
+        string propertyName = "badges") =>
+        (
+            element
+                .GetPropertyOrNull(propertyName)
+                ?.EnumerateArray()
+                .Any(item =>
+                    item.GetPropertyOrNull("musicInlineBadgeRenderer")
+                        ?.GetPropertyOrNull("icon")
+                        ?.GetPropertyOrNull("iconType")
+                        ?.GetString() == "MUSIC_EXPLICIT_BADGE")
+        )
+        .Or(false);
 
 
     public static YouTubeMusicEntity SelectArtist(
@@ -248,39 +179,22 @@ internal static class Selectors
 
     public static YouTubeMusicEntity[] SelectArtists(
         this JsonElement element,
-        int startIndex = 0)
-    {
-        int index = 0;
-
-        List<YouTubeMusicEntity> result = [];
-        foreach (JsonElement run in element.EnumerateArray())
-        {
-            if (index++ < startIndex)
-                continue;
-
-            string text = run
+        int startIndex = 0) =>
+        element
+            .EnumerateArray()
+            .Skip(startIndex)
+            .TakeWhile(item => item
                 .GetProperty("text")
                 .GetString()
                 .OrThrow()
-                .Trim();
-
-            switch (text)
-            {
-                case "•":
-                    return [.. result];
-                case "&":
-                case ",":
-                    continue;
-            }
-
-            string? id = run
-                .SelectNavigationBrowseIdOrNull();
-
-            result.Add(new(text, id, id));
-        }
-
-        return [.. result];
-    }
+                .Trim() != "•")
+            .Where(item => item
+                .GetProperty("text")
+                .GetString()
+                .OrThrow()
+                .Trim() is string text && text != "&" && text != ",")
+            .Select(SelectArtist)
+            .ToArray();
 
 
     public static YouTubeMusicEntity SelectAlbum(
@@ -300,38 +214,19 @@ internal static class Selectors
     public static YouTubeMusicEntity SelectAlbumUnknown(
         this JsonElement element)
     {
-        foreach (JsonElement item in element.EnumerateArray())
-        {
-            JsonElement? menu = item
-                .GetPropertyOrNull("menuNavigationItemRenderer");
+        string? browseId = element
+            .EnumerateArray()
+            .FirstOrDefault(item =>
+                item.TryGetProperty("menuNavigationItemRenderer", out JsonElement menu) &&
+                menu.SelectRunTextAt("text", 0) == "Go to album")
+            .AsNullable()
+            ?.GetProperty("menuNavigationItemRenderer")
+            .GetPropertyOrNull("navigationEndpoint")
+            ?.GetPropertyOrNull("browseEndpoint")
+            ?.GetPropertyOrNull("browseId")
+            ?.GetString();
 
-            if (menu is null)
-                continue;
-
-            string type = menu.Value
-                .GetProperty("text")
-                .GetProperty("runs")
-                .GetPropertyAt(0)
-                .GetProperty("text")
-                .GetString()
-                .OrThrow();
-
-            if (type != "Go to album")
-                continue;
-
-
-            string name = "N/A";
-
-            string? browseId = menu.Value
-                .GetPropertyOrNull("navigationEndpoint")
-                ?.GetPropertyOrNull("browseEndpoint")
-                ?.GetPropertyOrNull("browseId")
-                ?.GetString();
-
-            return new(name, null, browseId);
-        }
-
-        return new("N/A", null, null);
+        return new("N/A", null, browseId);
     }
 
 
@@ -351,49 +246,24 @@ internal static class Selectors
 
 
     public static bool SelectIsCreditsAvailable(
-        this JsonElement element)
-    {
-        foreach (JsonElement item in element.EnumerateArray())
-        {
-            JsonElement? menu = item
-                .GetPropertyOrNull("menuNavigationItemRenderer");
-
-            if (menu is null)
-                continue;
-
-            string type = menu.Value
-                .GetProperty("text")
-                .GetProperty("runs")
-                .GetPropertyAt(0)
-                .GetProperty("text")
-                .GetString()
-                .OrThrow();
-
-            if (type != "View song credits")
-                continue;
-
-
-            string? browseId = menu.Value
-                .GetPropertyOrNull("navigationEndpoint")
-                ?.GetPropertyOrNull("browseEndpoint")
-                ?.GetPropertyOrNull("browseId")
-                ?.GetString();
-
-            return browseId is not null;
-        }
-
-        return false;
-    }
+        this JsonElement element) =>
+        element
+            .EnumerateArray()
+            .FirstOrDefault(item =>
+                item.TryGetProperty("menuNavigationItemRenderer", out JsonElement menu) &&
+                menu.SelectRunTextAt("text", 0) == "View song credits")
+            .AsNullable()
+            ?.GetPropertyOrNull("navigationEndpoint")
+            ?.GetPropertyOrNull("browseEndpoint")
+            ?.GetPropertyOrNull("browseId")
+            ?.GetString() is not null;
 
 
     public static bool SelectIsPodcastEvenThoItShouldnt(
         this JsonElement element,
-        string categoryTitle)
-    {
-        JsonElement menuItems = element
+        string categoryTitle) =>
+        element
             .GetProperty("menu")
-            .GetProperty("menuRenderer");
-
-        return menuItems.TryGetProperty("topLevelButtons", out JsonElement items) && categoryTitle != "Episodes";
-    }
+            .GetProperty("menuRenderer")
+            .TryGetProperty("topLevelButtons", out JsonElement _) && categoryTitle != "Episodes";
 }

@@ -137,7 +137,6 @@ public class SongInfo(
             .OrThrow();
 
         bool isExplicit = item
-            .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 
         int? releaseYear = descriptionRuns

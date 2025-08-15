@@ -74,7 +74,7 @@ public class YouTubeMusicClient
 
         JsonElement menuRenderer = json.RootElement
             .GetProperty("actions")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("openPopupAction")
             .GetProperty("popup")
             .GetProperty("multiPageMenuRenderer");

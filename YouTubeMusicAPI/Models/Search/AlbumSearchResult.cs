@@ -40,18 +40,18 @@ public class AlbumSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -72,7 +72,7 @@ public class AlbumSearchResult(
             .SelectArtists(2);
 
         int? releaseYear = descriptionRuns
-            .GetElementAtOrNull(artists.Length * 2 + 2)
+            .GetPropertyAtOrNull(artists.Length * 2 + 2)
             ?.GetPropertyOrNull("text")
             ?.GetString()
             .ToInt32();
@@ -82,7 +82,7 @@ public class AlbumSearchResult(
             .SelectContainsExplicitBadge();
 
         AlbumType type = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .ToAlbumType()
@@ -110,7 +110,7 @@ public class AlbumSearchResult(
         string name = element
             .GetProperty("title")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -137,7 +137,7 @@ public class AlbumSearchResult(
             .SelectContainsExplicitBadge();
 
         AlbumType type = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .ToAlbumType()
@@ -164,18 +164,18 @@ public class AlbumSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -196,7 +196,7 @@ public class AlbumSearchResult(
             .SelectArtists(2);
 
         int? releaseYear = descriptionRuns
-            .GetElementAtOrNull(artists.Length * 2 + 2)
+            .GetPropertyAtOrNull(artists.Length * 2 + 2)
             ?.GetPropertyOrNull("text")
             ?.GetString()
             .ToInt32();
@@ -206,7 +206,7 @@ public class AlbumSearchResult(
             .SelectContainsExplicitBadge();
 
         AlbumType type = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .ToAlbumType()

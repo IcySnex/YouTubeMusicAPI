@@ -36,20 +36,20 @@ public class EpisodeSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement titleRun = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0);
+            .GetPropertyAt(0);
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow()
@@ -74,21 +74,21 @@ public class EpisodeSearchResult(
             .SelectThumbnails();
 
         DateTime releasedAt = descriptionRuns
-            .GetElementAt(descriptionStartIndex)
+            .GetPropertyAt(descriptionStartIndex)
             .GetProperty("text")
             .GetString()
             .ToDateTime()
             .Or(new(1970, 1, 1));
 
         YouTubeMusicEntity podcast = descriptionRuns
-            .GetElementAt(descriptionStartIndex + 2)
+            .GetPropertyAt(descriptionStartIndex + 2)
             .SelectPodcast();
 
         bool isRatingsAllowed = element
             .GetProperty("menu")
             .GetProperty("menuRenderer")
             .GetProperty("topLevelButtons")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("likeButtonRenderer")
             .GetProperty("likesAllowed")
             .GetBoolean();
@@ -111,7 +111,7 @@ public class EpisodeSearchResult(
         string name = element
             .GetProperty("title")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -129,14 +129,14 @@ public class EpisodeSearchResult(
             .SelectThumbnails();
 
         DateTime releasedAt = descriptionRuns
-            .GetElementAt(2)
+            .GetPropertyAt(2)
             .GetProperty("text")
             .GetString()
             .ToDateTime()
             .Or(new(1970, 1, 1));
 
         YouTubeMusicEntity podcast = descriptionRuns
-            .GetElementAt(4)
+            .GetPropertyAt(4)
             .SelectPodcast();
 
         bool isRatingsAllowed = true;

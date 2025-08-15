@@ -45,13 +45,13 @@ public class SongSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow()
@@ -59,11 +59,11 @@ public class SongSearchResult(
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -81,19 +81,19 @@ public class SongSearchResult(
             .SelectArtists(descriptionStartIndex);
 
         bool hasKnownAlbum = (descriptionRuns
-            .GetElementAtOrNull(descriptionStartIndex + artists.Length * 2)
+            .GetPropertyAtOrNull(descriptionStartIndex + artists.Length * 2)
             ?.GetPropertyOrNull("navigationEndpoint"))
             .If(null, false, true);
 
         YouTubeMusicEntity album = hasKnownAlbum
             ? descriptionRuns
-                .GetElementAt(descriptionStartIndex + artists.Length * 2)
+                .GetPropertyAt(descriptionStartIndex + artists.Length * 2)
                 .SelectAlbum()
             : menuItems
                 .SelectAlbumUnknown();
 
         TimeSpan duration = descriptionRuns
-            .GetElementAt(descriptionStartIndex + artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
+            .GetPropertyAt(descriptionStartIndex + artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
             .GetProperty("text")
             .GetString()
             .ToTimeSpan()
@@ -104,11 +104,11 @@ public class SongSearchResult(
             .SelectContainsExplicitBadge();
 
         string playsInfo = flexColumns
-            .GetElementAt(2)
+            .GetPropertyAt(2)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -140,7 +140,7 @@ public class SongSearchResult(
         string name = element
             .GetProperty("title")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -161,7 +161,7 @@ public class SongSearchResult(
             .SelectAlbumUnknown();
 
         TimeSpan duration = descriptionRuns
-            .GetElementAt(artists.Length * 2 + 2)
+            .GetPropertyAt(artists.Length * 2 + 2)
             .GetProperty("text")
             .GetString()
             .ToTimeSpan()
@@ -196,25 +196,25 @@ public class SongSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         JsonElement? albumRun = flexColumns
-            .GetElementAtOrNull(2)
+            .GetPropertyAtOrNull(2)
             ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
             ?.GetPropertyOrNull("text")
             ?.GetPropertyOrNull("runs")
-            ?.GetElementAtOrNull(0);
+            ?.GetPropertyAtOrNull(0);
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -248,7 +248,7 @@ public class SongSearchResult(
             .SelectContainsExplicitBadge();
 
         string playsInfo = descriptionRuns
-            .GetElementAt(artists.Length * 2 + 2)
+            .GetPropertyAt(artists.Length * 2 + 2)
             .GetProperty("text")
             .GetString()
             .OrThrow();

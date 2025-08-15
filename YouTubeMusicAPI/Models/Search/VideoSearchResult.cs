@@ -36,13 +36,13 @@ public class VideoSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow()
@@ -50,11 +50,11 @@ public class VideoSearchResult(
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -72,14 +72,14 @@ public class VideoSearchResult(
             .SelectArtists(descriptionStartIndex);
 
         TimeSpan duration = descriptionRuns
-            .GetElementAt(descriptionStartIndex + artists.Length * 2 + 2)
+            .GetPropertyAt(descriptionStartIndex + artists.Length * 2 + 2)
             .GetProperty("text")
             .GetString()
             .ToTimeSpan()
             .OrThrow();
 
         string viewsInfo = descriptionRuns
-            .GetElementAt(descriptionStartIndex + artists.Length * 2)
+            .GetPropertyAt(descriptionStartIndex + artists.Length * 2)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -106,7 +106,7 @@ public class VideoSearchResult(
         string name = element
             .GetProperty("title")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -124,14 +124,14 @@ public class VideoSearchResult(
             .SelectArtists(2);
 
         TimeSpan duration = descriptionRuns
-            .GetElementAt(artists.Length * 2 + 4)
+            .GetPropertyAt(artists.Length * 2 + 4)
             .GetProperty("text")
             .GetString()
             .ToTimeSpan()
             .OrThrow();
 
         string viewsInfo = descriptionRuns
-            .GetElementAt(artists.Length * 2 + 2)
+            .GetPropertyAt(artists.Length * 2 + 2)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -154,18 +154,18 @@ public class VideoSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -191,7 +191,7 @@ public class VideoSearchResult(
         TimeSpan duration = TimeSpan.Zero; // grrrrr YT, why DO YOU NOT PROVIDE A DURATION GAWD DAMN??=?=!" i will not make this nullable just because of this bullshit!!!!
 
         string viewsInfo = descriptionRuns
-            .GetElementAt(artists.Length * 2 + (hasKnownArtist ? 2 : 0))
+            .GetPropertyAt(artists.Length * 2 + (hasKnownArtist ? 2 : 0))
             .GetProperty("text")
             .GetString()
             .OrThrow();

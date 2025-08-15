@@ -32,13 +32,13 @@ public class ArtistSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow()
@@ -46,11 +46,11 @@ public class ArtistSearchResult(
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -64,7 +64,7 @@ public class ArtistSearchResult(
             .SelectThumbnails();
 
         string audienceInfo = (descriptionRuns
-            .GetElementAtOrNull(descriptionStartIndex + 2)
+            .GetPropertyAtOrNull(descriptionStartIndex + 2)
             ?.GetPropertyOrNull("text")
             ?.GetString())
             .Or("N/A subscribers");
@@ -86,7 +86,7 @@ public class ArtistSearchResult(
         string name = element
             .GetProperty("title")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -102,7 +102,7 @@ public class ArtistSearchResult(
         string audienceInfo = (element
             .GetProperty("subtitle")
             .GetProperty("runs")
-            .GetElementAtOrNull(2)
+            .GetPropertyAtOrNull(2)
             ?.GetPropertyOrNull("text")
             ?.GetString())
             .Or("N/A subscribers");
@@ -123,11 +123,11 @@ public class ArtistSearchResult(
     {
         string name = element
             .GetProperty("flexColumns")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();

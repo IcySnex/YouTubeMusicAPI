@@ -65,7 +65,7 @@ public sealed class SearchService(
                 .GetProperty("contents")
                 .GetProperty("tabbedSearchResultsRenderer")
                 .GetProperty("tabs")
-                .GetElementAt(0)
+                .GetPropertyAt(0)
                 .GetProperty("tabRenderer")
                 .GetProperty("content")
                 .GetProperty("sectionListRenderer")
@@ -79,7 +79,7 @@ public sealed class SearchService(
                     string categoryTitle = shelf
                         .GetProperty("title")
                         .GetProperty("runs")
-                        .GetElementAt(0)
+                        .GetPropertyAt(0)
                         .GetProperty("text")
                         .GetString()
                         .OrThrow();
@@ -93,7 +93,7 @@ public sealed class SearchService(
 
         string? nextContinuationToken = shelf
             .GetPropertyOrNull("continuations")
-            ?.GetElementAtOrNull(0)
+            ?.GetPropertyAtOrNull(0)
             ?.GetPropertyOrNull("nextContinuationData")
             ?.GetPropertyOrNull("continuation")
             ?.GetString();
@@ -283,7 +283,7 @@ public sealed class SearchService(
             .GetProperty("contents")
             .GetProperty("tabbedSearchResultsRenderer")
             .GetProperty("tabs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("tabRenderer")
             .GetProperty("content")
             .GetProperty("sectionListRenderer")
@@ -300,7 +300,7 @@ public sealed class SearchService(
                 string categoryTitle = cardShelf
                     .GetProperty("subtitle")
                     .GetProperty("runs")
-                    .GetElementAt(0)
+                    .GetPropertyAt(0)
                     .GetProperty("text")
                     .GetString()
                     .OrThrow();
@@ -337,13 +337,13 @@ public sealed class SearchService(
 
                         JsonElement descriptionRuns = item
                             .GetProperty("flexColumns")
-                            .GetElementAt(1)
+                            .GetPropertyAt(1)
                             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
                             .GetProperty("text")
                             .GetProperty("runs");
 
                         JsonElement firstDescriptionRun = descriptionRuns
-                            .GetElementAt(0);
+                            .GetPropertyAt(0);
 
                         string itemCategory = firstDescriptionRun
                             .GetProperty("text")
@@ -366,13 +366,13 @@ public sealed class SearchService(
                             firstDescriptionRun
                                 .TryGetProperty("navigationEndpoint", out _) &&
                             descriptionRuns
-                                .GetElementAtOrNull(2)?
+                                .GetPropertyAtOrNull(2)?
                                 .GetPropertyOrNull("text")
                                 ?.GetString() is string viewsInfo &&
                             viewsInfo
                                 .Contains("views") &&
                             descriptionRuns
-                                .GetElementAtOrNull(4)
+                                .GetPropertyAtOrNull(4)
                                 ?.GetPropertyOrNull("text")
                                 ?.GetString()
                                 ?.ToTimeSpan() is not null)
@@ -400,7 +400,7 @@ public sealed class SearchService(
                 string categoryTitle = shelf
                     .GetProperty("title")
                     .GetProperty("runs")
-                    .GetElementAt(0)
+                    .GetPropertyAt(0)
                     .GetProperty("text")
                     .GetString()
                     .OrThrow();
@@ -476,7 +476,7 @@ public sealed class SearchService(
         // Text Suggestions
         client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing text suggestions...");
         JsonElement textSuggestions = contents
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("searchSuggestionsSectionRenderer")
             .GetProperty("contents");
 
@@ -517,7 +517,7 @@ public sealed class SearchService(
         // Result Suggestions
         client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing result suggestions...");
         JsonElement? resultSuggestions = contents
-            .GetElementAtOrNull(1)
+            .GetPropertyAtOrNull(1)
             ?.GetPropertyOrNull("searchSuggestionsSectionRenderer")
             ?.GetPropertyOrNull("contents");
 
@@ -532,11 +532,11 @@ public sealed class SearchService(
 
             JsonElement? firstDescriptionRun = itemContent
                 .GetProperty("flexColumns")
-                .GetElementAtOrNull(1)
+                .GetPropertyAtOrNull(1)
                 ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
                 ?.GetPropertyOrNull("text")
                 ?.GetPropertyOrNull("runs")
-                ?.GetElementAtOrNull(0);
+                ?.GetPropertyAtOrNull(0);
 
             string? itemCategory = firstDescriptionRun?
                 .GetPropertyOrNull("text")
@@ -611,7 +611,7 @@ public sealed class SearchService(
 
         string feedbackToken = ((suggestionsJson.RootElement
             .GetPropertyOrNull("contents")
-            ?.GetElementAtOrNull(0)
+            ?.GetPropertyAtOrNull(0)
             ?.GetPropertyOrNull("searchSuggestionsSectionRenderer")
             ?.GetPropertyOrNull("contents")
             ?.EnumerateArray()
@@ -623,7 +623,7 @@ public sealed class SearchService(
                 string? suggestionText = itemContent
                     .GetPropertyOrNull("suggestion")
                     ?.GetPropertyOrNull("runs")
-                    ?.GetElementAtOrNull(0)
+                    ?.GetPropertyAtOrNull(0)
                     ?.GetPropertyOrNull("text")
                     ?.GetString();
 
@@ -652,7 +652,7 @@ public sealed class SearchService(
 
         bool isProcessed = removeJson.RootElement
             .GetPropertyOrNull("feedbackResponses")
-            ?.GetElementAtOrNull(0)
+            ?.GetPropertyAtOrNull(0)
             ?.GetPropertyOrNull("isProcessed")
             ?.GetBoolean() ?? false;
 

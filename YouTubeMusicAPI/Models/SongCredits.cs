@@ -50,7 +50,7 @@ public class SongCredits(
             string sectionType = sectionRenderer
                 .GetProperty("title")
                 .GetProperty("runs")
-                .GetElementAt(0)
+                .GetPropertyAt(0)
                 .GetProperty("text")
                 .GetString()
                 .OrThrow();

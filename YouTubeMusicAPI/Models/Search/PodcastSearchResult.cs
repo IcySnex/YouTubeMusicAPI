@@ -32,13 +32,13 @@ public class PodcastSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow()
@@ -46,11 +46,11 @@ public class PodcastSearchResult(
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -68,7 +68,7 @@ public class PodcastSearchResult(
             .SelectThumbnails();
 
         YouTubeMusicEntity host = descriptionRuns
-            .GetElementAt(descriptionStartIndex)
+            .GetPropertyAt(descriptionStartIndex)
             .SelectArtist();
 
         return new(name, id, browseId, thumbnails, host);
@@ -86,11 +86,11 @@ public class PodcastSearchResult(
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -108,11 +108,11 @@ public class PodcastSearchResult(
             .SelectThumbnails();
 
         YouTubeMusicEntity host = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(2)
+            .GetPropertyAt(2)
             .SelectArtist();
 
         return new(name, id, browseId, thumbnails, host);

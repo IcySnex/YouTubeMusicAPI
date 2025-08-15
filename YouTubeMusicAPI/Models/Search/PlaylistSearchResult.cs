@@ -36,13 +36,13 @@ public class PlaylistSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow()
@@ -50,11 +50,11 @@ public class PlaylistSearchResult(
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -72,11 +72,11 @@ public class PlaylistSearchResult(
             .SelectThumbnails();
 
         YouTubeMusicEntity creator = descriptionRuns
-            .GetElementAt(descriptionStartIndex)
+            .GetPropertyAt(descriptionStartIndex)
             .SelectArtist();
 
         string viewsSongsInfo = (descriptionRuns
-            .GetElementAtOrNull(descriptionStartIndex + 2)
+            .GetPropertyAtOrNull(descriptionStartIndex + 2)
             ?.GetPropertyOrNull("text")
             ?.GetString())
             .Or("N/A views");
@@ -105,7 +105,7 @@ public class PlaylistSearchResult(
         string name = element
             .GetProperty("title")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -123,7 +123,7 @@ public class PlaylistSearchResult(
             .SelectThumbnails();
 
         YouTubeMusicEntity creator = descriptionRuns
-            .GetElementAt(2)
+            .GetPropertyAt(2)
             .SelectArtist();
 
         string viewsInfo = "N/A views";
@@ -146,13 +146,13 @@ public class PlaylistSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow()
@@ -160,11 +160,11 @@ public class PlaylistSearchResult(
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -182,11 +182,11 @@ public class PlaylistSearchResult(
             .SelectThumbnails();
 
         YouTubeMusicEntity creator = descriptionRuns
-            .GetElementAt(descriptionStartIndex)
+            .GetPropertyAt(descriptionStartIndex)
             .SelectArtist();
 
         string viewsInfo = (descriptionRuns
-            .GetElementAtOrNull(descriptionStartIndex + 2)
+            .GetPropertyAtOrNull(descriptionStartIndex + 2)
             ?.GetPropertyOrNull("text")
             ?.GetString())
             .Or("N/A views");

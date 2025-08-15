@@ -11,6 +11,7 @@ using YouTubeMusicAPI.Client;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Streaming;
 using YouTubeMusicAPI.Sample.WPF.Logging;
+using YouTubeMusicAPI.Sample.WPF.Views;
 using YouTubeSessionGenerator;
 using YouTubeSessionGenerator.Js.Environments;
 
@@ -19,7 +20,9 @@ namespace YouTubeMusicAPI.Sample.WPF.ViewModels;
 partial class MainViewModel : ObservableObject
 {
     readonly ILogger logger;
+
     YouTubeMusicClient client;
+    string cookiesString = "";
 
     public MainViewModel()
     {
@@ -61,6 +64,8 @@ partial class MainViewModel : ObservableObject
         foreach (Cookie cookie in cookies)
             cookieContainer.Add(cookie);
 
+        cookiesString = string.Join(';', cookies.Select(c => $"{c.Name}={c.Value}"));
+
         // Get visitorData & poToken
         using HttpClient httpClient = new(new HttpClientHandler() { CookieContainer = cookieContainer });
         using NodeEnvironment jsEnvironment = new();
@@ -77,6 +82,23 @@ partial class MainViewModel : ObservableObject
 
         client = new(logger, "US", visitorData, poToken, cookies);
         IsSessionAuthenticated = true;
+    }
+
+
+    [RelayCommand]
+    void ExportSessionDetails()
+    {
+        SessionDetailsViewModel viewModel = new(
+            cookiesString,
+            client.VisitorData ?? "",
+            client.PoToken ?? "");
+
+        SessionDetailsWindow window = new(viewModel)
+        {
+            Owner = Application.Current.MainWindow
+        };
+
+        window.ShowDialog();
     }
 
 

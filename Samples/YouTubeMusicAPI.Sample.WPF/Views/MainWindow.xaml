@@ -54,6 +54,8 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="4" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <TextBlock
@@ -66,9 +68,13 @@
                 Opacity="0.8"
                 Text="{Binding IsSessionAuthenticated, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Is Authenticated|Not Auhtenticated'}" />
 
-
             <Button
                 Grid.Column="4"
+                Command="{Binding ExportSessionDetailsCommand}"
+                Content="Export"
+                IsEnabled="{Binding IsSessionAuthenticated}" />
+            <Button
+                Grid.Column="6"
                 Command="{Binding ToggleAuthenticationCommand}"
                 Content="{Binding IsSessionAuthenticated, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Remove|Login'}" />
         </Grid>

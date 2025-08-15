@@ -1,0 +1,105 @@
+﻿<Window
+    x:Class="YouTubeMusicAPI.Sample.WPF.Views.SessionDetailsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:YouTubeMusicAPI.Sample.WPF.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Session Details"
+    Width="500"
+    Height="181"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                VerticalAlignment="Center"
+                FontWeight="Medium"
+                Text="Cookies:" />
+            <TextBox
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                IsReadOnly="True"
+                Opacity="0.8"
+                Text="{Binding Cookies, Mode=OneTime}" />
+
+            <Button
+                Grid.Column="4"
+                Command="{Binding CopyCommand}"
+                CommandParameter="{Binding Cookies}"
+                Content="Copy" />
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                VerticalAlignment="Center"
+                FontWeight="Medium"
+                Text="Visitor Data:" />
+            <TextBox
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                IsReadOnly="True"
+                Opacity="0.8"
+                Text="{Binding VisitorData, Mode=OneTime}" />
+
+            <Button
+                Grid.Column="4"
+                Command="{Binding CopyCommand}"
+                CommandParameter="{Binding VisitorData}"
+                Content="Copy" />
+        </Grid>
+
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                VerticalAlignment="Center"
+                FontWeight="Medium"
+                Text="Proof Of Origin Token:" />
+            <TextBox
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                IsReadOnly="True"
+                Opacity="0.8"
+                Text="{Binding PoToken, Mode=OneTime}" />
+
+            <Button
+                Grid.Column="4"
+                Command="{Binding CopyCommand}"
+                CommandParameter="{Binding PoToken}"
+                Content="Copy" />
+        </Grid>
+    </Grid>
+</Window>

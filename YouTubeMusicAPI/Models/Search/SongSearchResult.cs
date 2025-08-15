@@ -100,7 +100,6 @@ public class SongSearchResult(
             .OrThrow();
 
         bool isExplicit = element
-            .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 
         string playsInfo = flexColumns
@@ -168,8 +167,7 @@ public class SongSearchResult(
             .OrThrow();
 
         bool isExplicit = element
-            .GetPropertyOrNull("subtitleBadges")
-            .SelectContainsExplicitBadge();
+            .SelectContainsExplicitBadge("subtitleBadges");
 
         string playsInfo = "N/A plays";
 
@@ -244,7 +242,6 @@ public class SongSearchResult(
         TimeSpan duration = TimeSpan.Zero; // grrrrr YT, why DO YOU NOT PROVIDE A DURATION GAWD DAMN??=?=!" i will not make this nullabel just because of this bullshit!!!!
 
         bool isExplicit = element
-            .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 
         string playsInfo = descriptionRuns

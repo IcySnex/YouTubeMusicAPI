@@ -75,4 +75,31 @@ internal static class Syntax
         TResult trueResult,
         TResult falseResult) =>
         EqualityComparer<TValue>.Default.Equals(value, condition) ? trueResult : falseResult;
+
+
+    /// <summary>
+    /// Converts a value type to its nullable equivalent.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="value">The value to convert.</param>
+    /// <returns>The <c>value</c> as a nullable <c>T?</c>.</returns>
+    public static T? AsNullable<T>(
+        this T value) where T : struct =>
+        EqualityComparer<T>.Default.Equals(value, default) ? null : value;
+
+
+    /// <summary>
+    /// Evaluates two expressions on the same object and returns the first non-null result.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the source object.</typeparam>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="source">The source object.</param>
+    /// <param name="first">The first expression to evaluate.</param>
+    /// <param name="second">The fallback expression to evaluate if the first returns null.</param>
+    /// <returns>The first non-null result of <c>first</c> or <c>second</c>.</returns>
+    public static TResult Coalesce<TSource, TResult>(
+        this TSource source,
+        Func<TSource, TResult> first,
+        Func<TSource, TResult> second) =>
+        first(source) ?? second(source);
 }

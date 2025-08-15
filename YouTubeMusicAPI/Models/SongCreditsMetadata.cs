@@ -64,7 +64,6 @@ public class SongCreditsMetadata(
             .ToInt32();
 
         bool isExplicit = element
-            .GetPropertyOrNull("badges")
             .SelectContainsExplicitBadge();
 
         return new(name, id, thumbnails, primaryArtist, releaseYear, isExplicit);

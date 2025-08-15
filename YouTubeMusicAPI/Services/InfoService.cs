@@ -92,7 +92,7 @@ public sealed class InfoService(
 
         JsonElement dialogRenderer = json.RootElement
             .GetProperty("onResponseReceivedActions")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("openPopupAction")
             .GetProperty("popup")
             .GetProperty("dismissableDialogRenderer");

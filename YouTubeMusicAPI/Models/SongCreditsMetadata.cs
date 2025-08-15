@@ -33,7 +33,7 @@ public class SongCreditsMetadata(
         JsonElement titleRun = element
             .GetProperty("title")
             .GetProperty("runs")
-            .GetElementAt(0);
+            .GetPropertyAt(0);
 
 
         string name = titleRun
@@ -52,13 +52,13 @@ public class SongCreditsMetadata(
         YouTubeMusicEntity primaryArtist = element
             .GetProperty("subtitle")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .SelectArtist();
 
         int? releaseYear = element
             .GetPropertyOrNull("secondTitle")
             ?.GetPropertyOrNull("runs")
-            ?.GetElementAtOrNull(2)
+            ?.GetPropertyAtOrNull(2)
             ?.GetPropertyOrNull("text")
             ?.GetString()
             .ToInt32();

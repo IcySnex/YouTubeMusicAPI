@@ -18,12 +18,12 @@ internal static class Getters
     }
 
 
-    public static JsonElement GetElementAt(
+    public static JsonElement GetPropertyAt(
         this JsonElement element,
         int index) =>
         element[index];
 
-    public static JsonElement? GetElementAtOrNull(
+    public static JsonElement? GetPropertyAtOrNull(
         this JsonElement element,
         int index)
     {

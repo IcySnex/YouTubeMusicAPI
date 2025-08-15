@@ -30,13 +30,13 @@ public class ProfileSearchResult(
             .GetProperty("flexColumns");
 
         JsonElement descriptionRuns = flexColumns
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow()
@@ -44,11 +44,11 @@ public class ProfileSearchResult(
 
 
         string name = flexColumns
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("musicResponsiveListItemFlexColumnRenderer")
             .GetProperty("text")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -62,7 +62,7 @@ public class ProfileSearchResult(
             .SelectThumbnails();
 
         string handle = descriptionRuns
-            .GetElementAt(descriptionStartIndex)
+            .GetPropertyAt(descriptionStartIndex)
             .GetProperty("text")
             .GetString()
             .OrThrow();

@@ -34,7 +34,7 @@ public class AuthenticatedUser(
 
         JsonElement items = element
             .GetProperty("sections")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("multiPageMenuSectionRenderer")
             .GetProperty("items");
 
@@ -43,7 +43,7 @@ public class AuthenticatedUser(
             .SelectRunTextAt("accountName");
 
         string id = items
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("compactLinkRenderer")
             .SelectNavigationBrowseId();
 
@@ -54,7 +54,7 @@ public class AuthenticatedUser(
             .SelectRunTextAt("channelHandle");
 
         bool isPremium = items
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("compactLinkRenderer")
             .SelectRunTextAt("title")
             .If("Paid Memberships", true, false);

@@ -52,18 +52,18 @@ public class SongInfo(
             .GetProperty("tabs");
 
         JsonElement item = tabs
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("tabRenderer")
             .GetProperty("content")
             .GetProperty("musicQueueRenderer")
             .GetProperty("content")
             .GetProperty("playlistPanelRenderer")
             .GetProperty("contents")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("playlistPanelVideoRenderer");
 
         JsonElement lyrics = tabs
-            .GetElementAt(1)
+            .GetPropertyAt(1)
             .GetProperty("tabRenderer");
 
         JsonElement menuItems = item
@@ -77,7 +77,7 @@ public class SongInfo(
         string name = item
             .GetProperty("title")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -91,7 +91,7 @@ public class SongInfo(
             .SelectThumbnails();
 
         string relatedBrowseId = tabs
-            .GetElementAt(2)
+            .GetPropertyAt(2)
             .GetProperty("tabRenderer")
             .GetProperty("endpoint")
             .GetProperty("browseEndpoint")
@@ -116,13 +116,13 @@ public class SongInfo(
             .SelectArtists();
 
         bool hasKnownAlbum = (descriptionRuns
-            .GetElementAtOrNull(artists.Length * 2)
+            .GetPropertyAtOrNull(artists.Length * 2)
             ?.GetPropertyOrNull("navigationEndpoint"))
             .If(null, false, true);
 
         YouTubeMusicEntity album = hasKnownAlbum
             ? descriptionRuns
-                .GetElementAt(artists.Length * 2)
+                .GetPropertyAt(artists.Length * 2)
                 .SelectAlbum()
             : menuItems
                 .SelectAlbumUnknown();
@@ -130,7 +130,7 @@ public class SongInfo(
         TimeSpan duration = item
             .GetProperty("lengthText")
             .GetProperty("runs")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("text")
             .GetString()
             .ToTimeSpan()
@@ -141,7 +141,7 @@ public class SongInfo(
             .SelectContainsExplicitBadge();
 
         int? releaseYear = descriptionRuns
-            .GetElementAtOrNull(artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
+            .GetPropertyAtOrNull(artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
             ?.GetPropertyOrNull("text")
             ?.GetString()
             ?.ToInt32();
@@ -153,7 +153,7 @@ public class SongInfo(
             .GetProperty("playerOverlays")
             .GetProperty("playerOverlayRenderer")
             .GetProperty("actions")
-            .GetElementAt(0)
+            .GetPropertyAt(0)
             .GetProperty("likeButtonRenderer")
             .GetProperty("likesAllowed")
             .GetBoolean();

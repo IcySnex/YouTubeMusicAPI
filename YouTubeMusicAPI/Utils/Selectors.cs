@@ -19,7 +19,7 @@ internal static class Selectors
         this JsonElement runs,
         int index) =>
         runs
-            .GetElementAt(index)
+            .GetPropertyAt(index)
             .GetProperty("text")
             .GetString()
             .OrThrow();
@@ -132,7 +132,7 @@ internal static class Selectors
             string type = menu.Value
                 .GetProperty("text")
                 .GetProperty("runs")
-                .GetElementAt(0)
+                .GetPropertyAt(0)
                 .GetProperty("text")
                 .GetString()
                 .OrThrow();
@@ -185,7 +185,7 @@ internal static class Selectors
             string type = menu.Value
                 .GetProperty("text")
                 .GetProperty("runs")
-                .GetElementAt(0)
+                .GetPropertyAt(0)
                 .GetProperty("text")
                 .GetString()
                 .OrThrow();
@@ -311,7 +311,7 @@ internal static class Selectors
             string type = menu.Value
                 .GetProperty("text")
                 .GetProperty("runs")
-                .GetElementAt(0)
+                .GetPropertyAt(0)
                 .GetProperty("text")
                 .GetString()
                 .OrThrow();
@@ -364,7 +364,7 @@ internal static class Selectors
             string type = menu.Value
                 .GetProperty("text")
                 .GetProperty("runs")
-                .GetElementAt(0)
+                .GetPropertyAt(0)
                 .GetProperty("text")
                 .GetString()
                 .OrThrow();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using YouTubeMusicAPI.Http;
+using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Utils;
@@ -45,13 +46,14 @@ public sealed class InfoService(
         // Parse response
         client.Logger?.LogInformation("[InfoService-GetSongAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
+        JElement root = new(json.RootElement);
 
-        bool isSong = json.RootElement
-            .GetProperty("playerOverlays")
-            .GetProperty("playerOverlayRenderer")
-            .GetProperty("browserMediaSession")
-            .GetProperty("browserMediaSessionRenderer")
-            .TryGetProperty("album", out _);
+        bool isSong = root
+            .Get("playerOverlays")
+            .Get("playerOverlayRenderer")
+            .Get("browserMediaSession")
+            .Get("browserMediaSessionRenderer")
+            .Contains("album");
 
         if (!isSong)
         {
@@ -59,7 +61,7 @@ public sealed class InfoService(
             throw new ArgumentException("The provided ID does not correspond to a song. Use 'GetVideoAsync' instead.", nameof(id));
         }
 
-        SongInfo song = SongInfo.Parse(json.RootElement);
+        SongInfo song = SongInfo.Parse(root);
         return song;
     }
 
@@ -89,15 +91,16 @@ public sealed class InfoService(
         // Parse response
         client.Logger?.LogInformation("[InfoService-GetSongCreditsAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
+        JElement root = new(json.RootElement);
 
-        JsonElement dialogRenderer = json.RootElement
-            .GetProperty("onResponseReceivedActions")
-            .GetPropertyAt(0)
-            .GetProperty("openPopupAction")
-            .GetProperty("popup")
-            .GetProperty("dismissableDialogRenderer");
+        JElement dialogRenderer = root
+            .Get("onResponseReceivedActions")
+            .GetAt(0)
+            .Get("openPopupAction")
+            .Get("popup")
+            .Get("dismissableDialogRenderer");
 
-        if (!dialogRenderer.TryGetProperty("sections", out _))
+        if (!dialogRenderer.Contains("sections"))
         {
             client.Logger?.LogError("[InfoService-GetSongCreditsAsync] The provided ID does not correspond to a song with available credits.");
             throw new ArgumentException("The provided ID does not correspond to a song with available credits.", nameof(id));

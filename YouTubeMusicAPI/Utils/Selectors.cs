@@ -96,13 +96,13 @@ internal static class Selectors
 
     public static Thumbnail[] SelectThumbnails(
         this JsonElement element,
-        string propertyName = "thumbnail") =>
-        element
-            .GetProperty(propertyName)
-            .GetProperty("thumbnails")
-            .EnumerateArray()
-            .Select(Thumbnail.Parse)
-            .ToArray();
+        string propertyName = "thumbnail") => [];
+        //element
+        //    .GetProperty(propertyName)
+        //    .GetProperty("thumbnails")
+        //    .EnumerateArray()
+        //    .Select(Thumbnail.Parse)
+        //    .ToArray();
 
     public static Radio? SelectRadioOrNull(
         this JsonElement element)

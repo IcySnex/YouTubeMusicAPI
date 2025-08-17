@@ -39,11 +39,11 @@ internal static class Syntax
     /// <param name="value">The nullable value.</param>
     /// <param name="expression">The original expression that produced the value (automatically provided by the compiler).</param>
     /// <returns>The <c>value</c> if it's not <see langword="null"/>.</returns>
-    /// <exception cref="NullReferenceException">Occurrs when the <c>value</c> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">Occurrs when the <c>expression</c> returned <see langword="null"/>.</exception>
     public static T OrThrow<T>(
         this T? value,
         [CallerArgumentExpression(nameof(value))] string? expression = null) where T : struct =>
-        value ?? throw new NullReferenceException($"Value is null: {expression}");
+        value ?? throw new InvalidOperationException($"Value was null but expected non-nullable {typeof(T).Name}: {expression}");
 
     /// <summary>
     /// Returns the value if it's not  <see langword="null"/>, otherwise throws an exception.
@@ -52,11 +52,11 @@ internal static class Syntax
     /// <param name="value">The nullable value.</param>
     /// <param name="expression">The original expression that produced the value (automatically provided by the compiler).</param>
     /// <returns>The <c>value</c> if it's not <see langword="null"/>.</returns>
-    /// <exception cref="NullReferenceException">Occurrs when the <c>value</c> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">Occurrs when the <c>expression</c> returned <see langword="null"/>.</exception>
     public static T OrThrow<T>(
         this T? value,
         [CallerArgumentExpression(nameof(value))] string? expression = null) where T : class =>
-        value ?? throw new NullReferenceException($"Value is null: {expression}");
+        value ?? throw new InvalidOperationException($"Value was null but expected non-nullable {typeof(T).Name}: {expression}");
 
 
     /// <summary>
@@ -75,6 +75,47 @@ internal static class Syntax
         TResult trueResult,
         TResult falseResult) =>
         EqualityComparer<TValue>.Default.Equals(value, condition) ? trueResult : falseResult;
+
+    /// <summary>
+    /// Returns whether the <c>value</c> equals any of the specified <c>conditions</c>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to compare.</param>
+    /// <param name="conditions">The values to compare against.</param>
+    /// <returns><see langword="true"/> if <c>value</c> equals any of the <c>conditions</c>, otherwise <see langword="false"/>.</returns>
+    public static bool Is<T>(
+        this T value,
+        params T[] conditions) =>
+        conditions.Any(c => EqualityComparer<T>.Default.Equals(value, c));
+
+    /// <summary>
+    /// Returns whether the <c>value</c> is <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <returns><see langword="true"/> if <c>value</c> is <see langword="null"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNull<T>(
+        this T? value) where T : class =>
+        value is null;
+
+    /// <summary>
+    /// Returns the logical negation of the specified <paramref name="value"/>.
+    /// </summary>
+    /// <param name="value">The boolean value to negate.</param>
+    /// <returns><see langword="true"/> if <paramref name="value"/> is <see langword="false"/>, otherwise <see langword="false"/>.</returns>
+    public static bool Not(
+        this bool value) =>
+        !value;
+
+
+    public static void ForEach<T>(
+        this IEnumerable<T> source,
+        Action<T> action)
+    {
+        foreach (T item in source)
+            action(item);
+    }
+
 
 
     /// <summary>

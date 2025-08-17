@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Info;
@@ -38,127 +38,120 @@ public class SongInfo(
     Radio? radio) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="SongInfo"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="SongInfo"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> '{}' to parse.</param>
+    /// <param name="element">The <see cref="JElement"/> '$' to parse.</param>
+    /// <returns>A <see cref="SongInfo"/> representing the <see cref="JElement"/>.</returns>
     internal static SongInfo Parse(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement tabs = element
-            .GetProperty("contents")
-            .GetProperty("singleColumnMusicWatchNextResultsRenderer")
-            .GetProperty("tabbedRenderer")
-            .GetProperty("watchNextTabbedResultsRenderer")
-            .GetProperty("tabs");
+        JElement tabs = element
+            .Get("contents")
+            .Get("singleColumnMusicWatchNextResultsRenderer")
+            .Get("tabbedRenderer")
+            .Get("watchNextTabbedResultsRenderer")
+            .Get("tabs");
 
-        JsonElement item = tabs
-            .GetPropertyAt(0)
-            .GetProperty("tabRenderer")
-            .GetProperty("content")
-            .GetProperty("musicQueueRenderer")
-            .GetProperty("content")
-            .GetProperty("playlistPanelRenderer")
-            .GetProperty("contents")
-            .GetPropertyAt(0)
-            .GetProperty("playlistPanelVideoRenderer");
+        JElement item = tabs
+            .GetAt(0)
+            .Get("tabRenderer")
+            .Get("content")
+            .Get("musicQueueRenderer")
+            .Get("content")
+            .Get("playlistPanelRenderer")
+            .Get("contents")
+            .GetAt(0)
+            .Get("playlistPanelVideoRenderer");
 
-        JsonElement lyrics = tabs
-            .GetPropertyAt(1)
-            .GetProperty("tabRenderer");
+        JElement lyricsTab = tabs
+            .GetAt(1)
+            .Get("tabRenderer");
 
-        JsonElement menuItems = item
-            .SelectMenuItems();
+        JElement menuItems = item
+            .SelectMenu();
 
-        JsonElement descriptionRuns = item
-            .GetProperty("longBylineText")
-            .GetProperty("runs");
+        JElement descriptionRuns = item
+            .Get("longBylineText")
+            .Get("runs");
 
 
         string name = item
-            .GetProperty("title")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .SelectRunTextAt("title", 0)
             .OrThrow();
 
         string id = item
-            .GetProperty("videoId")
-            .GetString()
+            .Get("videoId")
+            .AsString()
             .OrThrow();
 
         Thumbnail[] thumbnails = item
             .SelectThumbnails();
 
         string relatedBrowseId = tabs
-            .GetPropertyAt(2)
-            .GetProperty("tabRenderer")
-            .GetProperty("endpoint")
-            .GetProperty("browseEndpoint")
-            .GetProperty("browseId")
-            .GetString()
+            .GetAt(2)
+            .Get("tabRenderer")
+            .Get("endpoint")
+            .Get("browseEndpoint")
+            .Get("browseId")
+            .AsString()
             .OrThrow();
 
-        bool isLyricsUnavailable = (lyrics
-            .GetPropertyOrNull("unselectable")
-            ?.GetBoolean())
-            .Or(false);
-
-        string? lyricsBrowseId = isLyricsUnavailable
-            ? null
-            : lyrics
-                .GetProperty("endpoint")
-                .GetProperty("browseEndpoint")
-                .GetProperty("browseId")
-                .GetString();
+        string? lyricsBrowseId = lyricsTab
+            .Get("unselectable")
+            .AsBool()
+            .Or(false)
+            .If(true,
+                null,
+                lyricsTab
+                    .Get("endpoint")
+                    .Get("browseEndpoint")
+                    .Get("browseId")
+                    .AsString());
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists();
 
-        bool hasKnownAlbum = (descriptionRuns
-            .GetPropertyAtOrNull(artists.Length * 2)
-            ?.GetPropertyOrNull("navigationEndpoint"))
-            .If(null, false, true);
-
-        YouTubeMusicEntity album = hasKnownAlbum
-            ? descriptionRuns
-                .GetPropertyAt(artists.Length * 2)
-                .SelectAlbum()
-            : menuItems
-                .SelectAlbumUnknown();
+        bool isAlbumUnknown = descriptionRuns
+            .GetAt(artists.Length * 2)
+            .Get("navigationEndpoint")
+            .IsUndefined;
+        YouTubeMusicEntity album = isAlbumUnknown
+            .If(true,
+                menuItems
+                    .SelectAlbumUnknown(),
+                descriptionRuns
+                    .GetAt(artists.Length * 2)
+                    .SelectAlbum());
 
         TimeSpan duration = item
-            .GetProperty("lengthText")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .SelectRunTextAt("lengthText", 0)
             .ToTimeSpan()
             .OrThrow();
 
         bool isExplicit = item
-            .SelectContainsExplicitBadge();
+            .SelectIsExplicit();
 
         int? releaseYear = descriptionRuns
-            .GetPropertyAtOrNull(artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
-            ?.GetPropertyOrNull("text")
-            ?.GetString()
-            ?.ToInt32();
+            .GetAt(artists.Length * 2 + (isAlbumUnknown ? 0 : 2))
+            .Get("text")
+            .AsString()
+            .ToInt32();
 
         bool isCreditsAvailable = menuItems
             .SelectIsCreditsAvailable();
 
         bool isRatingsAllowed = element
-            .GetProperty("playerOverlays")
-            .GetProperty("playerOverlayRenderer")
-            .GetProperty("actions")
-            .GetPropertyAt(0)
-            .GetProperty("likeButtonRenderer")
-            .GetProperty("likesAllowed")
-            .GetBoolean();
+            .Get("playerOverlays")
+            .Get("playerOverlayRenderer")
+            .Get("actions")
+            .GetAt(0)
+            .Get("likeButtonRenderer")
+            .Get("likesAllowed")
+            .AsBool()
+            .OrThrow();
 
         Radio? radio = menuItems
-            .SelectRadioOrNull();
+            .SelectRadio();
 
         return new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, isRatingsAllowed, radio);
     }

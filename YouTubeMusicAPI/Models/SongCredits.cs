@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models;
@@ -22,16 +22,17 @@ public class SongCredits(
     IReadOnlyList<string> metadataProviders)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into <see cref="SongCredits"/>.
+    /// Parses a <see cref="JElement"/> into <see cref="SongCredits"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> 'dismissableDialogRenderer' to parse.</param>
+    /// <param name="element">The <see cref="JElement"/> 'dismissableDialogRenderer' to parse.</param>
+    /// <returns><see cref="SongCredits"/> representing the <see cref="JElement"/>.</returns>
     internal static SongCredits Parse(
-        JsonElement element)
+        JElement element)
     {
         // Metadata
-        JsonElement itemRenderer = element
-            .GetProperty("metadata")
-            .GetProperty("musicMultiRowListItemRenderer");
+        JElement itemRenderer = element
+            .Get("metadata")
+            .Get("musicMultiRowListItemRenderer");
 
         SongCreditsMetadata metadata = SongCreditsMetadata.Parse(itemRenderer);
 
@@ -40,42 +41,52 @@ public class SongCredits(
         List<string> writers = [];
         List<string> producers = [];
         List<string> metadataProviders = [];
-        foreach (JsonElement section in element
-            .GetProperty("sections")
-            .EnumerateArray())
-        {
-            if (!section.TryGetProperty("dismissableDialogContentSectionRenderer", out JsonElement sectionRenderer))
-                continue;
 
-            string sectionType = sectionRenderer
-                .GetProperty("title")
-                .GetProperty("runs")
-                .GetPropertyAt(0)
-                .GetProperty("text")
-                .GetString()
-                .OrThrow();
-
-            List<string> targetList = sectionType switch
+        element
+            .Get("sections")
+            .AsArray()
+            .Or(JArray.Empty)
+            .Select(item => item
+                .Get("dismissableDialogContentSectionRenderer"))
+            .Where(item => !item.IsUndefined)
+            .ForEach(item =>
             {
-                "Performed by" => performers,
-                "Written by" => writers,
-                "Produced by" => producers,
-                "Music metadata provided by" => metadataProviders,
-                _ => throw new ArgumentException($"Unknown section type: {sectionType}", nameof(element))
-            };
-            foreach (JsonElement run in sectionRenderer
-                .GetProperty("subtitle")
-                .GetProperty("runs")
-                .EnumerateArray())
-            {
-                string? text = run
-                    .GetProperty("text")
-                    .GetString();
+                List<string> enumerable = item
+                    .Get("subtitle")
+                    .Get("runs")
+                    .AsArray()
+                    .Or(JArray.Empty)
+                    .Select(item => item
+                        .Get("text")
+                        .AsString())
+                    .Where(text => !string.IsNullOrWhiteSpace(text))
+                    .Cast<string>()
+                    .ToList();
 
-                if (!string.IsNullOrEmpty(text) && text != "\n")
-                    targetList.Add(text);
-            }
-        }
+                switch (item
+                    .Get("title")
+                    .Get("runs")
+                    .GetAt(0)
+                    .Get("text")
+                    .AsString())
+                {
+                    case "Performed by":
+                        performers = enumerable;
+                        break;
+
+                    case "Written by":
+                        writers = enumerable;
+                        break;
+
+                    case "Produced by":
+                        producers = enumerable;
+                        break;
+
+                    case "Music metadata provided by":
+                        metadataProviders = enumerable;
+                        break;
+                }
+            });
 
         return new(metadata, performers, writers, producers, metadataProviders);
     }

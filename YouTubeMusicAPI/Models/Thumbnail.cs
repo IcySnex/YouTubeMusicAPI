@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models;
@@ -18,24 +18,27 @@ public class Thumbnail(
     int height)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="Thumbnail"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="Thumbnail"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> to parse.</param>
+    /// <param name="element">The <see cref="JElement"/> to parse.</param>
+    /// <returns>A <see cref="Thumbnail"/> representing the <see cref="JElement"/>.</returns>
     internal static Thumbnail Parse(
-        JsonElement element)
+        JElement element)
     {
         string url = element
-            .GetProperty("url")
-            .GetString()
+            .Get("url")
+            .AsString()
             .OrThrow();
 
         int width = element
-            .GetProperty("width")
-            .GetInt32();
+            .Get("width")
+            .AsInt32()
+            .OrThrow();
 
         int height = element
-            .GetProperty("height")
-            .GetInt32();
+            .Get("height")
+            .AsInt32()
+            .OrThrow();
 
         return new(url, width, height);
     }

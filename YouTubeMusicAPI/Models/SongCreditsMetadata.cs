@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models;
@@ -24,47 +25,45 @@ public class SongCreditsMetadata(
     bool isExplicit)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into <see cref="SongCreditsMetadata"/>.
+    /// Parses a <see cref="JElement"/> into <see cref="SongCreditsMetadata"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> 'musicMultiRowListItemRenderer' to parse.</param>
+    /// <param name="element">The <see cref="JElement"/> 'musicMultiRowListItemRenderer' to parse.</param>
+    /// <returns><see cref="SongCreditsMetadata"/> representing the <see cref="JElement"/>.</returns>
     internal static SongCreditsMetadata Parse(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement titleRun = element
-            .GetProperty("title")
-            .GetProperty("runs")
-            .GetPropertyAt(0);
+        JElement titleRun = element
+            .Get("title")
+            .Get("runs")
+            .GetAt(0);
 
 
         string name = titleRun
-            .GetProperty("text")
-            .GetString()
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = titleRun
-            .SelectNavigationVideoId();
+            .SelectNavigationVideoId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity primaryArtist = element
-            .GetProperty("subtitle")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
+            .Get("subtitle")
+            .Get("runs")
+            .GetAt(0)
             .SelectArtist();
 
         int? releaseYear = element
-            .GetPropertyOrNull("secondTitle")
-            ?.GetPropertyOrNull("runs")
-            ?.GetPropertyAtOrNull(2)
-            ?.GetPropertyOrNull("text")
-            ?.GetString()
+            .SelectRunTextAt("secondTitle", 2)
             .ToInt32();
 
         bool isExplicit = element
-            .SelectContainsExplicitBadge();
+            .SelectIsExplicit();
 
         return new(name, id, thumbnails, primaryArtist, releaseYear, isExplicit);
     }

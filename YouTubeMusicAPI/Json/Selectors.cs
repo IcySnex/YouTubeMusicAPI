@@ -3,7 +3,7 @@ using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Json;
 
-internal static class SelectExtensions
+internal static class Selectors
 {
     public static string? SelectRunTextAt(
         this JElement element,
@@ -24,6 +24,20 @@ internal static class SelectExtensions
             .Get("items");
 
 
+    public static JElement SelectWatchEndpoint(
+        this JElement element)
+    {
+        JElement watchEndpoint = element
+            .Get("watchEndpoint");
+
+        return watchEndpoint.IsUndefined
+            .If(true,
+                element
+                    .Get("watchPlaylistEndpoint"),
+                watchEndpoint);
+    }
+
+
     public static string? SelectNavigationBrowseId(
         this JElement element) =>
         element
@@ -36,8 +50,48 @@ internal static class SelectExtensions
         this JElement element) =>
         element
             .Get("navigationEndpoint")
-            .Get("watchEndpoint")
+            .SelectWatchEndpoint()
             .Get("videoId")
+            .AsString();
+
+    public static string? SelectNavigationPlaylistId(
+        this JElement element) =>
+        element
+            .Get("navigationEndpoint")
+            .SelectWatchEndpoint()
+            .Get("playlistId")
+            .AsString();
+
+
+    public static string? SelectOverlayVideoId(
+        this JElement element) =>
+        element
+            .Get("musicItemThumbnailOverlayRenderer")
+            .Get("content")
+            .Get("musicPlayButtonRenderer")
+            .Get("playNavigationEndpoint")
+            .SelectWatchEndpoint()
+            .Get("videoId")
+            .AsString();
+
+    public static string? SelectOverlayPlaylistId(
+        this JElement element) =>
+        element
+            .Get("musicItemThumbnailOverlayRenderer")
+            .Get("content")
+            .Get("musicPlayButtonRenderer")
+            .Get("playNavigationEndpoint")
+            .SelectWatchEndpoint()
+            .Get("playlistId")
+            .AsString();
+
+
+    public static string? SelectTapBrowseId(
+        this JElement element) =>
+        element
+            .Get("onTap")
+            .Get("browseEndpoint")
+            .Get("browseId")
             .AsString();
 
 
@@ -56,7 +110,7 @@ internal static class SelectExtensions
     public static Radio? SelectRadio(
         this JElement element)
     {
-        JElement navigationEndpoint = element
+        JElement watchEndpoint = element
             .AsArray()
             .Or(JArray.Empty)
             .FirstOrDefault(item => item
@@ -64,13 +118,8 @@ internal static class SelectExtensions
                 .SelectRunTextAt("text", 0)
                 .Is("Start radio"))
             .Get("menuNavigationItemRenderer")
-            .Get("navigationEndpoint");
-
-        JElement watchEndpoint = navigationEndpoint
-            .Get("watchEndpoint");
-        if (watchEndpoint.IsUndefined)
-            watchEndpoint = navigationEndpoint
-                .Get("watchPlaylistEndpoint");
+            .Get("navigationEndpoint")
+            .SelectWatchEndpoint();
 
         string? playlistId = watchEndpoint
             .Get("playlistId")
@@ -111,15 +160,13 @@ internal static class SelectExtensions
                 .AsString()
                 .OrThrow()
                 .Trim()
-                .Is("•")
-                .Not())
+                .IsNot("•"))
             .Where(item => item
                 .Get("text")
                 .AsString()
                 .OrThrow()
                 .Trim()
-                .Is("&", ",")
-                .Not())
+                .IsNot("&", ","))
             .Select(SelectArtist)
             .ToArray();
 
@@ -154,6 +201,20 @@ internal static class SelectExtensions
     }
 
 
+    public static YouTubeMusicEntity SelectPodcast(
+        this JElement element)
+    {
+        string name = element
+            .Get("text")
+            .AsString()
+            .OrThrow();
+        string? browseId = element
+            .SelectNavigationBrowseId();
+
+        return new(name, browseId?.Substring(4), browseId);
+    }
+
+
     public static bool SelectIsExplicit(
         this JElement element,
         string key = "badges") =>
@@ -179,6 +240,17 @@ internal static class SelectExtensions
                 .Is("View song credits"))
             .Get("menuNavigationItemRenderer")
             .SelectNavigationBrowseId()
-            .IsNull()
-            .Not();
+            .IsNotNull();
+
+    public static string? SelectPlaylistId(
+        this JElement element) =>
+        element
+            .AsArray()
+            .Or(JArray.Empty)
+            .FirstOrDefault(item => item
+                .Get("menuNavigationItemRenderer")
+                .SelectRunTextAt("text", 0)
+                .Is("Shuffle play"))
+            .Get("menuNavigationItemRenderer")
+            .SelectNavigationPlaylistId();
 }

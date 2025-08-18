@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using YouTubeMusicAPI.Http;
+using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Utils;
@@ -38,7 +39,7 @@ public sealed class SearchService(
         string? continuationToken,
         string queryParams,
         string category,
-        Func<JsonElement, T> parse,
+        Func<JElement, T> parse,
         CancellationToken cancellationToken = default) where T : SearchResult
     {
         // Send request
@@ -54,63 +55,56 @@ public sealed class SearchService(
         // Parse response
         client.Logger?.LogInformation("[SearchService-FetchPageAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
+        JElement root = new(json.RootElement);
 
-        bool isContinued = json.RootElement
-            .TryGetProperty("continuationContents", out JsonElement continuationContents);
+        bool isContinued = root
+            .Contains("continuationContents", out JElement continuationContents);
 
-        JsonElement shelf = isContinued
-            ? continuationContents
-                .GetProperty("musicShelfContinuation")
-            : json.RootElement
-                .GetProperty("contents")
-                .GetProperty("tabbedSearchResultsRenderer")
-                .GetProperty("tabs")
-                .GetPropertyAt(0)
-                .GetProperty("tabRenderer")
-                .GetProperty("content")
-                .GetProperty("sectionListRenderer")
-                .GetProperty("contents")
-                .EnumerateArray()
-                .FirstOrDefault(content =>
-                {
-                    if (!content.TryGetProperty("musicShelfRenderer", out JsonElement shelf))
-                        return false;
-
-                    string categoryTitle = shelf
-                        .GetProperty("title")
-                        .GetProperty("runs")
-                        .GetPropertyAt(0)
-                        .GetProperty("text")
-                        .GetString()
-                        .OrThrow();
-
-                    return category == categoryTitle;
-                });
-        if (shelf.ValueKind == JsonValueKind.Undefined)
+        JElement shelf = isContinued
+            .If(true,
+                continuationContents
+                    .Get("musicShelfContinuation"),
+                root
+                    .Get("contents")
+                    .Get("tabbedSearchResultsRenderer")
+                    .Get("tabs")
+                    .GetAt(0)
+                    .Get("tabRenderer")
+                    .Get("content")
+                    .Get("sectionListRenderer")
+                    .Get("contents")
+                    .AsArray()
+                    .Or(JArray.Empty)
+                    .FirstOrDefault(item => item
+                        .Get("musicShelfRenderer")
+                        .SelectRunTextAt("title", 0)
+                        .Is(category)));
+        if (shelf.IsUndefined)
             return new([], null);
         if (!isContinued)
-            shelf = shelf.GetProperty("musicShelfRenderer");
+            shelf = shelf.Get("musicShelfRenderer");
 
         string? nextContinuationToken = shelf
-            .GetPropertyOrNull("continuations")
-            ?.GetPropertyAtOrNull(0)
-            ?.GetPropertyOrNull("nextContinuationData")
-            ?.GetPropertyOrNull("continuation")
-            ?.GetString();
+            .Get("continuations")
+            .GetAt(0)
+            .Get("nextContinuationData")
+            .Get("continuation")
+            .AsString();
 
-        List<T> result = [];
-        foreach (JsonElement content in shelf.GetProperty("contents").EnumerateArray())
-        {
-            JsonElement item = content
-                .GetProperty("musicResponsiveListItemRenderer");
-
-            // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
-            if (item.SelectIsPodcastEvenThoItShouldnt(category))
-                continue;
-
-            T searchResult = parse(item);
-            result.Add(searchResult);
-        }
+        List<T> result = shelf
+            .Get("contents")
+            .AsArray()
+            .OrThrow()
+            .Select(item => item
+                .Get("musicResponsiveListItemRenderer"))
+            .Where(item => item // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
+                .Get("menu")
+                .Get("menuRenderer")
+                .Contains("topLevelButtons")
+                .And(category != "Episodes")
+                .Not())
+            .Select(item => parse(item))
+            .ToList();
 
         return new(result, nextContinuationToken);
     }
@@ -121,21 +115,20 @@ public sealed class SearchService(
     /// <typeparam name="T">The type of search results to parse.</typeparam>
     /// <param name="query">The query to search for.</param>
     /// <param name="queryParams">The query params to filter.</param>
-    /// <param name="categoryTitle">The title of the shelf category.</param>
+    /// <param name="category">The title of the shelf category.</param>
     /// <param name="parse">The function to parse JSON elements to a search result.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     PaginatedAsyncEnumerable<T> CreatePaginatorAsync<T>(
         string query,
         string queryParams,
-        string categoryTitle,
-        Func<JsonElement, T> parse) where T : SearchResult
+        string category,
+        Func<JElement, T> parse) where T : SearchResult
     {
         Ensure.NotNullOrEmpty(query, nameof(query));
 
-        client.Logger?.LogInformation("[SearchService-CreatePaginatorAsync] Creating '{categoryTitle}' paginator: '{query}'.", categoryTitle, query);
         return new((contiuationToken, cancellationToken) =>
-            FetchPageAsync(query, contiuationToken, queryParams, categoryTitle, parse, cancellationToken));
+            FetchPageAsync(query, contiuationToken, queryParams, category, parse, cancellationToken));
     }
 
 
@@ -144,7 +137,7 @@ public sealed class SearchService(
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SongSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<SongSearchResult> SongsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -158,7 +151,7 @@ public sealed class SearchService(
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="VideoSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<VideoSearchResult> VideosAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -172,7 +165,7 @@ public sealed class SearchService(
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PlaylistSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<PlaylistSearchResult> PlaylistsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -186,7 +179,7 @@ public sealed class SearchService(
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="AlbumSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<AlbumSearchResult> AlbumsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -200,7 +193,7 @@ public sealed class SearchService(
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ArtistSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<ArtistSearchResult> ArtistsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -214,7 +207,7 @@ public sealed class SearchService(
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ProfileSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<ProfileSearchResult> ProfilesAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -228,7 +221,7 @@ public sealed class SearchService(
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PodcastSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<PodcastSearchResult> PodcastsAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -242,7 +235,7 @@ public sealed class SearchService(
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="EpisodeSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<EpisodeSearchResult> EpisodesAsync(
         string query) =>
         CreatePaginatorAsync(
@@ -258,7 +251,7 @@ public sealed class SearchService(
     /// <param name="query">The query to search for.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>A <see cref="SearchPage"/> containing all items, including the top result.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SearchPage> AllAsync(
@@ -278,137 +271,149 @@ public sealed class SearchService(
         // Parse response
         client.Logger?.LogInformation("[SearchService-AllAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
+        JElement root = new(json.RootElement);
 
-        JsonElement contents = json.RootElement
-            .GetProperty("contents")
-            .GetProperty("tabbedSearchResultsRenderer")
-            .GetProperty("tabs")
-            .GetPropertyAt(0)
-            .GetProperty("tabRenderer")
-            .GetProperty("content")
-            .GetProperty("sectionListRenderer")
-            .GetProperty("contents");
+        JArray contents = root
+            .Get("contents")
+            .Get("tabbedSearchResultsRenderer")
+            .Get("tabs")
+            .GetAt(0)
+            .Get("tabRenderer")
+            .Get("content")
+            .Get("sectionListRenderer")
+            .Get("contents")
+            .AsArray()
+            .OrThrow();
 
-        List<SearchResult> results = [];
+        // Top Result
+        JElement cardShelf = contents
+            .FirstOrDefault(item => item.
+                Contains("musicCardShelfRenderer"))
+            .Get("musicCardShelfRenderer");
+
+        // - Primary
+        client.Logger?.LogInformation("[SearchService-AllAsync] Parsing top result...");
         SearchResult? topResult = null;
-        List<SearchResult> relatedTopResults = [];
-        foreach (JsonElement content in contents.EnumerateArray())
-        {
-            // Top Result
-            if (content.TryGetProperty("musicCardShelfRenderer", out JsonElement cardShelf))
-            {
-                string categoryTitle = cardShelf
-                    .GetProperty("subtitle")
-                    .GetProperty("runs")
-                    .GetPropertyAt(0)
-                    .GetProperty("text")
-                    .GetString()
-                    .OrThrow();
-                client.Logger?.LogInformation("[SearchService-AllAsync] Parsing '{categoryTitle}' top result...", categoryTitle);
 
-                // Primary
-                Func<JsonElement, SearchResult>? parseTopResult = categoryTitle switch
+        string? category = cardShelf
+            .SelectRunTextAt("subtitle", 0);
+        switch (category)
+        {
+            case "Song":
+                topResult = SongSearchResult.ParseTopResult(cardShelf);
+                break;
+
+            case "Video":
+                topResult = VideoSearchResult.ParseTopResult(cardShelf);
+                break;
+
+            case "Playlist":
+                topResult = PlaylistSearchResult.ParseTopResult(cardShelf);
+                break;
+
+            case "Album" or "EP" or "Single":
+                topResult = AlbumSearchResult.ParseTopResult(cardShelf);
+                break;
+
+            case "Artist":
+                topResult = ArtistSearchResult.ParseTopResult(cardShelf);
+                break;
+
+            case "Profile": // never found any top result profile; If u did, CREATE AN ISSUE plz :3
+            case "Podcast": // bruh; YT returns top result podcasts in a "musicShelfRenderer". cba rn to parse that shi frfr
+                break;
+
+            case "Episode":
+                topResult = EpisodeSearchResult.ParseTopResult(cardShelf);
+                break;
+
+            default:
+                client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse top result. Unsupported category: {categoryTitle}.", category);
+                break;
+        }
+
+        // - Related
+        List<SearchResult> relatedTopResults = cardShelf
+            .Get("contents")
+            .AsArray()
+            .Or(JArray.Empty)
+            .Select(item =>
+            {
+                if (!item.Contains("musicResponsiveListItemRenderer", out JElement content))
+                    return null;
+
+                JElement descriptionRuns = content
+                        .Get("flexColumns")
+                        .GetAt(1)
+                        .Get("musicResponsiveListItemFlexColumnRenderer")
+                        .Get("text")
+                        .Get("runs");
+                JElement firstDescriptionRun = descriptionRuns
+                    .GetAt(0);
+
+                string? category = firstDescriptionRun
+                    .Get("text")
+                    .AsString();
+                Func<JElement, SearchResult>? parseItem = category switch
                 {
-                    "Song" => SongSearchResult.ParseTopResult,
-                    "Video" => VideoSearchResult.ParseTopResult,
-                    "Playlist" => PlaylistSearchResult.ParseTopResult,
-                    "Album" or "EP" or "Single" => AlbumSearchResult.ParseTopResult,
-                    "Artist" => ArtistSearchResult.ParseTopResult,
+                    "Song" => SongSearchResult.Parse,
+                    "Video" => VideoSearchResult.Parse,
+                    "Playlist" => null, // never found any top result playlist; If u did, CREATE AN ISSUE plz :3
+                    "Album" or "EP" or "Single" => AlbumSearchResult.Parse,
+                    "Artist" => null, // never found any top result artist; If u did, CREATE AN ISSUE plz :3
                     "Profile" => null, // never found any top result profile; If u did, CREATE AN ISSUE plz :3
-                    "Podcast" => null, // bruh; YT returns top result podcasts in a "musicShelfRenderer". cba rn to parse that shi frfr
-                    "Episode" => EpisodeSearchResult.ParseTopResult,
+                    "Podcast" => null, // never found any top result podcast; If u did, CREATE AN ISSUE plz :3
+                    "Episode" => EpisodeSearchResult.Parse,
                     _ => null
                 };
-                if (parseTopResult is null)
+                if (parseItem is null && // bruh; YT cmon why dont u write "Video" for videos??? now i gotta do that random ahh fallback >:(
+                    firstDescriptionRun
+                        .Contains("navigationEndpoint") &&
+                    descriptionRuns
+                        .GetAt(2)
+                        .Get("text")
+                        .AsString()
+                        .IsNotNull(out string? viewsInfo) &&
+                    viewsInfo
+                        .Contains("views") &&
+                    descriptionRuns
+                        .GetAt(4)
+                        .Get("text")
+                        .AsString()
+                        .ToTimeSpan()
+                        .IsNotNull())
+                    parseItem = VideoSearchResult.Parse;
+                if (parseItem is null)
                 {
-                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse top result. Unsupported category: {categoryTitle}.", categoryTitle);
-                    continue;
+                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse related top result. Unsupported caegory: {category}.", category);
+                    return null;
                 }
 
-                topResult = parseTopResult(cardShelf);
+                if (content // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
+                    .Get("menu")
+                    .Get("menuRenderer")
+                    .Contains("topLevelButtons")
+                    .And(category != "Episodes"))
+                    return null;
 
-                // Related
-                if (cardShelf.TryGetProperty("contents", out JsonElement cardShelfContents))
-                {
-                    foreach (JsonElement cardContent in cardShelfContents.EnumerateArray())
-                    {
-                        if (!cardContent.TryGetProperty("musicResponsiveListItemRenderer", out JsonElement item))
-                            continue;
+                return parseItem(content);
+            })
+            .Where(Syntax.IsNotNull)
+            .Cast<SearchResult>()
+            .ToList();
 
-                        JsonElement descriptionRuns = item
-                            .GetProperty("flexColumns")
-                            .GetPropertyAt(1)
-                            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-                            .GetProperty("text")
-                            .GetProperty("runs");
-
-                        JsonElement firstDescriptionRun = descriptionRuns
-                            .GetPropertyAt(0);
-
-                        string itemCategory = firstDescriptionRun
-                            .GetProperty("text")
-                            .GetString()
-                            .OrThrow();
-
-                        Func<JsonElement, SearchResult>? parseItem = itemCategory switch
-                        {
-                            "Song" => SongSearchResult.Parse,
-                            "Video" => VideoSearchResult.Parse,
-                            "Playlist" => null, // never found any top result playlist; If u did, CREATE AN ISSUE plz :3
-                            "Album" or "EP" or "Single" => AlbumSearchResult.Parse,
-                            "Artist" => null, // never found any top result artist; If u did, CREATE AN ISSUE plz :3
-                            "Profile" => null, // never found any top result profile; If u did, CREATE AN ISSUE plz :3
-                            "Podcast" => null, // never found any top result podcast; If u did, CREATE AN ISSUE plz :3
-                            "Episode" => EpisodeSearchResult.Parse,
-                            _ => null
-                        };
-                        if (parseItem is null && // bruh; YT cmon why dont u write "Video" for videos??? now i gotta do that random ahh fallback >:(
-                            firstDescriptionRun
-                                .TryGetProperty("navigationEndpoint", out _) &&
-                            descriptionRuns
-                                .GetPropertyAtOrNull(2)?
-                                .GetPropertyOrNull("text")
-                                ?.GetString() is string viewsInfo &&
-                            viewsInfo
-                                .Contains("views") &&
-                            descriptionRuns
-                                .GetPropertyAtOrNull(4)
-                                ?.GetPropertyOrNull("text")
-                                ?.GetString()
-                                ?.ToTimeSpan() is not null)
-                            parseItem = VideoSearchResult.Parse;
-                        if (parseItem is null)
-                        {
-                            client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse related top result. Unsupported caegory: {category}.", itemCategory);
-                            continue;
-                        }
-
-                        // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
-                        if (item.SelectIsPodcastEvenThoItShouldnt(categoryTitle))
-                            continue;
-
-                        SearchResult searchResult = parseItem(item);
-                        relatedTopResults.Add(searchResult);
-                    }
-                }
-
-            }
-
-            // Shelf
-            if (content.TryGetProperty("musicShelfRenderer", out JsonElement shelf)) // bruh sometimes yt crashes this shi
+        // Results
+        List<SearchResult> results = contents
+            .Where(item => item
+                .Contains("musicShelfRenderer"))
+            .SelectMany(item =>
             {
-                var s = shelf.ToString();
+                JElement shelf = item
+                    .Get("musicShelfRenderer");
 
-                string categoryTitle = shelf
-                    .GetProperty("title")
-                    .GetProperty("runs")
-                    .GetPropertyAt(0)
-                    .GetProperty("text")
-                    .GetString()
-                    .OrThrow();
-                client.Logger?.LogInformation("[SearchService-AllAsync] Parsing '{categoryTitle}' shelf...", categoryTitle);
-
-                Func<JsonElement, SearchResult>? parse = categoryTitle switch
+                string? category = shelf
+                    .SelectRunTextAt("title", 0);
+                Func<JElement, SearchResult>? parse = category switch
                 {
                     "Songs" => SongSearchResult.Parse,
                     "Videos" => VideoSearchResult.Parse,
@@ -422,24 +427,27 @@ public sealed class SearchService(
                 };
                 if (parse is null)
                 {
-                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse search result. Unsupported caegory: {category}.", categoryTitle);
-                    continue;
+                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse search result. Unsupported caegory: {category}.", category);
+                    return Enumerable.Empty<SearchResult>();
                 }
 
-                foreach (JsonElement shelfContent in shelf.GetProperty("contents").EnumerateArray())
-                {
-                    if (!shelfContent.TryGetProperty("musicResponsiveListItemRenderer", out JsonElement item))
-                        continue;
-
-                    // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
-                    if (item.SelectIsPodcastEvenThoItShouldnt(categoryTitle))
-                        continue;
-
-                    SearchResult searchResult = parse(item);
-                    results.Add(searchResult);
-                }
-            }
-        }
+                client.Logger?.LogInformation("[SearchService-AllAsync] Parsing '{categoryTitle}' shelf...", category);
+                return shelf
+                    .Get("contents")
+                    .AsArray()
+                    .Or(JArray.Empty)
+                    .Select(item => item
+                        .Get("musicResponsiveListItemRenderer"))
+                    .Where(item => item
+                        .Get("menu")
+                        .Get("menuRenderer")
+                        .Contains("topLevelButtons")
+                        .And(category != "Episodes")
+                        .Not())
+                    .Select(parse);
+            })
+            .Where(Syntax.IsNotNull)
+            .ToList();
 
         return new(results, topResult, relatedTopResults);
     }
@@ -471,110 +479,102 @@ public sealed class SearchService(
         // Parse response
         client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
-
-        if (!json.RootElement.TryGetProperty("contents", out JsonElement contents))
+        JElement root = new(json.RootElement);
+        if (!root.Contains("contents", out JElement contents))
             return new([], [], []);
 
         // Text Suggestions
         client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing text suggestions...");
-        JsonElement textSuggestions = contents
-            .GetPropertyAt(0)
-            .GetProperty("searchSuggestionsSectionRenderer")
-            .GetProperty("contents");
+        JArray textSuggestions = contents
+            .GetAt(0)
+            .Get("searchSuggestionsSectionRenderer")
+            .Get("contents")
+            .AsArray()
+            .Or(JArray.Empty);
 
-        List<string> search = [];
-        List<string> history = [];
-        foreach (JsonElement item in textSuggestions.EnumerateArray())
-        {
-            // Search
-            if (item.TryGetProperty("searchSuggestionRenderer", out JsonElement searchItemContent))
-            {
-                IEnumerable<string> text = searchItemContent
-                    .GetProperty("suggestion")
-                    .GetProperty("runs")
-                    .EnumerateArray()
+        List<string> searchSuggestions = textSuggestions
+            .Where(item => item
+                .Contains("searchSuggestionRenderer"))
+            .Select(item => item
+                .Get("searchSuggestionRenderer")
+                .Get("suggestion")
+                    .Get("runs")
+                    .AsArray()
+                    .OrThrow()
                     .Select(run => run
-                        .GetProperty("text")
-                        .GetString()
-                        .Or(""));
-
-                search.Add(string.Join("", text));
-            }
-            // History
-            else if (item.TryGetProperty("historySuggestionRenderer", out JsonElement historyItemContent))
-            {
-                IEnumerable<string> text = historyItemContent
-                    .GetProperty("suggestion")
-                    .GetProperty("runs")
-                    .EnumerateArray()
+                        .Get("text")
+                        .AsString()
+                        .Or(""))
+                    .Join(""))
+            .ToList();
+        List<string> historySuggestions = textSuggestions
+            .Where(item => item
+                .Contains("historySuggestionRenderer"))
+            .Select(item => item
+                .Get("historySuggestionRenderer")
+                .Get("suggestion")
+                    .Get("runs")
+                    .AsArray()
+                    .OrThrow()
                     .Select(run => run
-                        .GetProperty("text")
-                        .GetString()
-                        .Or(""));
-
-                history.Add(string.Join("", text));
-            }
-        }
+                        .Get("text")
+                        .AsString()
+                        .Or(""))
+                    .Join(""))
+            .ToList();
 
         // Result Suggestions
         client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing result suggestions...");
-        JsonElement? resultSuggestions = contents
-            .GetPropertyAtOrNull(1)
-            ?.GetPropertyOrNull("searchSuggestionsSectionRenderer")
-            ?.GetPropertyOrNull("contents");
-
+        JArray? resultSuggestions = contents
+            .GetAt(1)
+            .Get("searchSuggestionsSectionRenderer")
+            .Get("contents")
+            .AsArray();
         if (resultSuggestions is null)
-            return new(search, history, []);
+            return new(searchSuggestions, historySuggestions, []);
 
-        List<SearchResult> results = [];
-        foreach (JsonElement item in resultSuggestions.Value.EnumerateArray())
-        {
-            if (!item.TryGetProperty("musicResponsiveListItemRenderer", out JsonElement itemContent))
-                continue;
-
-            JsonElement? firstDescriptionRun = itemContent
-                .GetProperty("flexColumns")
-                .GetPropertyAtOrNull(1)
-                ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
-                ?.GetPropertyOrNull("text")
-                ?.GetPropertyOrNull("runs")
-                ?.GetPropertyAtOrNull(0);
-
-            string? itemCategory = firstDescriptionRun?
-                .GetPropertyOrNull("text")
-                ?.GetString();
-
-            Func<JsonElement, SearchResult>? parseItem = itemCategory switch
+        List<SearchResult> results = resultSuggestions
+            .Select(item =>
             {
-                "Song" => SongSearchResult.ParseSuggestion,
-                "Video" => VideoSearchResult.ParseSuggestion,
-                "Playlist" => PlaylistSearchResult.ParseSuggestion,
-                "Album" or "EP" or "Single" => AlbumSearchResult.ParseSuggestion,
-                "Artist" => ArtistSearchResult.ParseSuggestion,
-                "Profile" => null, // never found any search suggestion profiles; If u did, CREATE AN ISSUE plz :3
-                "Podcast" => PodcastSearchResult.ParseSuggestion,
-                "Episode" => null, // never found any search suggestion episodes; If u did, CREATE AN ISSUE plz :3
-                _ => null,
-            };
-            if (parseItem is null && // // bruh; YT cmon why dont u have a description text for artists??? now i gotta do that dumb fallback again >:(
-                itemContent
-                    .GetPropertyOrNull("navigationEndpoint")
-                    ?.GetPropertyOrNull("browseEndpoint")
-                    ?.GetPropertyOrNull("browseId")
-                    ?.GetString() is string browseId &&
-                browseId.StartsWith("UC"))
-                parseItem = ArtistSearchResult.ParseSuggestion;
-            if (parseItem is null)
-            {
-                client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse search suggestion result. Unsupported caegory: {category}.", itemCategory);
-                continue;
-            }
+                if (!item.Contains("musicResponsiveListItemRenderer", out JElement content))
+                    return null;
 
-            SearchResult searchResult = parseItem(itemContent);
-            results.Add(searchResult);
-        }
+                string? category = content
+                    .Get("flexColumns")
+                    .GetAt(0)
+                    .Get("musicResponsiveListItemFlexColumnRenderer")
+                    .SelectRunTextAt("text", 0);
+                Func<JElement, SearchResult>? parseItem = category switch
+                {
+                    "Song" => SongSearchResult.ParseSuggestion,
+                    "Video" => VideoSearchResult.ParseSuggestion,
+                    "Playlist" => PlaylistSearchResult.ParseSuggestion,
+                    "Album" or "EP" or "Single" => AlbumSearchResult.ParseSuggestion,
+                    "Artist" => ArtistSearchResult.ParseSuggestion,
+                    "Profile" => null, // never found any search suggestion profiles; If u did, CREATE AN ISSUE plz :3
+                    "Podcast" => PodcastSearchResult.ParseSuggestion,
+                    "Episode" => null, // never found any search suggestion episodes; If u did, CREATE AN ISSUE plz :3
+                    _ => null,
+                };
+                if (parseItem is null && // // bruh; YT cmon why dont u have a description text for artists??? now i gotta do that dumb fallback again >:(
+                    content.SelectNavigationBrowseId() is string browseId &&
+                    browseId.StartsWith("UC"))
+                {
+                    parseItem = ArtistSearchResult.ParseSuggestion;
+                }
+                if (parseItem is null)
+                {
+                    client.Logger?.LogWarning("[SearchService-GetSuggestionsAsync] Could not parse search suggestion result. Unsupported caegory: {category}.", category);
+                    return null;
+                }
 
-        return new(search, history, results);
+                return parseItem(content);
+            })
+            .Where(Syntax.IsNotNull)
+            .Cast<SearchResult>()
+            .ToList();
+
+        return new(searchSuggestions, historySuggestions, results);
     }
 
 
@@ -586,9 +586,10 @@ public sealed class SearchService(
     /// </remarks>
     /// <param name="input">The input to get remove from the suggestions.</param>
     /// <param name="cancellationToken">The token to cancel this action.</param>
-    /// <exception cref="ArgumentException">Occurrs when the <c>input</c> is <see langword="null"/> or empty.</exception>
-    /// <exception cref="InvalidOperationException">Occurrs when the user is not authenticated.</exception>
-    /// <exception cref="NullReferenceException">Occurrs when a the <c>input</c> could not be found in the search history suggestions.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>input</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="NullReferenceException">Occurs when the search suggestion could not be found in the history.</exception>
+    /// <exception cref="InvalidOperationException">Occurs when the user is not authenticated.</exception>
+    /// <exception cref="NullReferenceException">Occurs when a the <c>input</c> could not be found in the search history suggestions.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task RemoveSuggestionAsync(
@@ -598,7 +599,7 @@ public sealed class SearchService(
         Ensure.NotNullOrEmpty(input, nameof(input));
         Ensure.IsAuthenticated(client.RequestHandler);
 
-        // Get suggestions
+        // Send suggestions request
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Getting suggestions...");
         KeyValuePair<string, object?>[] suggestionsPayload =
         [
@@ -610,36 +611,32 @@ public sealed class SearchService(
         // Parse suggestions response
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Parsing suggestions response...");
         using JsonDocument suggestionsJson = JsonDocument.Parse(suggestionsResponse);
+        JElement suggestionsRoot = new(suggestionsJson.RootElement);
 
-        string feedbackToken = ((suggestionsJson.RootElement
-            .GetPropertyOrNull("contents")
-            ?.GetPropertyAtOrNull(0)
-            ?.GetPropertyOrNull("searchSuggestionsSectionRenderer")
-            ?.GetPropertyOrNull("contents")
-            ?.EnumerateArray()
-            .FirstOrDefault(item =>
-            {
-                if (!item.TryGetProperty("historySuggestionRenderer", out JsonElement itemContent))
-                    return false;
+        string? feedbackToken = suggestionsRoot
+            .Get("contents")
+            .GetAt(0)
+            .Get("searchSuggestionsSectionRenderer")
+            .Get("contents")
+            .AsArray()
+            .Or(JArray.Empty)
+            .FirstOrDefault(item => item
+                .Get("historySuggestionRenderer")
+                .SelectRunTextAt("suggestion", 0)
+                .IsNotNull(out string? suggestion)
+                .And(string.Equals(suggestion, input, StringComparison.InvariantCultureIgnoreCase)))
+            .Get("historySuggestionRenderer")
+            .Get("serviceEndpoint")
+            .Get("feedbackEndpoint")
+            .Get("feedbackToken")
+            .AsString();
+        if (feedbackToken is null)
+        {
+            client.Logger?.LogError("[SearchService-RemoveSuggestionAsync] Could not find search suggestion '{input}' in history to remove.", input);
+            throw new NullReferenceException($"Could not find search suggestion '{input}' in history to remove.");
+        }
 
-                string? suggestionText = itemContent
-                    .GetPropertyOrNull("suggestion")
-                    ?.GetPropertyOrNull("runs")
-                    ?.GetPropertyAtOrNull(0)
-                    ?.GetPropertyOrNull("text")
-                    ?.GetString();
-
-                return suggestionText == input;
-            }))
-            ?.GetPropertyOrNull("historySuggestionRenderer")
-            ?.GetPropertyOrNull("serviceEndpoint")
-            ?.GetPropertyOrNull("feedbackEndpoint")
-            ?.GetPropertyOrNull("feedbackToken")
-            ?.GetString())
-            .OrThrow();
-
-
-        // Remove
+        // Send remove request
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Removing suggestion...");
         KeyValuePair<string, object?>[] payload =
         [
@@ -648,16 +645,17 @@ public sealed class SearchService(
 
         string removeResponse = await client.RequestHandler.PostAsync(Endpoints.Feedback, payload, ClientType.WebMusic, cancellationToken);
 
-        // Parse response
+        // Parse remove response
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Parsing remove response...");
         using JsonDocument removeJson = JsonDocument.Parse(removeResponse);
+        JElement removeRoot = new(removeJson.RootElement);
 
-        bool isProcessed = removeJson.RootElement
-            .GetPropertyOrNull("feedbackResponses")
-            ?.GetPropertyAtOrNull(0)
-            ?.GetPropertyOrNull("isProcessed")
-            ?.GetBoolean() ?? false;
-
+        bool isProcessed = removeRoot
+            .Get("feedbackResponses")
+            .GetAt(0)
+            .Get("isProcessed")
+            .AsBool()
+            .Or(false);
         if (!isProcessed)
         {
             client.Logger?.LogError("[SearchService-RemoveSuggestionAsync] Remove search suggestion '{input}' not processed.", input);

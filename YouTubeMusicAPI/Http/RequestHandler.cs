@@ -34,7 +34,7 @@ internal sealed class RequestHandler(
     /// <summary>
     /// Whether the request handler is authenticated.
     /// </summary>
-    public bool IsAuthenticated => authenticator is not AnonymousAuthenticator;
+    public bool IsAuthenticated => authenticator.GetType() != typeof(AnonymousAuthenticator);
 
 
     /// <summary>
@@ -68,7 +68,7 @@ internal sealed class RequestHandler(
             body["context"] = new { client };
 
             if (authenticator.ProofOfOriginToken is string poToken)
-                body["serviceIntegrityDimensions"] = new { poToken = authenticator.ProofOfOriginToken };
+                body["serviceIntegrityDimensions"] = new { poToken };
 
             request.Headers.Add("User-Agent", client.UserAgent);
         }

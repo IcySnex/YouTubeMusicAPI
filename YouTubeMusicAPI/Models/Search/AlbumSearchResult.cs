@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Search;
@@ -30,100 +30,104 @@ public class AlbumSearchResult(
     Radio? radio) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="AlbumSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="AlbumSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static AlbumSearchResult Parse(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement flexColumns = element
-            .GetProperty("flexColumns");
+        JElement flexColumns = element
+            .Get("flexColumns");
 
-        JsonElement descriptionRuns = flexColumns
-            .GetPropertyAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs");
+        JElement descriptionRuns = flexColumns
+            .GetAt(1)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs");
 
 
         string name = flexColumns
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("overlay")
-            .SelectOverlayNavigationPlaylistId();
+            .Get("overlay")
+            .SelectOverlayPlaylistId()
+            .OrThrow();
 
         string browseId = element
-            .SelectNavigationBrowseId();
+            .SelectNavigationBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(2);
 
         int? releaseYear = descriptionRuns
-            .GetPropertyAtOrNull(artists.Length * 2 + 2)
-            ?.GetPropertyOrNull("text")
-            ?.GetString()
+            .GetAt(artists.Length * 2 + 2)
+            .Get("text")
+            .AsString()
             .ToInt32();
 
         bool isExplicit = element
-            .SelectContainsExplicitBadge();
+            .SelectIsExplicit();
 
         AlbumType type = descriptionRuns
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .ToAlbumType()
             .OrThrow();
 
         Radio? radio = element
-            .SelectMenuItems()
-            .SelectRadioOrNull();
+            .SelectMenu()
+            .SelectRadio();
 
         return new(name, id, browseId, thumbnails, artists, releaseYear, isExplicit, type, radio);
     }
 
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="AlbumSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="AlbumSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicCardShelfRenderer".</param>
     internal static AlbumSearchResult ParseTopResult(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement descriptionRuns = element
-            .GetProperty("subtitle")
-            .GetProperty("runs");
+        JElement descriptionRuns = element
+            .Get("subtitle")
+            .Get("runs");
 
 
         string name = element
-            .GetProperty("title")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .Get("title")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("thumbnailOverlay")
-            .SelectOverlayNavigationPlaylistId();
+            .Get("thumbnailOverlay")
+            .SelectOverlayPlaylistId()
+            .OrThrow();
 
         string browseId = element
-            .SelectTapBrowseId();
+            .SelectTapBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
@@ -132,85 +136,86 @@ public class AlbumSearchResult(
         int? releaseYear = null;
 
         bool isExplicit = element
-            .SelectContainsExplicitBadge("subtitleBadges");
+            .SelectIsExplicit("subtitleBadges");
 
         AlbumType type = descriptionRuns
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .ToAlbumType()
             .OrThrow();
 
         Radio? radio = element
-            .SelectMenuItems()
-            .SelectRadioOrNull();
+            .SelectMenu()
+            .SelectRadio();
 
         return new(name, id, browseId, thumbnails, artists, releaseYear, isExplicit, type, radio);
     }
 
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="AlbumSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="AlbumSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static AlbumSearchResult ParseSuggestion(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement menuItems = element
-            .SelectMenuItems();
+        JElement menu = element
+            .SelectMenu();
 
-        JsonElement flexColumns = element
-            .GetProperty("flexColumns");
+        JElement flexColumns = element
+            .Get("flexColumns");
 
-        JsonElement descriptionRuns = flexColumns
-            .GetPropertyAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs");
+        JElement descriptionRuns = flexColumns
+            .GetAt(1)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs");
 
 
         string name = flexColumns
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
-        string id = menuItems
-            .SelectPlaylistIdOrNull()
+        string id = menu
+            .SelectPlaylistId()
             .OrThrow();
 
         string browseId = element
-            .SelectNavigationBrowseId();
+            .SelectNavigationBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(2);
 
         int? releaseYear = descriptionRuns
-            .GetPropertyAtOrNull(artists.Length * 2 + 2)
-            ?.GetPropertyOrNull("text")
-            ?.GetString()
+            .GetAt(artists.Length * 2 + 2)
+            .Get("text")
+            .AsString()
             .ToInt32();
 
         bool isExplicit = element
-            .SelectContainsExplicitBadge();
+            .SelectIsExplicit();
 
         AlbumType type = descriptionRuns
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .ToAlbumType()
             .OrThrow();
 
-        Radio? radio = menuItems
-            .SelectRadioOrNull();
+        Radio? radio = menu
+            .SelectRadio();
 
         return new(name, id, browseId, thumbnails, artists, releaseYear, isExplicit, type, radio);
     }

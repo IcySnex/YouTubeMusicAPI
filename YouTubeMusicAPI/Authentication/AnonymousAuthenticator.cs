@@ -39,7 +39,7 @@ public class AnonymousAuthenticator(
     /// Applies the authentication to the given HTTP request.
     /// </summary>
     /// <param name="request">The HTTP request to authenticate.</param>
-    /// <exception cref="ArgumentNullException">Occurrs when the <c>request.RequestUri</c> is <see langword="null"/>./></exception>
+    /// <exception cref="ArgumentNullException">Occurs when the <c>request.RequestUri</c> is <see langword="null"/>./></exception>
     public virtual void Apply(
         HttpRequestMessage request)
     {

@@ -26,7 +26,7 @@ public sealed class InfoService(
     /// <param name="id">The ID of the song.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The <see cref="SongInfo"/> containing the information.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>id</c> is <see langword="null"/> or empty or when the provided ID does not correspond to a song.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty or when the provided ID does not correspond to a song.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SongInfo> GetSongAsync(
@@ -54,7 +54,6 @@ public sealed class InfoService(
             .Get("browserMediaSession")
             .Get("browserMediaSessionRenderer")
             .Contains("album");
-
         if (!isSong)
         {
             client.Logger?.LogError("[InfoService-GetSongAsync] The provided ID does not correspond to a song. Use 'GetVideoAsync' instead.");
@@ -71,7 +70,7 @@ public sealed class InfoService(
     /// <param name="id">The ID of the song.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The <see cref="SongCredits"/> containing the information about the credits.</returns>
-    /// <exception cref="ArgumentException">Occurrs when the <c>id</c> is <see langword="null"/> or empty or when the provided ID does not correspond to a song with available credits.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty or when the provided ID does not correspond to a song with available credits.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SongCredits> GetSongCreditsAsync(
@@ -99,7 +98,6 @@ public sealed class InfoService(
             .Get("openPopupAction")
             .Get("popup")
             .Get("dismissableDialogRenderer");
-
         if (!dialogRenderer.Contains("sections"))
         {
             client.Logger?.LogError("[InfoService-GetSongCreditsAsync] The provided ID does not correspond to a song with available credits.");

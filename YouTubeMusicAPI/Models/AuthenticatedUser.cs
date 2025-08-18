@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models;
@@ -22,40 +22,43 @@ public class AuthenticatedUser(
     bool isPremium) : YouTubeMusicEntity(name, id, id)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into an <see cref="AuthenticatedUser"/>.
+    /// Parses a <see cref="JElement"/> into an <see cref="AuthenticatedUser"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> 'multiPageMenuRenderer' to parse.</param>
+    /// <param name="element">The <see cref="JElement"/> 'multiPageMenuRenderer' to parse.</param>
     internal static AuthenticatedUser Parse(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement headerRenderer = element
-            .GetProperty("header")
-            .GetProperty("activeAccountHeaderRenderer");
+        JElement headerRenderer = element
+            .Get("header")
+            .Get("activeAccountHeaderRenderer");
 
-        JsonElement items = element
-            .GetProperty("sections")
-            .GetPropertyAt(0)
-            .GetProperty("multiPageMenuSectionRenderer")
-            .GetProperty("items");
+        JElement items = element
+            .Get("sections")
+            .GetAt(0)
+            .Get("multiPageMenuSectionRenderer")
+            .Get("items");
 
 
         string name = headerRenderer
-            .SelectRunTextAt("accountName", 0);
+            .SelectRunTextAt("accountName", 0)
+            .OrThrow();
 
         string id = items
-            .GetPropertyAt(0)
-            .GetProperty("compactLinkRenderer")
-            .SelectNavigationBrowseId();
+            .GetAt(0)
+            .Get("compactLinkRenderer")
+            .SelectNavigationBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = headerRenderer
             .SelectThumbnails("accountPhoto");
 
         string handle = headerRenderer
-            .SelectRunTextAt("channelHandle", 0);
+            .SelectRunTextAt("channelHandle", 0)
+            .OrThrow();
 
         bool isPremium = items
-            .GetPropertyAt(1)
-            .GetProperty("compactLinkRenderer")
+            .GetAt(1)
+            .Get("compactLinkRenderer")
             .SelectRunTextAt("title", 0)
             .If("Paid Memberships", true, false);
 

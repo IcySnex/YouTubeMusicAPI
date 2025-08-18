@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Search;
@@ -22,129 +22,128 @@ public class ArtistSearchResult(
     Radio? radio) : SearchResult(name, id, id, thumbnails)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into an <see cref="ArtistSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into an <see cref="ArtistSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static ArtistSearchResult Parse(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement flexColumns = element
-            .GetProperty("flexColumns");
+        JElement flexColumns = element
+            .Get("flexColumns");
 
-        JsonElement descriptionRuns = flexColumns
-            .GetPropertyAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs");
+        JElement descriptionRuns = flexColumns
+            .GetAt(1)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow()
             .If("Artist", 2, 0);
 
 
         string name = flexColumns
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .SelectNavigationBrowseId();
+            .SelectNavigationBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        string audienceInfo = (descriptionRuns
-            .GetPropertyAtOrNull(descriptionStartIndex + 2)
-            ?.GetPropertyOrNull("text")
-            ?.GetString())
+        string audienceInfo = descriptionRuns
+            .GetAt(descriptionStartIndex)
+            .Get("text")
+            .AsString()
             .Or("N/A subscribers");
 
         Radio? radio = element
-            .SelectMenuItems()
-            .SelectRadioOrNull();
+            .SelectMenu()
+            .SelectRadio();
 
         return new(name, id, thumbnails, audienceInfo, radio);
     }
 
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="ArtistSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="ArtistSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicCardShelfRenderer".</param>
     internal static ArtistSearchResult ParseTopResult(
-        JsonElement element)
+        JElement element)
     {
         string name = element
-            .GetProperty("title")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .Get("title")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .SelectTapBrowseId();
+            .SelectTapBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        string audienceInfo = (element
-            .GetProperty("subtitle")
-            .GetProperty("runs")
-            .GetPropertyAtOrNull(2)
-            ?.GetPropertyOrNull("text")
-            ?.GetString())
+        string audienceInfo = element
+            .SelectRunTextAt("subtitle", 2)
             .Or("N/A subscribers");
 
         Radio? radio = element
-            .SelectMenuItems()
-            .SelectRadioOrNull();
+            .SelectMenu()
+            .SelectRadio();
 
         return new(name, id, thumbnails, audienceInfo, radio);
     }
 
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into an <see cref="ArtistSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into an <see cref="ArtistSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static ArtistSearchResult ParseSuggestion(
-        JsonElement element)
+        JElement element)
     {
         string name = element
-            .GetProperty("flexColumns")
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .Get("flexColumns")
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .SelectNavigationBrowseId();
+            .SelectNavigationBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         string audienceInfo = "N/A subscribers";
 
         Radio? radio = element
-            .SelectMenuItems()
-            .SelectRadioOrNull();
+            .SelectMenu()
+            .SelectRadio();
 
         return new(name, id, thumbnails, audienceInfo, radio);
     }

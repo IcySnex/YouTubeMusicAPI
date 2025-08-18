@@ -107,7 +107,7 @@ internal static class TestData
     public const int FetchLimit = 20;
 
     //  Search
-    public const string SearchQuery = "Pashanim 2000";
+    public const string SearchQuery = "pashanim ms Jackson";
 
     //  Info
     public const string SongId = "k5oAUteAOlw";

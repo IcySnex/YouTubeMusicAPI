@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace YouTubeMusicAPI.Utils;
 
@@ -39,7 +40,7 @@ internal static class Syntax
     /// <param name="value">The nullable value.</param>
     /// <param name="expression">The original expression that produced the value (automatically provided by the compiler).</param>
     /// <returns>The <c>value</c> if it's not <see langword="null"/>.</returns>
-    /// <exception cref="InvalidOperationException">Occurrs when the <c>expression</c> returned <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">Occurs when the <c>expression</c> returned <see langword="null"/>.</exception>
     public static T OrThrow<T>(
         this T? value,
         [CallerArgumentExpression(nameof(value))] string? expression = null) where T : struct =>
@@ -52,7 +53,7 @@ internal static class Syntax
     /// <param name="value">The nullable value.</param>
     /// <param name="expression">The original expression that produced the value (automatically provided by the compiler).</param>
     /// <returns>The <c>value</c> if it's not <see langword="null"/>.</returns>
-    /// <exception cref="InvalidOperationException">Occurrs when the <c>expression</c> returned <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">Occurs when the <c>expression</c> returned <see langword="null"/>.</exception>
     public static T OrThrow<T>(
         this T? value,
         [CallerArgumentExpression(nameof(value))] string? expression = null) where T : class =>
@@ -76,6 +77,7 @@ internal static class Syntax
         TResult falseResult) =>
         EqualityComparer<TValue>.Default.Equals(value, condition) ? trueResult : falseResult;
 
+
     /// <summary>
     /// Returns whether the <c>value</c> equals any of the specified <c>conditions</c>.
     /// </summary>
@@ -89,14 +91,43 @@ internal static class Syntax
         conditions.Any(c => EqualityComparer<T>.Default.Equals(value, c));
 
     /// <summary>
-    /// Returns whether the <c>value</c> is <see langword="null"/>.
+    /// Returns whether the <c>value</c> doesn't equals any of the specified <c>conditions</c>.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
-    /// <param name="value">The value to check.</param>
-    /// <returns><see langword="true"/> if <c>value</c> is <see langword="null"/>, otherwise <see langword="false"/>.</returns>
-    public static bool IsNull<T>(
-        this T? value) where T : class =>
-        value is null;
+    /// <param name="value">The value to compare.</param>
+    /// <param name="conditions">The values to compare against.</param>
+    /// <returns><see langword="true"/> if <c>value</c> equals any of the <c>conditions</c>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNot<T>(
+        this T value,
+        params T[] conditions) =>
+        !conditions.Any(c => EqualityComparer<T>.Default.Equals(value, c));
+
+
+    /// <summary>
+    /// Returns the logical AND of the specified boolean values.
+    /// </summary>
+    /// <param name="value">The first boolean value.</param>
+    /// <param name="other">The second boolean value.</param>
+    /// <returns>
+    /// <see langword="true"/> if both <c>value</c> and <c>other</c> are <see langword="true"/>; otherwise, <see langword="false"/>.
+    /// </returns>
+    public static bool And(
+        this bool value,
+        bool other) =>
+        value && other;
+
+    /// <summary>
+    /// Returns the logical OR of the specified boolean values.
+    /// </summary>
+    /// <param name="value">The first boolean value.</param>
+    /// <param name="other">The second boolean value.</param>
+    /// <returns>
+    /// <see langword="true"/> if either <c>value</c> or <c>other</c> is <see langword="true"/>; otherwise, <see langword="false"/>.
+    /// </returns>
+    public static bool Or(
+        this bool value,
+        bool other) =>
+        value || other;
 
     /// <summary>
     /// Returns the logical negation of the specified <paramref name="value"/>.
@@ -108,6 +139,90 @@ internal static class Syntax
         !value;
 
 
+    /// <summary>
+    /// Returns whether the <c>value</c> is <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <returns><see langword="true"/> if <c>value</c> is <see langword="null"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNull<T>(
+        this T? value) where T : class =>
+        value is null;
+
+    /// <summary>
+    /// Returns whether the <c>value</c> is <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <returns><see langword="true"/> if <c>value</c> is <see langword="null"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNull<T>(
+        this T? value) where T : struct =>
+        value is null;
+
+
+    /// <summary>
+    /// Returns whether the <c>value</c> is not <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <returns><see langword="true"/> if <c>value</c> is not <see langword="null"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNotNull<T>(
+        this T? value) where T : class =>
+        value is not null;
+
+    /// <summary>
+    /// Returns whether the <c>value</c> is not <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <returns><see langword="true"/> if <c>value</c> is not <see langword="null"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNotNull<T>(
+        this T? value) where T : struct =>
+        value is not null;
+
+    /// <summary>
+    /// Returns whether the <c>value</c> is not <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <param name="result">The non-null result.</param>
+    /// <returns><see langword="true"/> if <c>value</c> is not <see langword="null"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNotNull<T>(
+        this T? value,
+        [NotNullWhen(true)] out T? result) where T : class
+    {
+        if (value is null)
+        {
+            result = null;
+            return false;
+        }
+
+        result = value;
+        return true;
+    }
+
+    /// <summary>
+    /// Returns whether the <c>value</c> is not <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <param name="result">The non-null result.</param>
+    /// <returns><see langword="true"/> if <c>value</c> is not <see langword="null"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNotNull<T>(
+        this T? value,
+        [NotNullWhen(true)] out T? result) where T : struct
+    {
+        if (value is null)
+        {
+            result = null;
+            return false;
+        }
+
+        result = value;
+        return true;
+    }
+
+
     public static void ForEach<T>(
         this IEnumerable<T> source,
         Action<T> action)
@@ -115,6 +230,12 @@ internal static class Syntax
         foreach (T item in source)
             action(item);
     }
+
+
+    public static string Join(
+        this IEnumerable<string> source,
+        string separator) =>
+        string.Join(separator, source);
 
 
 

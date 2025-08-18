@@ -67,7 +67,7 @@ public class SongInfo(
             .GetAt(1)
             .Get("tabRenderer");
 
-        JElement menuItems = item
+        JElement menu = item
             .SelectMenu();
 
         JElement descriptionRuns = item
@@ -117,7 +117,7 @@ public class SongInfo(
             .IsUndefined;
         YouTubeMusicEntity album = isAlbumUnknown
             .If(true,
-                menuItems
+                menu
                     .SelectAlbumUnknown(),
                 descriptionRuns
                     .GetAt(artists.Length * 2)
@@ -137,7 +137,7 @@ public class SongInfo(
             .AsString()
             .ToInt32();
 
-        bool isCreditsAvailable = menuItems
+        bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
 
         bool isRatingsAllowed = element
@@ -150,7 +150,7 @@ public class SongInfo(
             .AsBool()
             .OrThrow();
 
-        Radio? radio = menuItems
+        Radio? radio = menu
             .SelectRadio();
 
         return new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, isRatingsAllowed, radio);

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Search;
@@ -22,97 +22,101 @@ public class PodcastSearchResult(
     YouTubeMusicEntity host) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="PodcastSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="PodcastSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static PodcastSearchResult Parse(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement flexColumns = element
-            .GetProperty("flexColumns");
+        JElement flexColumns = element
+            .Get("flexColumns");
 
-        JsonElement descriptionRuns = flexColumns
-            .GetPropertyAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs");
+        JElement descriptionRuns = flexColumns
+            .GetAt(1)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow()
             .If("Podcast", 2, 0);
 
 
         string name = flexColumns
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("overlay")
-            .SelectOverlayNavigationPlaylistId();
+            .Get("overlay")
+            .SelectOverlayPlaylistId()
+            .OrThrow();
 
         string browseId = element
-            .SelectNavigationBrowseId();
+            .SelectNavigationBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity host = descriptionRuns
-            .GetPropertyAt(descriptionStartIndex)
+            .GetAt(descriptionStartIndex)
             .SelectArtist();
 
         return new(name, id, browseId, thumbnails, host);
     }
 
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="PodcastSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="PodcastSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static PodcastSearchResult ParseSuggestion(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement flexColumns = element
-            .GetProperty("flexColumns");
+        JElement flexColumns = element
+            .Get("flexColumns");
 
 
         string name = flexColumns
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("overlay")
-            .SelectOverlayNavigationPlaylistId();
+            .Get("overlay")
+            .SelectOverlayPlaylistId()
+            .OrThrow();
 
         string browseId = element
-            .SelectNavigationBrowseId();
+            .SelectNavigationBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity host = flexColumns
-            .GetPropertyAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(2)
+            .GetAt(1)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(2)
             .SelectArtist();
 
         return new(name, id, browseId, thumbnails, host);

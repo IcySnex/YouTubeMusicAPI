@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Search;
@@ -32,229 +32,232 @@ public class SongSearchResult(
     Radio? radio) : SearchResult(name, id, null, thumbnails)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="SongSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="SongSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static SongSearchResult Parse(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement menuItems = element
-            .SelectMenuItems();
+        JElement menu = element
+            .SelectMenu();
 
-        JsonElement flexColumns = element
-            .GetProperty("flexColumns");
+        JElement flexColumns = element
+            .Get("flexColumns");
 
-        JsonElement descriptionRuns = flexColumns
-            .GetPropertyAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs");
+        JElement descriptionRuns = flexColumns
+            .GetAt(1)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow()
             .If("Song", 2, 0);
 
 
         string name = flexColumns
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("overlay")
-            .SelectOverlayNavigationVideoId();
+            .Get("overlay")
+            .SelectOverlayVideoId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(descriptionStartIndex);
 
-        bool hasKnownAlbum = (descriptionRuns
-            .GetPropertyAtOrNull(descriptionStartIndex + artists.Length * 2)
-            ?.GetPropertyOrNull("navigationEndpoint"))
-            .If(null, false, true);
-
-        YouTubeMusicEntity album = hasKnownAlbum
-            ? descriptionRuns
-                .GetPropertyAt(descriptionStartIndex + artists.Length * 2)
-                .SelectAlbum()
-            : menuItems
-                .SelectAlbumUnknown();
+        bool isAlbumUnknown = descriptionRuns
+            .GetAt(descriptionStartIndex + artists.Length * 2)
+            .Get("navigationEndpoint")
+            .IsUndefined;
+        YouTubeMusicEntity album = isAlbumUnknown
+            .If(true,
+                menu
+                    .SelectAlbumUnknown(),
+                descriptionRuns
+                    .GetAt(descriptionStartIndex + artists.Length * 2)
+                    .SelectAlbum());
 
         TimeSpan duration = descriptionRuns
-            .GetPropertyAt(descriptionStartIndex + artists.Length * 2 + (hasKnownAlbum ? 2 : 0))
-            .GetProperty("text")
-            .GetString()
+            .GetAt(descriptionStartIndex + artists.Length * 2 + (isAlbumUnknown ? 0 : 2))
+            .Get("text")
+            .AsString()
             .ToTimeSpan()
             .OrThrow();
 
         bool isExplicit = element
-            .SelectContainsExplicitBadge();
+            .SelectIsExplicit();
 
         string playsInfo = flexColumns
-            .GetPropertyAt(2)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(2)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
-        bool isCreditsAvailable = menuItems
+        bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
 
-        Radio? radio = menuItems
-            .SelectRadioOrNull();
+        Radio? radio = menu
+            .SelectRadio();
 
         return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, isCreditsAvailable, radio);
     }
 
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="SongSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="SongSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicCardShelfRenderer".</param>
     internal static SongSearchResult ParseTopResult(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement menuItems = element
-            .SelectMenuItems();
+        JElement menu = element
+            .SelectMenu();
 
-        JsonElement descriptionRuns = element
-            .GetProperty("subtitle")
-            .GetProperty("runs");
+        JElement descriptionRuns = element
+            .Get("subtitle")
+            .Get("runs");
 
 
         string name = element
-            .GetProperty("title")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .Get("title")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("thumbnailOverlay")
-            .SelectOverlayNavigationVideoId();
+            .Get("thumbnailOverlay")
+            .SelectOverlayVideoId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(2);
 
-        YouTubeMusicEntity album = menuItems
+        YouTubeMusicEntity album = menu
             .SelectAlbumUnknown();
 
         TimeSpan duration = descriptionRuns
-            .GetPropertyAt(artists.Length * 2 + 2)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(artists.Length * 2 + 2)
+            .Get("text")
+            .AsString()
             .ToTimeSpan()
             .OrThrow();
 
         bool isExplicit = element
-            .SelectContainsExplicitBadge("subtitleBadges");
+            .SelectIsExplicit("subtitleBadges");
 
         string playsInfo = "N/A plays";
 
-        bool isCreditsAvailable = menuItems
+        bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
 
-        Radio? radio = menuItems
-            .SelectRadioOrNull();
+        Radio? radio = menu
+            .SelectRadio();
 
         return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, isCreditsAvailable, radio);
     }
 
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="SongSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="SongSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static SongSearchResult ParseSuggestion(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement menuItems = element
-            .SelectMenuItems();
+        JElement menu = element
+            .SelectMenu();
 
-        JsonElement flexColumns = element
-            .GetProperty("flexColumns");
+        JElement flexColumns = element
+            .Get("flexColumns");
 
-        JsonElement descriptionRuns = flexColumns
-            .GetPropertyAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs");
+        JElement descriptionRuns = flexColumns
+            .GetAt(1)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs");
 
-        JsonElement? albumRun = flexColumns
-            .GetPropertyAtOrNull(2)
-            ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
-            ?.GetPropertyOrNull("text")
-            ?.GetPropertyOrNull("runs")
-            ?.GetPropertyAtOrNull(0);
+        JElement albumRun = flexColumns
+            .GetAt(2)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0);
 
 
         string name = flexColumns
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("overlay")
-            .SelectOverlayNavigationVideoId();
+            .Get("overlay")
+            .SelectOverlayVideoId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists(2);
 
-        bool hasKnownAlbum = (albumRun
-            ?.GetPropertyOrNull("navigationEndpoint"))
-            .If(null, false, true);
-
-        YouTubeMusicEntity album = hasKnownAlbum
-            ? albumRun!.Value
-                .SelectAlbum()
-            : menuItems
-                .SelectAlbumUnknown();
+        bool isAlbumUnknown = albumRun
+            .Get("navigationEndpoint")
+            .IsUndefined;
+        YouTubeMusicEntity album = isAlbumUnknown
+            .If(true,
+                menu
+                    .SelectAlbumUnknown(),
+                albumRun
+                    .SelectAlbum());
 
         TimeSpan duration = TimeSpan.Zero; // grrrrr YT, why DO YOU NOT PROVIDE A DURATION GAWD DAMN??=?=!" i will not make this nullabel just because of this bullshit!!!!
 
         bool isExplicit = element
-            .SelectContainsExplicitBadge();
+            .SelectIsExplicit();
 
         string playsInfo = descriptionRuns
-            .GetPropertyAt(artists.Length * 2 + 2)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(artists.Length * 2 + 2)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
-        bool isCreditsAvailable = menuItems
+        bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
 
-        Radio? radio = menuItems
-            .SelectRadioOrNull();
+        Radio? radio = menu
+            .SelectRadio();
 
         return new(name, id, thumbnails, artists, album, duration, isExplicit, playsInfo, isCreditsAvailable, radio);
     }

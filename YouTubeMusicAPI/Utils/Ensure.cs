@@ -10,7 +10,7 @@ internal static class Ensure
     /// </summary>
     /// <param name="value">The object to ensure not being <see langword="null"/>.</param>
     /// <param name="name">The name of the value.</param>
-    /// <exception cref="ArgumentNullException">Occurrs when the <c>value</c> is <see langword="null"/>./></exception>
+    /// <exception cref="ArgumentNullException">Occurs when the <c>value</c> is <see langword="null"/>./></exception>
     public static void NotNull(
         [NotNull] object? value,
         string name)
@@ -26,7 +26,7 @@ internal static class Ensure
     /// </summary>
     /// <param name="value">The string to ensure not being <see langword="null"/> or empty.</param>
     /// <param name="name">The name of the value.</param>
-    /// <exception cref="ArgumentException">Occurrs when the <c>value</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>value</c> is <see langword="null"/> or empty.</exception>
     public static void NotNullOrEmpty(
         [NotNull] string? value,
         string name)
@@ -42,7 +42,7 @@ internal static class Ensure
     /// Ensures that the user is authenticated in the provided <see cref="RequestHandler"/>.
     /// </summary>
     /// <param name="requestHandler">The request handler to check if authenticated.</param>
-    /// <exception cref="InvalidOperationException">Occurrs when the <c>requestHandler</c> is not authenticated.</exception>
+    /// <exception cref="InvalidOperationException">Occurs when the <c>requestHandler</c> is not authenticated.</exception>
     public static void IsAuthenticated(
         RequestHandler requestHandler)
     {

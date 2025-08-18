@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using YouTubeMusicAPI.Http;
+using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Services;
-using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI;
 
@@ -71,15 +71,15 @@ public class YouTubeMusicClient
         // Parse
         Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
+        JElement root = new(json.RootElement);
 
-        JsonElement menuRenderer = json.RootElement
-            .GetProperty("actions")
-            .GetPropertyAt(0)
-            .GetProperty("openPopupAction")
-            .GetProperty("popup")
-            .GetProperty("multiPageMenuRenderer");
-
-        if (!menuRenderer.TryGetProperty("header", out _))
+        JElement menuRenderer = root
+            .Get("actions")
+            .GetAt(0)
+            .Get("openPopupAction")
+            .Get("popup")
+            .Get("multiPageMenuRenderer");
+        if (!menuRenderer.Contains("header"))
         {
             Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] User not authenticated: No 'header' in 'multiPageMenuRenderer'.");
             return null;

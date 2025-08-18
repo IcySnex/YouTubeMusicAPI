@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Search;
@@ -26,117 +26,122 @@ public class EpisodeSearchResult(
     bool isRatingsAllowed) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="EpisodeSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="EpisodeSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicResponsiveListItemRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     internal static EpisodeSearchResult Parse(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement flexColumns = element
-            .GetProperty("flexColumns");
+        JElement flexColumns = element
+            .Get("flexColumns");
 
-        JsonElement titleRun = flexColumns
-            .GetPropertyAt(0)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs")
-            .GetPropertyAt(0);
+        JElement titleRun = flexColumns
+            .GetAt(0)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs")
+            .GetAt(0);
 
-        JsonElement descriptionRuns = flexColumns
-            .GetPropertyAt(1)
-            .GetProperty("musicResponsiveListItemFlexColumnRenderer")
-            .GetProperty("text")
-            .GetProperty("runs");
+        JElement descriptionRuns = flexColumns
+            .GetAt(1)
+            .Get("musicResponsiveListItemFlexColumnRenderer")
+            .Get("text")
+            .Get("runs");
 
         int descriptionStartIndex = descriptionRuns
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow()
             .If("Episode", 2, 0);
 
 
         string name = titleRun
-            .GetProperty("text")
-            .GetString()
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("overlay")
-            .SelectOverlayNavigationVideoId();
+            .Get("overlay")
+            .SelectOverlayVideoId()
+            .OrThrow();
 
         string browseId = titleRun
-            .SelectNavigationBrowseId();
+            .SelectNavigationBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         DateTime releasedAt = descriptionRuns
-            .GetPropertyAt(descriptionStartIndex)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(descriptionStartIndex)
+            .Get("text")
+            .AsString()
             .ToDateTime()
             .Or(new(1970, 1, 1));
 
         YouTubeMusicEntity podcast = descriptionRuns
-            .GetPropertyAt(descriptionStartIndex + 2)
+            .GetAt(descriptionStartIndex + 2)
             .SelectPodcast();
 
         bool isRatingsAllowed = element
-            .GetProperty("menu")
-            .GetProperty("menuRenderer")
-            .GetProperty("topLevelButtons")
-            .GetPropertyAt(0)
-            .GetProperty("likeButtonRenderer")
-            .GetProperty("likesAllowed")
-            .GetBoolean();
+            .Get("menu")
+            .Get("menuRenderer")
+            .Get("topLevelButtons")
+            .GetAt(0)
+            .Get("likeButtonRenderer")
+            .Get("likesAllowed")
+            .AsBool()
+            .OrThrow();
 
         return new(name, id, browseId, thumbnails, releasedAt, podcast, isRatingsAllowed);
     }
 
     /// <summary>
-    /// Parses a <see cref="JsonElement"/> into a <see cref="EpisodeSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="EpisodeSearchResult"/>.
     /// </summary>
-    /// <param name="element">The <see cref="JsonElement"/> "musicCardShelfRenderer".</param>
+    /// <param name="element">The <see cref="JElement"/> "musicCardShelfRenderer".</param>
     internal static EpisodeSearchResult ParseTopResult(
-        JsonElement element)
+        JElement element)
     {
-        JsonElement descriptionRuns = element
-            .GetProperty("subtitle")
-            .GetProperty("runs");
+        JElement descriptionRuns = element
+            .Get("subtitle")
+            .Get("runs");
 
 
         string name = element
-            .GetProperty("title")
-            .GetProperty("runs")
-            .GetPropertyAt(0)
-            .GetProperty("text")
-            .GetString()
+            .Get("title")
+            .Get("runs")
+            .GetAt(0)
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
-            .GetProperty("thumbnailOverlay")
-            .SelectOverlayNavigationVideoId();
+            .Get("thumbnailOverlay")
+            .SelectOverlayVideoId()
+            .OrThrow();
 
         string browseId = element
-            .SelectTapBrowseId();
+            .SelectTapBrowseId()
+            .OrThrow();
 
         Thumbnail[] thumbnails = element
-            .GetProperty("thumbnail")
-            .GetProperty("musicThumbnailRenderer")
+            .Get("thumbnail")
+            .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
         DateTime releasedAt = descriptionRuns
-            .GetPropertyAt(2)
-            .GetProperty("text")
-            .GetString()
+            .GetAt(2)
+            .Get("text")
+            .AsString()
             .ToDateTime()
             .Or(new(1970, 1, 1));
 
         YouTubeMusicEntity podcast = descriptionRuns
-            .GetPropertyAt(4)
+            .GetAt(4)
             .SelectPodcast();
 
         bool isRatingsAllowed = true;

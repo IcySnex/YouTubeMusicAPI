@@ -12,4 +12,5 @@ YouTubeMusicAPI is a simple and efficient C# wrapper for the YouTube Music Web A
 > 
 > This recode is my effort to turn YouTubeMusicAPI into a **clean, consistent, and fully-featured API wrapper** that does justice to everything YouTube Music has to offer - including library management, more detailed information, playback support, and explore endpoints - all while improving performance, efficiency, and code maintainability.
 > 
-> 📌 You can track development progress in the [`recode`](https://github.com/IcySnex/YouTubeMusicAPI/tree/recode) branch and view planned features in the [Project Board](https://github.com/users/IcySnex/projects/1).
+> 📌 You can track development progress and view planned features in the [Project Board](https://github.com/users/IcySnex/projects/1).<br/>
+> 📌 Documentation for the existing version is available [here](https://github.com/IcySnex/YouTubeMusicAPI/blob/main/README.md).

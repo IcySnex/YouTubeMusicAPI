@@ -22,7 +22,6 @@ public class Program
         };
         YouTubeMusicClient client = new(config);
 
-
         await Task.Delay(100);
     }
 }

@@ -3,7 +3,7 @@ using YouTubeMusicAPI.Models.Info;
 
 namespace YouTubeMusicAPI.Tests.Services;
 
-public class InfoServiceTests
+public class SongServiceTests
 {
     YouTubeMusicClient client;
 
@@ -13,14 +13,14 @@ public class InfoServiceTests
 
 
     [Test]
-    public void Should_get_song()
+    public void Should_get()
     {
         // Act
         SongInfo? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Info.GetSongAsync(TestData.SongId);
+            result = await client.Songs.GetAsync(TestData.SongId);
         });
 
         // Assert
@@ -30,14 +30,14 @@ public class InfoServiceTests
     }
 
     [Test]
-    public void Should_get_song_credits()
+    public void Should_get_credits()
     {
         // Act
         SongCredits? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Info.GetSongCreditsAsync(TestData.SongId);
+            result = await client.Songs.GetCreditsAsync(TestData.SongId);
         });
 
         // Assert

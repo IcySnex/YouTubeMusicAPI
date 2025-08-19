@@ -1,5 +1,5 @@
-﻿using YouTubeMusicAPI.Models;
-using YouTubeMusicAPI.Models.Info;
+﻿using YouTubeMusicAPI.Models.Info;
+using YouTubeMusicAPI.Models.Songs;
 
 namespace YouTubeMusicAPI.Tests.Services;
 
@@ -38,6 +38,23 @@ public class SongServiceTests
         Assert.DoesNotThrowAsync(async () =>
         {
             result = await client.Songs.GetCreditsAsync(TestData.SongId);
+        });
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+
+        TestData.WriteResult(result);
+    }
+
+    [Test]
+    public void Should_get_lyrics()
+    {
+        // Act
+        object? result = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            result = await client.Songs.GetLyricsAsync(TestData.SongLyricsBrowseId);
         });
 
         // Assert

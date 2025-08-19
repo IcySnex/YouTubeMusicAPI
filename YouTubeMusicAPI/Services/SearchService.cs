@@ -587,7 +587,7 @@ public sealed class SearchService(
     /// <param name="input">The input to get remove from the suggestions.</param>
     /// <param name="cancellationToken">The token to cancel this action.</param>
     /// <exception cref="ArgumentException">Occurs when the <c>input</c> is <see langword="null"/> or empty.</exception>
-    /// <exception cref="NullReferenceException">Occurs when the search suggestion could not be found in the history.</exception>
+    /// <exception cref="InvalidOperationException">Occurs when the search suggestion could not be found in the history or it was not processed.</exception>
     /// <exception cref="InvalidOperationException">Occurs when the user is not authenticated.</exception>
     /// <exception cref="NullReferenceException">Occurs when a the <c>input</c> could not be found in the search history suggestions.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
@@ -633,7 +633,7 @@ public sealed class SearchService(
         if (feedbackToken is null)
         {
             client.Logger?.LogError("[SearchService-RemoveSuggestionAsync] Could not find search suggestion '{input}' in history to remove.", input);
-            throw new NullReferenceException($"Could not find search suggestion '{input}' in history to remove.");
+            throw new InvalidOperationException($"Could not find search suggestion '{input}' in history to remove.");
         }
 
         // Send remove request
@@ -659,7 +659,7 @@ public sealed class SearchService(
         if (!isProcessed)
         {
             client.Logger?.LogError("[SearchService-RemoveSuggestionAsync] Remove search suggestion '{input}' not processed.", input);
-            throw new NotSupportedException($"Remove search suggestion '{input}' not processed.");
+            throw new InvalidOperationException($"Remove search suggestion '{input}' not processed.");
         }
     }
 }

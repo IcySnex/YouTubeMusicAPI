@@ -9,7 +9,7 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicAPI.Services;
 
 /// <summary>
-/// Service used to search on YouTube Music.
+/// Service which handles searches on YouTube Music.
 /// </summary>
 /// <remarks>
 /// Creates a new instance of the <see cref="SearchService"/> class.

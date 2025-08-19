@@ -4,21 +4,38 @@ using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
+using YouTubeMusicAPI.Models.Search;
+using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services;
 
 /// <summary>
-/// Service used to get information from YouTube Music.
+/// Service which handles songs information/interaction from YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="SearchService"/> class.
+/// Creates a new instance of the <see cref="SongService"/> class.
 /// </remarks>
 /// <param name="client">The shared base client.</param>
-public sealed class InfoService(
+public sealed class SongService(
     YouTubeMusicClient client)
 {
     readonly YouTubeMusicClient client = client;
+
+
+    /// <summary>
+    /// Creates a paginator that searches for songs on YouTube Music.
+    /// </summary>
+    /// <remarks>
+    /// Convenience method that forwards to <see cref="SearchService.SongsAsync(string)"/>.
+    /// </remarks>
+    /// <param name="query">The query to search for.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SongSearchResult"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
+    public PaginatedAsyncEnumerable<SongSearchResult> SearchAsync(
+        string query) =>
+        client.Search.SongsAsync(query);
+
 
     /// <summary>
     /// Gets detailed information about a song from YouTube Music.
@@ -29,7 +46,7 @@ public sealed class InfoService(
     /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty or when the provided ID does not correspond to a song.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
-    public async Task<SongInfo> GetSongAsync(
+    public async Task<SongInfo> GetAsync(
         string id,
         CancellationToken cancellationToken = default)
     {
@@ -73,7 +90,7 @@ public sealed class InfoService(
     /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty or when the provided ID does not correspond to a song with available credits.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
-    public async Task<SongCredits> GetSongCreditsAsync(
+    public async Task<SongCredits> GetCreditsAsync(
         string id,
         CancellationToken cancellationToken = default)
     {
@@ -107,4 +124,6 @@ public sealed class InfoService(
         SongCredits credits = SongCredits.Parse(dialogRenderer);
         return credits;
     }
+
+    
 }

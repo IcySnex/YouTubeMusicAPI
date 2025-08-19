@@ -28,25 +28,25 @@ public class YouTubeMusicClient
         Logger = Config.Logger;
 
         Search = new(this);
-        Info = new(this);
+        Songs = new(this);
     }
 
 
     /// <summary>
-    /// The configuration for this YouTube Music client.
+    /// The configuration for this client.
     /// </summary>
     public YouTubeMusicConfig Config { get; }
 
 
     /// <summary>
-    /// The service used to search on YouTube Music.
+    /// The service which handles searches on YouTube Music.
     /// </summary>
     public SearchService Search { get; }
 
     /// <summary>
-    /// The service used to get information from YouTube Music.
+    /// The service which handles songs information/interaction from YouTube Music.
     /// </summary>
-    public InfoService Info { get; }
+    public SongService Songs { get; }
 
 
     /// <summary>

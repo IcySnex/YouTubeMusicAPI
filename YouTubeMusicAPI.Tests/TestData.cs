@@ -110,5 +110,7 @@ internal static class TestData
     public const string SearchQuery = "pashanim ms Jackson";
 
     //  Info
-    public const string SongId = "k5oAUteAOlw";
+    public const string SongId = "Pw6XsQ1n1Lc";
+
+    public const string SongLyricsBrowseId = "MPLYt_l2cuqVhB8gx-1";
 }

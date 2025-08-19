@@ -44,7 +44,7 @@ public class YouTubeMusicClient
     public SearchService Search { get; }
 
     /// <summary>
-    /// The service which handles songs information/interaction from YouTube Music.
+    /// The service which handles getting information about songs from YouTube Music.
     /// </summary>
     public SongService Songs { get; }
 

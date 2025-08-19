@@ -2,27 +2,24 @@
 using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
-using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Search;
+using YouTubeMusicAPI.Models.Songs;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services;
 
 /// <summary>
-/// Service which handles songs information/interaction from YouTube Music.
+/// Service which handles getting information about songs from YouTube Music.
 /// </summary>
 /// <remarks>
 /// Creates a new instance of the <see cref="SongService"/> class.
 /// </remarks>
 /// <param name="client">The shared base client.</param>
 public sealed class SongService(
-    YouTubeMusicClient client)
+    YouTubeMusicClient client) : MediaItemService(client)
 {
-    readonly YouTubeMusicClient client = client;
-
-
     /// <summary>
     /// Creates a paginator that searches for songs on YouTube Music.
     /// </summary>
@@ -43,7 +40,8 @@ public sealed class SongService(
     /// <param name="id">The ID of the song.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The <see cref="SongInfo"/> containing the information.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty or when the provided ID does not correspond to a song.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="InvalidOperationException">Occurs when the provided ID does not correspond to a song.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SongInfo> GetAsync(
@@ -61,7 +59,7 @@ public sealed class SongService(
         string response = await client.RequestHandler.PostAsync(Endpoints.Next, payload, ClientType.WebMusic, cancellationToken);
 
         // Parse response
-        client.Logger?.LogInformation("[InfoService-GetSongAsync] Parsing response...");
+        client.Logger?.LogInformation("[SongService-GetAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
         JElement root = new(json.RootElement);
 
@@ -73,8 +71,8 @@ public sealed class SongService(
             .Contains("album");
         if (!isSong)
         {
-            client.Logger?.LogError("[InfoService-GetSongAsync] The provided ID does not correspond to a song. Use 'GetVideoAsync' instead.");
-            throw new ArgumentException("The provided ID does not correspond to a song. Use 'GetVideoAsync' instead.", nameof(id));
+            client.Logger?.LogError("[SongService-GetAsync] The provided ID does not correspond to a song. Use 'GetVideoAsync' instead.");
+            throw new InvalidOperationException("The provided ID does not correspond to a song. Use 'GetVideoAsync' instead.");
         }
 
         SongInfo song = SongInfo.Parse(root);
@@ -87,7 +85,8 @@ public sealed class SongService(
     /// <param name="id">The ID of the song.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The <see cref="SongCredits"/> containing the information about the credits.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty or when the provided ID does not correspond to a song with available credits.</exception>
+    /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="InvalidOperationException">Occurs when when the provided ID does not correspond to a song with available credits.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SongCredits> GetCreditsAsync(
@@ -105,7 +104,7 @@ public sealed class SongService(
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
         // Parse response
-        client.Logger?.LogInformation("[InfoService-GetSongCreditsAsync] Parsing response...");
+        client.Logger?.LogInformation("[SongService-GetCreditsAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
         JElement root = new(json.RootElement);
 
@@ -117,13 +116,11 @@ public sealed class SongService(
             .Get("dismissableDialogRenderer");
         if (!dialogRenderer.Contains("sections"))
         {
-            client.Logger?.LogError("[InfoService-GetSongCreditsAsync] The provided ID does not correspond to a song with available credits.");
-            throw new ArgumentException("The provided ID does not correspond to a song with available credits.", nameof(id));
+            client.Logger?.LogError("[SongService-GetCreditsAsync] The provided ID does not correspond to a song with available credits.");
+            throw new InvalidOperationException("The provided ID does not correspond to a song with available credits.");
         }
 
         SongCredits credits = SongCredits.Parse(dialogRenderer);
         return credits;
     }
-
-    
 }

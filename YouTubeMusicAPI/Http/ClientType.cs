@@ -20,17 +20,12 @@ internal enum ClientType
     WebMusic,
 
     /// <summary>
-    /// Represents the YouTube iOS client.
+    /// Represents the YouTube Music iOS client.
     /// </summary>
     /// <remarks>
     /// Notes:<br/>
     /// - Account cookies not supported.<br/>
     /// - Provides HLS (m3u8) streaming formats.
     /// </remarks>
-    IOS,
-
-    /// <summary>
-    /// Represents the YouTube TV client.
-    /// </summary>
-    Tv
+    IOSMusic,
 }

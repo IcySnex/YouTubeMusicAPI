@@ -21,10 +21,10 @@ internal static class Conversion
         {
             ClientType.None => null,
             ClientType.WebMusic => Client.WebMusic.Clone(),
-            ClientType.IOS => Client.IOS.Clone(),
-            ClientType.Tv => Client.Tv.Clone(),
+            ClientType.IOSMusic => Client.IOSMusic.Clone(),
             _ => throw new ArgumentException($"Invalid client type: {type}.", nameof(type))
         };
+
 
     /// <summary>
     /// Converts a <see langword="string"/> to a <see cref="TimeSpan"/>.
@@ -45,6 +45,21 @@ internal static class Conversion
 
         return null;
     }
+
+    /// <summary>
+    /// Converts a milliseconds <see langword="long"/> to a <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="milliseconds">The milliseconds to convert.</param>
+    /// <returns>A <see cref="TimeSpan"/> representing the milliseconds.</returns>
+    public static TimeSpan? ToTimeSpan(
+        this long? milliseconds)
+    {
+        if (milliseconds.HasValue)
+            return TimeSpan.FromMilliseconds(milliseconds.Value);
+
+        return null;
+    }
+
 
     /// <summary>
     /// Converts a <see langword="string"/> to a <see cref="DateTime"/>.
@@ -82,8 +97,9 @@ internal static class Conversion
         };
     }
 
+
     /// <summary>
-    /// Converts a <see langword="string"/> to a <see cref="int"/>.
+    /// Converts a <see langword="string"/> to an <see cref="int"/>.
     /// </summary>
     /// <param name="text">The text to convert.</param>
     /// <returns>An <see cref="int"/> representing the text.</returns>
@@ -95,6 +111,21 @@ internal static class Conversion
 
         return null;
     }
+
+    /// <summary>
+    /// Converts a <see langword="string"/> to a <see cref="long"/>.
+    /// </summary>
+    /// <param name="text">The text to convert.</param>
+    /// <returns>A <see cref="long"/> representing the text.</returns>
+    public static long? ToInt64(
+        this string? text)
+    {
+        if (long.TryParse(text, CultureInfo.InvariantCulture, out long result))
+            return result;
+
+        return null;
+    }
+
 
     /// <summary>
     /// Converts a <see langword="string"/> to a <see cref="AlbumType"/>.

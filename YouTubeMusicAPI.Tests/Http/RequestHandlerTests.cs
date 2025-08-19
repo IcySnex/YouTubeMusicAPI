@@ -35,8 +35,7 @@ internal sealed class RequestHandlerTests
     [Test]
     [TestCase(ClientType.None)]
     [TestCase(ClientType.WebMusic)]
-    [TestCase(ClientType.IOS)]
-    [TestCase(ClientType.Tv)]
+    [TestCase(ClientType.IOSMusic)]
     public void Should_post_with_client(
         ClientType clientType)
     {

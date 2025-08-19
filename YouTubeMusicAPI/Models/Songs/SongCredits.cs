@@ -1,7 +1,7 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Models;
+namespace YouTubeMusicAPI.Models.Songs;
 
 /// <summary>
 /// Represents the credits information for a song.

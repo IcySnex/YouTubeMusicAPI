@@ -1,7 +1,7 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Models;
+namespace YouTubeMusicAPI.Models.Songs;
 
 /// <summary>
 /// Represents the song metadata for which the <see cref="SongCredits"/> are.

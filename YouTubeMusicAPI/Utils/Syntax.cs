@@ -238,7 +238,6 @@ internal static class Syntax
         string.Join(separator, source);
 
 
-
     /// <summary>
     /// Converts a value type to its nullable equivalent.
     /// </summary>

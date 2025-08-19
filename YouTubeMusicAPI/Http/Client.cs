@@ -60,7 +60,7 @@ internal sealed class Client(
         };
 
     /// <summary>
-    /// A template <see cref="Client"/> instance which represents the YouTube iOS client.
+    /// A template <see cref="Client"/> instance which represents the YouTube Music iOS client.
     /// </summary>
     /// <remarks>
     /// Notes:<br/>
@@ -68,42 +68,19 @@ internal sealed class Client(
     /// - Provides HLS (m3u8) streaming formats .
     /// </remarks>
     /// <returns>A <see cref="Client"/> which represents the YouTube iOS client.</returns>
-    public static readonly Client IOS =
+    public static readonly Client IOSMusic =
         new(hl: "en",
             gl: "US",
             platform: "MOBILE",
-            clientName: "iOS",
-            clientVersion: "20.11.6",
+            clientName: "IOS_MUSIC",
+            clientVersion: "7.21.50",
             deviceMake: "Apple",
             deviceModel: "iPhone16,2",
             osName: "iOS",
             osVersion: "18.1.0.22B83",
-            userAgent: "com.google.ios.youtube/20.11.6 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; US)",
+            userAgent: "com.google.ios.youtube.music/7.21.50 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; US)",
             timeZone: "UTC",
             utcOffsetMinutes: 0);
-
-    /// <summary>
-    /// A template <see cref="Client"/> instance which represents the YouTube TV client.
-    /// </summary>
-    /// <remarks>
-    /// </remarks>
-    /// <returns>A <see cref="Client"/> which represents the YouTube TV client.</returns>
-    public static readonly Client Tv =
-        new(hl: "en",
-            gl: "US",
-            platform: "DESKTOP",
-            clientName: "TVHTML5",
-            clientVersion: "7.20250430.13.00",
-            deviceMake: "",
-            deviceModel: "",
-            osName: "",
-            osVersion: "",
-            userAgent: "Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version",
-            timeZone: "UTC",
-            utcOffsetMinutes: 0)
-        {
-            OriginalUrl = "https://www.youtube.com/tv",
-        };
 
 
     /// <summary>

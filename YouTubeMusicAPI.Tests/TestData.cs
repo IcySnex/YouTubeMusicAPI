@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
-using YouTubeMusicAPI.Authentication;
+using YouTubeMusicAPI.Http.Authentication;
 using YouTubeSessionGenerator;
 using YouTubeSessionGenerator.Js.Environments;
 
@@ -107,10 +107,10 @@ internal static class TestData
     public const int FetchLimit = 20;
 
     //  Search
-    public const string SearchQuery = "pashanim ms Jackson";
+    public const string SearchQuery = "pashanim";
 
     //  Info
-    public const string SongId = "Pw6XsQ1n1Lc";
+    public const string SongId = "wQjVjkRBAfw";
 
     public const string SongLyricsBrowseId = "MPLYt_l2cuqVhB8gx-1";
 }

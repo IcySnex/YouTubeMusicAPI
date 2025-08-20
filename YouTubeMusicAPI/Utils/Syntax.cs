@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using YouTubeMusicAPI.Json;
 
 namespace YouTubeMusicAPI.Utils;
 
@@ -263,4 +264,23 @@ internal static class Syntax
         Func<TSource, TResult> first,
         Func<TSource, TResult> second) =>
         first(source) ?? second(source);
+
+    /// <summary>
+    /// Evaluates two expressions on the same <see cref="JElement"/> and returns the first non-undefined result.
+    /// </summary>
+    /// <param name="source">The source element.</param>
+    /// <param name="first">The first expression to evaluate.</param>
+    /// <param name="second">The fallback expression to evaluate if the first is undefined.</param>
+    /// <returns>The first non-undefined result of <c>first</c> or <c>second</c>.</returns>
+    public static JElement Coalesce(
+        this JElement source,
+        Func<JElement, JElement> first,
+        Func<JElement, JElement> second)
+    {
+        JElement result = first(source);
+        if (result.IsUndefined)
+            result = second(source);
+
+        return result;
+    }
 }

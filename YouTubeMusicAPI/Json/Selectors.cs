@@ -25,17 +25,11 @@ internal static class Selectors
 
 
     public static JElement SelectWatchEndpoint(
-        this JElement element)
-    {
-        JElement watchEndpoint = element
-            .Get("watchEndpoint");
-
-        return watchEndpoint.IsUndefined
-            .If(true,
-                element
-                    .Get("watchPlaylistEndpoint"),
-                watchEndpoint);
-    }
+        this JElement element) =>
+        element
+            .Coalesce(
+                item => item.Get("watchEndpoint"),
+                item => item.Get("watchPlaylistEndpoint"));
 
 
     public static string? SelectNavigationBrowseId(

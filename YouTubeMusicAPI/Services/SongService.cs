@@ -2,7 +2,6 @@
 using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
-using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Songs;
 using YouTubeMusicAPI.Pagination;

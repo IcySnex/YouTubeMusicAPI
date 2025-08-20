@@ -1,5 +1,4 @@
-﻿using YouTubeMusicAPI.Models.Info;
-using YouTubeMusicAPI.Models.Songs;
+﻿using YouTubeMusicAPI.Models.Songs;
 
 namespace YouTubeMusicAPI.Tests.Services;
 

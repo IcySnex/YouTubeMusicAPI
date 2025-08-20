@@ -1,7 +1,7 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Models.Info;
+namespace YouTubeMusicAPI.Models.Songs;
 
 /// <summary>
 /// Represents a song on YouTube Music.
@@ -61,7 +61,13 @@ public class SongInfo(
             .Get("playlistPanelRenderer")
             .Get("contents")
             .GetAt(0)
-            .Get("playlistPanelVideoRenderer");
+            .Coalesce(
+                item => item
+                    .Get("playlistPanelVideoRenderer"),
+                item => item
+                    .Get("playlistPanelVideoWrapperRenderer")
+                    .Get("primaryRenderer")
+                    .Get("playlistPanelVideoRenderer"));
 
         JElement lyricsTab = tabs
             .GetAt(1)

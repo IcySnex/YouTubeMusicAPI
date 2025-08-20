@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the type of YouTube Music client used for making API requests.
 /// </summary>
-internal enum ClientType
+public enum ClientType
 {
     /// <summary>
     /// Represents no client.

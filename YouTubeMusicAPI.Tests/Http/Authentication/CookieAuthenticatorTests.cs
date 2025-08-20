@@ -1,7 +1,8 @@
 ﻿using System.Net;
-using YouTubeMusicAPI.Authentication;
+using YouTubeMusicAPI.Http;
+using YouTubeMusicAPI.Http.Authentication;
 
-namespace YouTubeMusicAPI.Tests.Authentication;
+namespace YouTubeMusicAPI.Tests.Http.Authentication;
 
 [TestFixture]
 internal sealed class CookieAuthenticatorTests
@@ -39,11 +40,16 @@ internal sealed class CookieAuthenticatorTests
         HttpRequestMessage request = new(HttpMethod.Post, "https://music.youtube.com/youtubei/v1/player");
 
         // Act
-        authenticator.Apply(request);
+        bool result = authenticator.Apply(request, ClientType.WebMusic);
 
         // Assert
-        string? cookieHeader = request.Headers.GetValues("Cookie").FirstOrDefault();
-        Assert.That(cookieHeader, Does.Contain("SOCS=CAI"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+
+            string? cookieHeader = request.Headers.GetValues("Cookie").FirstOrDefault();
+            Assert.That(cookieHeader, Does.Contain("SOCS=CAI"));
+        });
     }
 
     [Test]
@@ -56,11 +62,13 @@ internal sealed class CookieAuthenticatorTests
         HttpRequestMessage request = new(HttpMethod.Post, "https://music.youtube.com/youtubei/v1/player");
 
         // Act
-        authenticator.Apply(request);
+        bool result = authenticator.Apply(request, ClientType.WebMusic);
 
         // Assert
         Assert.Multiple(() =>
         {
+            Assert.That(result, Is.True);
+
             string? cookieHeader = request.Headers.GetValues("Cookie").FirstOrDefault();
             foreach (Cookie cookie in cookies)
                 Assert.That(cookieHeader, Does.Contain($"{cookie.Name}={cookie.Value}"));
@@ -75,11 +83,13 @@ internal sealed class CookieAuthenticatorTests
         HttpRequestMessage request = new(HttpMethod.Post, "https://music.youtube.com/youtubei/v1/player");
 
         // Act
-        authenticator.Apply(request);
+        bool result = authenticator.Apply(request, ClientType.WebMusic);
 
         // Assert
         Assert.Multiple(() =>
         {
+            Assert.That(result, Is.True);
+
             string? authHeader = request.Headers.Authorization?.ToString();
             Assert.That(authHeader, Is.Not.Null.Or.Empty);
 
@@ -91,4 +101,19 @@ internal sealed class CookieAuthenticatorTests
             Assert.That(timestampPart, Does.Match(@"^[0-9]+_[A-F0-9]+$"));
         });
     }
+
+    [Test]
+    public void Should_not_work_with_non_web_clients()
+    {
+        // Arrange
+        CookieAuthenticator authenticator = new(TestData.RandomCookies());
+        HttpRequestMessage request = new(HttpMethod.Post, "https://music.youtube.com/youtubei/v1/player");
+
+        // Act
+        bool result = authenticator.Apply(request, ClientType.IOSMusic);
+
+        // Assert
+        Assert.That(result, Is.False);
+    }
+
 }

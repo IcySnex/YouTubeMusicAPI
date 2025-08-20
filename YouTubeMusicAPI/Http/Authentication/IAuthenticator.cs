@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Authentication;
+﻿namespace YouTubeMusicAPI.Http.Authentication;
 
 /// <summary>
 /// Handles the authentication of HTTP requests sent to YouTube Music.
@@ -28,6 +28,9 @@ public interface IAuthenticator
     /// Applies the authentication to the given HTTP request.
     /// </summary>
     /// <param name="request">The HTTP request to authenticate.</param>
-    public void Apply(
-        HttpRequestMessage request);
+    /// <param name="clientType">The type of YouTube Music client used for making the requests.</param>
+    /// <returns>Weither the authentication was successfully applied to the request.</returns>
+    public bool Apply(
+        HttpRequestMessage request,
+        ClientType clientType);
 }

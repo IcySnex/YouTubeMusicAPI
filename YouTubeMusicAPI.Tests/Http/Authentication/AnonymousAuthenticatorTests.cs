@@ -1,6 +1,7 @@
-﻿using YouTubeMusicAPI.Authentication;
+﻿using YouTubeMusicAPI.Http;
+using YouTubeMusicAPI.Http.Authentication;
 
-namespace YouTubeMusicAPI.Tests.Authentication;
+namespace YouTubeMusicAPI.Tests.Http.Authentication;
 
 [TestFixture]
 internal sealed class AnonymousAuthenticatorTests
@@ -32,10 +33,15 @@ internal sealed class AnonymousAuthenticatorTests
         HttpRequestMessage request = new(HttpMethod.Post, "https://music.youtube.com/youtubei/v1/player");
 
         // Act
-        authenticator.Apply(request);
+        bool result = authenticator.Apply(request, ClientType.WebMusic);
 
         // Assert
-        string cookieHeader = request.Headers.GetValues("Cookie").FirstOrDefault() ?? "";
-        Assert.That(cookieHeader, Does.Contain("SOCS=CAI"), "SOCS=CAI cookie is missing");
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+
+            string cookieHeader = request.Headers.GetValues("Cookie").FirstOrDefault() ?? "";
+            Assert.That(cookieHeader, Does.Contain("SOCS=CAI"), "SOCS=CAI cookie is missing");
+        });
     }
 }

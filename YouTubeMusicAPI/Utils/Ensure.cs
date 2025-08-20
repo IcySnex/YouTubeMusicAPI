@@ -39,14 +39,14 @@ internal static class Ensure
 
 
     /// <summary>
-    /// Ensures that the user is authenticated in the provided <see cref="RequestHandler"/>.
+    /// Ensures that the user is authenticated in the provided <see cref="YouTubeMusicClient"/>.
     /// </summary>
-    /// <param name="requestHandler">The request handler to check if authenticated.</param>
-    /// <exception cref="InvalidOperationException">Occurs when the <c>requestHandler</c> is not authenticated.</exception>
-    public static void IsAuthenticated(
-        RequestHandler requestHandler)
+    /// <param name="client">The client to check if authenticated.</param>
+    /// <exception cref="InvalidOperationException">Occurs when the <c>client</c> is not authenticated.</exception>
+    public static void Authenticated(
+        YouTubeMusicClient client)
     {
-        if (requestHandler.IsAuthenticated)
+        if (client.RequestHandler.IsAuthenticated)
             return;
 
         throw new InvalidOperationException("The user must be authenticate before using this endpoint.");

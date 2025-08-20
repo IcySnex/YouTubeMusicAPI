@@ -1,9 +1,9 @@
 ﻿using YouTubeMusicAPI.Models;
 
-namespace YouTubeMusicAPI.Tests.Authentication;
+namespace YouTubeMusicAPI.Tests.Client;
 
 [TestFixture]
-internal sealed class AuthenticatedUserTests
+internal sealed class YouTubeMusicClientTests
 {
     YouTubeMusicClient client;
 

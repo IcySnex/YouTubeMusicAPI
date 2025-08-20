@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Authentication;
+namespace YouTubeMusicAPI.Http.Authentication;
 
 /// <summary>
 /// Represents an user session via cookies used to authenticate HTTP requests sent to YouTube Music.
@@ -61,8 +61,6 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
     string GenerateAuthHeaderValue(
         Uri uri)
     {
-        IReadOnlyCollection<Cookie> cookies = Container.GetCookies(uri);
-
         long timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         string domain = uri.Scheme + Uri.SchemeDelimiter + uri.Host;
 
@@ -80,17 +78,22 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
     /// <summary>
     /// Applies the authentication to the given HTTP request.
     /// </summary>
+    /// <remarks>
+    /// Only applies to web clients (<see cref="ClientType.WebMusic"/>).
+    /// </remarks>
     /// <param name="request">The HTTP request to authenticate.</param>
-    /// <exception cref="ArgumentNullException">Occurs when the <c>request.RequestUri</c> is <see langword="null"/>./></exception>
-    public override void Apply(
-        HttpRequestMessage request)
+    /// <param name="clientType">The type of YouTube Music client used for making the requests.</param>
+    /// <returns>Weither the authentication was successfully applied to the request.</returns>
+    public override bool Apply(
+        HttpRequestMessage request,
+        ClientType clientType)
     {
-        base.Apply(request);
+        if (request.RequestUri is null ||
+            clientType != ClientType.WebMusic)
+            return false;
 
-        Ensure.NotNull(request.RequestUri, nameof(request.RequestUri));
-
-        request.Headers.Remove("Cookie");
         request.Headers.Add("Cookie", Container.GetCookieHeader(request.RequestUri));
         request.Headers.Add("Authorization", GenerateAuthHeaderValue(request.RequestUri));
+        return true;
     }
 }

@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using YouTubeMusicAPI.Authentication;
+using YouTubeMusicAPI.Http.Authentication;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Http;
@@ -57,7 +57,9 @@ internal sealed class RequestHandler(
         CancellationToken cancellationToken = default)
     {
         // Prepare
-        HttpRequestMessage request = new(method, url);
+        Uri requestUri = new(url);
+        HttpRequestMessage request = new(method, requestUri);
+
         Dictionary<string, object?> body = payload?.ToDictionary() ?? [];
 
         if (clientType.ToClient() is Client client)
@@ -70,6 +72,7 @@ internal sealed class RequestHandler(
             if (authenticator.ProofOfOriginToken is string poToken)
                 body["serviceIntegrityDimensions"] = new { poToken };
 
+            request.Headers.Add("Origin", requestUri.Scheme + Uri.SchemeDelimiter + requestUri.Host);
             request.Headers.Add("User-Agent", client.UserAgent);
         }
 
@@ -79,7 +82,8 @@ internal sealed class RequestHandler(
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
         }
 
-        authenticator.Apply(request);
+        if (!authenticator.Apply(request, clientType))
+            logger?.LogWarning("[RequestHandler-SendAsync] Authenticator could not apply to the request.");
 
         // Send
         logger?.LogInformation("[RequestHandler-SendAsync] Sending HTTP request: {method}-{url}.", method, url);

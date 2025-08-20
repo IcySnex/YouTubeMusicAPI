@@ -597,7 +597,7 @@ public sealed class SearchService(
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrEmpty(input, nameof(input));
-        Ensure.IsAuthenticated(client.RequestHandler);
+        Ensure.Authenticated(client);
 
         // Send suggestions request
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Getting suggestions...");

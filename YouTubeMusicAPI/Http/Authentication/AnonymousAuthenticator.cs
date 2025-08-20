@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Utils;
-
-namespace YouTubeMusicAPI.Authentication;
+﻿namespace YouTubeMusicAPI.Http.Authentication;
 
 /// <summary>
 /// Represents an anonymous session used to authenticate HTTP requests sent to YouTube Music.
@@ -39,13 +37,13 @@ public class AnonymousAuthenticator(
     /// Applies the authentication to the given HTTP request.
     /// </summary>
     /// <param name="request">The HTTP request to authenticate.</param>
-    /// <exception cref="ArgumentNullException">Occurs when the <c>request.RequestUri</c> is <see langword="null"/>./></exception>
-    public virtual void Apply(
-        HttpRequestMessage request)
+    /// <param name="clientType">The type of YouTube Music client used for making the requests.</param>
+    /// <returns>Weither the authentication was successfully applied to the request.</returns>
+    public virtual bool Apply(
+        HttpRequestMessage request,
+        ClientType clientType)
     {
-        Ensure.NotNull(request.RequestUri, nameof(request.RequestUri));
-
-        request.Headers.Add("Origin", request.RequestUri.Scheme + Uri.SchemeDelimiter + request.RequestUri.Host);
         request.Headers.Add("Cookie", "SOCS=CAI");
+        return true;
     }
 }

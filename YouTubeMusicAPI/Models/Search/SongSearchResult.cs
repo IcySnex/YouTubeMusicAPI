@@ -98,7 +98,7 @@ public class SongSearchResult(
             .Get("text")
             .AsString()
             .ToTimeSpan()
-            .OrThrow();
+            .Or(TimeSpan.Zero);
 
         bool isExplicit = element
             .SelectIsExplicit();
@@ -111,7 +111,7 @@ public class SongSearchResult(
             .GetAt(0)
             .Get("text")
             .AsString()
-            .OrThrow();
+            .Or("N/A plays");
 
         bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
@@ -166,7 +166,7 @@ public class SongSearchResult(
             .Get("text")
             .AsString()
             .ToTimeSpan()
-            .OrThrow();
+            .Or(TimeSpan.Zero);
 
         bool isExplicit = element
             .SelectIsExplicit("subtitleBadges");
@@ -242,7 +242,7 @@ public class SongSearchResult(
                 albumRun
                     .SelectAlbum());
 
-        TimeSpan duration = TimeSpan.Zero; // grrrrr YT, why DO YOU NOT PROVIDE A DURATION GAWD DAMN??=?=!" i will not make this nullabel just because of this bullshit!!!!
+        TimeSpan duration = TimeSpan.Zero;
 
         bool isExplicit = element
             .SelectIsExplicit();
@@ -251,7 +251,7 @@ public class SongSearchResult(
             .GetAt(artists.Length * 2 + 2)
             .Get("text")
             .AsString()
-            .OrThrow();
+            .Or("N/A plays");
 
         bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
@@ -277,6 +277,9 @@ public class SongSearchResult(
     /// <summary>
     /// The duration of this song.
     /// </summary>
+    /// <remarks>
+    /// May be <see cref="TimeSpan.Zero"/> if the YouTube decides to play annoying games (in search suggestions and library searches)."/>
+    /// </remarks>
     public TimeSpan Duration { get; } = duration;
 
     /// <summary>

@@ -23,14 +23,18 @@ public sealed class SongService(
     /// Creates a paginator that searches for songs on YouTube Music.
     /// </summary>
     /// <remarks>
-    /// Convenience method that forwards to <see cref="SearchService.SongsAsync(string)"/>.
+    /// Convenience method that forwards to <see cref="SearchService.ByCategoryAsync{T}(string, SearchScope, bool)"/>.
     /// </remarks>
     /// <param name="query">The query to search for.</param>
+    /// <param name="scope">The scope of the search.</param>
+    /// <param name="ignoreSpelling">Weither to ignore spelling suggestions.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SongSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<SongSearchResult> SearchAsync(
-        string query) =>
-        client.Search.SongsAsync(query);
+        string query,
+        SearchScope scope = SearchScope.Global,
+        bool ignoreSpelling = true) =>
+        client.Search.ByCategoryAsync<SongSearchResult>(query, scope, ignoreSpelling);
 
 
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Models;
+using YouTubeMusicAPI.Models.Search;
 
 namespace YouTubeMusicAPI.Utils;
 
@@ -34,16 +35,16 @@ internal static class Conversion
     public static TimeSpan? ToTimeSpan(
         this string? text)
     {
-        if (TimeSpan.TryParseExact(text, @"m\:ss", CultureInfo.InvariantCulture, out TimeSpan result))
-            return result;
-        if (TimeSpan.TryParseExact(text, @"mm\:ss", CultureInfo.InvariantCulture, out result))
-            return result;
-        if (TimeSpan.TryParseExact(text, @"h\:mm\:ss", CultureInfo.InvariantCulture, out result))
-            return result;
-        if (TimeSpan.TryParseExact(text, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out result))
-            return result;
+        if (text is null)
+            return null;
 
-        return null;
+        string[] parts = text.Split(':');
+        return parts.Length switch
+        {
+            2 when int.TryParse(parts[0], out int minutes) && int.TryParse(parts[1], out int seconds) => new(0, minutes, seconds),
+            3 when int.TryParse(parts[0], out int hours) && int.TryParse(parts[1], out int minutes) && int.TryParse(parts[2], out int seconds) => new(hours, minutes, seconds),
+            _ => null,
+        };
     }
 
     /// <summary>
@@ -141,4 +142,85 @@ internal static class Conversion
             "EP" => (AlbumType?)AlbumType.Ep,
             _ => null,
         };
+
+
+    /// <summary>
+    /// Converts a <see cref="SearchScope"/>, a <see cref="SearchCategory"/> and <see cref="bool"/> representing weither to ignore spelling to a query parameter.
+    /// </summary>
+    /// <param name="category">The category of content to search for.</param>
+    /// <param name="scope">The scope of the search.</param>
+    /// <param name="ignoreSpelling">Weither to ignore spelling suggestions.</param>
+    /// <returns>A <see cref="string"/> representing the search query parameter.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Occurs when the given <see cref="SearchCategory"/> is invalid.</exception>
+    public static string ToQueryParams(
+        this SearchScope scope,
+        SearchCategory? category,
+        bool ignoreSpelling)
+    {
+        static string GetQueryParam2(SearchCategory category) =>
+            category switch
+            {
+                SearchCategory.Songs => "II",
+                SearchCategory.Videos => "IQ",
+                SearchCategory.Albums => "IY",
+                SearchCategory.Artists => "Ig",
+                SearchCategory.CommunityPlaylists => "EA",
+                SearchCategory.FeaturedPlaylists => "Dg",
+                SearchCategory.Profiles => "JY",
+                SearchCategory.Podcasts => "JQ",
+                SearchCategory.Episodes => "JI",
+                _ => throw new ArgumentOutOfRangeException(nameof(category), category, "The given SearchCategory is invalid.")
+            };
+
+        const string filteredQueryParam1 = "EgWKAQ";
+
+        string? queryParams = null;
+        string queryParam1 = "";
+        string queryParam2 = "";
+        string queryParam3 = "";
+
+        if (!category.HasValue && scope == SearchScope.Global && !ignoreSpelling)
+            return "";
+
+        switch (scope)
+        {
+            //case SearchScope.Uploads:
+            //    queryParams = "agIYAw%3D%3D";
+            //    break;
+
+            case SearchScope.Library:
+                if (!category.HasValue)
+                {
+                    queryParams = "agIYBA%3D%3D";
+                    break;
+                }
+
+                queryParam1 = filteredQueryParam1;
+                queryParam2 = GetQueryParam2(category.Value);
+                queryParam3 = "AWoKEAUQCRADEAoYBA%3D%3D";
+                break;
+
+            case SearchScope.Global:
+                if (!category.HasValue)
+                {
+                    queryParams = "EhGKAQ4IARABGAEgASgAOAFAAUICCAE%3D";
+                    break;
+                }
+
+                if (category.Value == SearchCategory.CommunityPlaylists || category.Value == SearchCategory.FeaturedPlaylists)
+                {
+                    queryParam1 = "EgeKAQQoA";
+                    queryParam3 = ignoreSpelling ? "BQgIIAWoMEA4QChADEAQQCRAF" : "BagwQDhAKEAMQBBAJEAU%3D";
+                }
+                else
+                {
+                    queryParam1 = filteredQueryParam1;
+                    queryParam3 = ignoreSpelling ? "AUICCAFqDBAOEAoQAxAEEAkQBQ%3D%3D" : "AWoMEA4QChADEAQQCRAF";
+                }
+                queryParam2 = GetQueryParam2(category.Value);
+                break;
+        }
+
+        return queryParams is null ? queryParam1 + queryParam2 + queryParam3 : queryParams;
+    }
 }

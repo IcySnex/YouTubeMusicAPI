@@ -1,5 +1,7 @@
 ﻿using YouTubeMusicAPI.Models.MediaItems;
+using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Videos;
+using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Tests.Services;
 
@@ -10,6 +12,26 @@ public class VideoServiceTests
     [SetUp]
     public async Task Setup() =>
         client = await TestData.CreateClientAsync();
+
+
+    [Test]
+    public void Should_search()
+    {
+        // Act
+        IReadOnlyList<VideoSearchResult>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<VideoSearchResult> response = client.Videos.SearchAsync(TestData.SearchQuery, TestData.SearchScope, TestData.SearchIgnoreSpelling);
+
+            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
 
 
     [Test]

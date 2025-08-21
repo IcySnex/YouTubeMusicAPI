@@ -23,14 +23,18 @@ public sealed class VideoService(
     /// Creates a paginator that searches for videos on YouTube Music.
     /// </summary>
     /// <remarks>
-    /// Convenience method that forwards to <see cref="SearchService.VideosAsync(string)"/>.
+    /// Convenience method that forwards to <see cref="SearchService.ByCategoryAsync{T}(string, SearchScope, bool)"/>.
     /// </remarks>
     /// <param name="query">The query to search for.</param>
+    /// <param name="scope">The scope of the search.</param>
+    /// <param name="ignoreSpelling">Weither to ignore spelling suggestions.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="VideoSearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
     public PaginatedAsyncEnumerable<VideoSearchResult> SearchAsync(
-        string query) =>
-        client.Search.VideosAsync(query);
+        string query,
+        SearchScope scope = SearchScope.Global,
+        bool ignoreSpelling = true) =>
+        client.Search.ByCategoryAsync<VideoSearchResult>(query, scope, ignoreSpelling);
 
 
     /// <summary>

@@ -77,13 +77,13 @@ public class VideoSearchResult(
             .Get("text")
             .AsString()
             .ToTimeSpan()
-            .OrThrow();
+            .Or(TimeSpan.Zero);
 
         string viewsInfo = descriptionRuns
             .GetAt(descriptionStartIndex + artists.Length * 2)
             .Get("text")
             .AsString()
-            .OrThrow();
+            .Or("N/A views");
 
         Radio? radio = element
             .SelectMenu()
@@ -130,13 +130,13 @@ public class VideoSearchResult(
             .Get("text")
             .AsString()
             .ToTimeSpan()
-            .OrThrow();
+            .Or(TimeSpan.Zero);
 
         string viewsInfo = descriptionRuns
             .GetAt(artists.Length * 2 + 2)
             .Get("text")
             .AsString()
-            .OrThrow();
+            .Or("N/A views");
 
         Radio? radio = element
             .SelectMenu()
@@ -192,13 +192,13 @@ public class VideoSearchResult(
                     .SelectArtists(2),
                 [new("N/A", null, null)]);
 
-        TimeSpan duration = TimeSpan.Zero; // grrrrr YT, why DO YOU NOT PROVIDE A DURATION GAWD DAMN??=?=!" i will not make this nullable just because of this bullshit!!!!
+        TimeSpan duration = TimeSpan.Zero;
 
         string viewsInfo = descriptionRuns
             .GetAt(artists.Length * 2 + (hasKnownArtist ? 2 : 0))
             .Get("text")
             .AsString()
-            .OrThrow();
+            .Or("N/A views");
 
         Radio? radio = element
             .SelectMenu()
@@ -216,6 +216,9 @@ public class VideoSearchResult(
     /// <summary>
     /// The duration of this video.
     /// </summary>
+    /// <remarks>
+    /// May be <see cref="TimeSpan.Zero"/> if the YouTube decides to play annoying games (in search suggestions and library searches)."/>
+    /// </remarks>
     public TimeSpan Duration { get; } = duration;
 
     /// <summary>

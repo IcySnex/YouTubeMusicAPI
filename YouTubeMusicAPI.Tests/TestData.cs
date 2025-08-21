@@ -20,10 +20,19 @@ internal static class TestData
     };
 
     public static void WriteResult<T>(
-        T result)
+        T result,
+        string name = "Result")
     {
         string json = JsonSerializer.Serialize<object?>(result, JsonOptions);
-        TestContext.Out.WriteLine("Result: {0}", json);
+        TestContext.Out.WriteLine("{0}: {1}", name, json);
+    }
+
+    public static void WriteResult<T>(
+        IReadOnlyList<T> results,
+        string name = "Results")
+    {
+        string json = JsonSerializer.Serialize<object?>(results.Cast<object?>().ToList(), JsonOptions);
+        TestContext.Out.WriteLine("{0}: {1}", name, json);
     }
 
 
@@ -112,7 +121,9 @@ internal static class TestData
     public const int FetchLimit = 20;
 
     // - Search
-    public const string SearchQuery = "pashanim";
+    public const string SearchQuery = "Cutty Vibez";
+    public const Models.Search.SearchScope SearchScope = Models.Search.SearchScope.Global;
+    public const bool SearchIgnoreSpelling = true;
 
     // - Songs
     public const string SongId = "tzqtLQ1_bjU";

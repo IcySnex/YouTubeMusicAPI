@@ -53,6 +53,17 @@ public class EpisodeSearchResult(
             .OrThrow()
             .If("Episode", 2, 0);
 
+        bool containsDuration = descriptionRuns
+            .GetAt(0)
+            .SelectNavigationBrowseId()
+            .IsNotNull()
+            .And(descriptionRuns
+                .GetAt(2)
+                .Get("text")
+                .AsString()
+                .IsNotNull(out string? duration)
+                .And(duration!.Contains("hr") || duration.Contains("min") || duration.Contains("sec")));
+
 
         string name = titleRun
             .Get("text")
@@ -73,15 +84,21 @@ public class EpisodeSearchResult(
             .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        DateTime releasedAt = descriptionRuns
-            .GetAt(descriptionStartIndex)
-            .Get("text")
-            .AsString()
+        DateTime releasedAt = containsDuration
+            .If(true,
+                flexColumns
+                    .GetAt(2)
+                    .Get("musicResponsiveListItemFlexColumnRenderer")
+                    .SelectRunTextAt("text", 0),
+                descriptionRuns
+                    .GetAt(descriptionStartIndex + (containsDuration ? 4 : 0))
+                    .Get("text")
+                    .AsString())
             .ToDateTime()
             .Or(new(1970, 1, 1));
 
         YouTubeMusicEntity podcast = descriptionRuns
-            .GetAt(descriptionStartIndex + 2)
+            .GetAt(descriptionStartIndex + (containsDuration ? 0 : 2))
             .SelectPodcast();
 
         return new(name, id, browseId, thumbnails, releasedAt, podcast);

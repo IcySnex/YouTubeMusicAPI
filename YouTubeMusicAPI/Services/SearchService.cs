@@ -28,8 +28,8 @@ public sealed class SearchService(
     /// <param name="query">The query to search for.</param>
     /// <param name="continuationToken">The token used to continue a previous search.</param>
     /// <param name="queryParams">The query params to filter.</param>
-    /// <param name="category">The title of the shelf category.</param>
     /// <param name="parse">The function to parse JSON elements to a search result.</param>
+    /// <param name="categoryTitle">The category title of the shelf.</param>
     /// <param name="cancellationToken">The token to cancel this tas.</param>
     /// <returns>A page of search results.</returns>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
@@ -38,8 +38,8 @@ public sealed class SearchService(
         string query,
         string? continuationToken,
         string queryParams,
-        string category,
         Func<JElement, T> parse,
+        string categoryTitle,
         CancellationToken cancellationToken = default) where T : SearchResult
     {
         // Send request
@@ -78,7 +78,7 @@ public sealed class SearchService(
                     .FirstOrDefault(item => item
                         .Get("musicShelfRenderer")
                         .SelectRunTextAt("title", 0)
-                        .Is(category)));
+                        .Is(categoryTitle)));
         if (shelf.IsUndefined)
             return new([], null);
         if (!isContinued)
@@ -97,158 +97,104 @@ public sealed class SearchService(
             .OrThrow()
             .Select(item => item
                 .Get("musicResponsiveListItemRenderer"))
-            .Where(item => item // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
-                .Get("menu")
-                .Get("menuRenderer")
-                .Contains("topLevelButtons")
-                .And(category != "Episodes")
-                .Not())
+            .Where(item => // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check
+                categoryTitle == "Episodes" || !item.SelectIsPodcast()) // duh no fluent syntax :( "short-circuiting" performance blabla
             .Select(item => parse(item))
             .ToList();
 
         return new(result, nextContinuationToken);
     }
 
+
     /// <summary>
-    /// Creates a paginator that fetches search results from YouTube Music.
+    /// Creates an async paginator that fetches search results from YouTube Music.
     /// </summary>
-    /// <typeparam name="T">The type of search results to parse.</typeparam>
     /// <param name="query">The query to search for.</param>
-    /// <param name="queryParams">The query params to filter.</param>
-    /// <param name="category">The title of the shelf category.</param>
-    /// <param name="parse">The function to parse JSON elements to a search result.</param>
+    /// <param name="category">The category of content to search for.</param>
+    /// <param name="scope">The scope of the search.</param>
+    /// <param name="ignoreSpelling">Weither to ignore spelling suggestions.</param>
     /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    PaginatedAsyncEnumerable<T> CreatePaginatorAsync<T>(
+    /// <exception cref="InvalidOperationException">Occurs when the <c>category</c> is <see cref="SearchCategory.CommunityPlaylists"/> or <see cref="SearchCategory.FeaturedPlaylists"/> while <c>scope</c> is <see cref="SearchScope.Library"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Occurs when the given <see cref="SearchCategory"/> is invalid.</exception>
+    public PaginatedAsyncEnumerable<SearchResult> ByCategoryAsync(
         string query,
-        string queryParams,
-        string category,
-        Func<JElement, T> parse) where T : SearchResult
+        SearchCategory category,
+        SearchScope scope = SearchScope.Global,
+        bool ignoreSpelling = true)
     {
         Ensure.NotNullOrEmpty(query, nameof(query));
 
+        if (scope == SearchScope.Library && (category == SearchCategory.CommunityPlaylists || category == SearchCategory.FeaturedPlaylists))
+            throw new InvalidOperationException("The categories 'CommunityPlaylists' and 'FeaturedPlaylists' not supported for the scope 'Library'.");
+
+        (Func<JElement, SearchResult> parse, string categoryTitle) = category switch
+        {
+            SearchCategory.Songs => ((Func<JElement, SearchResult>)SongSearchResult.Parse, "Songs"),
+            SearchCategory.Videos => (VideoSearchResult.Parse, "Videos"),
+            SearchCategory.Albums => (AlbumSearchResult.Parse, "Albums"),
+            SearchCategory.Artists => (ArtistSearchResult.Parse, "Artists"),
+            SearchCategory.CommunityPlaylists => (PlaylistSearchResult.Parse, "Community playlists"),
+            SearchCategory.FeaturedPlaylists => (PlaylistSearchResult.Parse, "Featured playlists"),
+            SearchCategory.Profiles => (ProfileSearchResult.Parse, "Profiles"),
+            SearchCategory.Podcasts => (PodcastSearchResult.Parse, "Podcasts"),
+            SearchCategory.Episodes => (EpisodeSearchResult.Parse, "Episodes"),
+            _ => throw new ArgumentOutOfRangeException(nameof(category), category, "The given SearchCategory is invalid.")
+        };
+        string queryParams = scope.ToQueryParams(category, ignoreSpelling);
+
         return new((contiuationToken, cancellationToken) =>
-            FetchPageAsync(query, contiuationToken, queryParams, category, parse, cancellationToken));
+            FetchPageAsync(query, contiuationToken, queryParams, parse, categoryTitle, cancellationToken));
     }
 
-
     /// <summary>
-    /// Creates a paginator that searches for songs on YouTube Music.
+    /// Creates an async paginator that fetches search results from YouTube Music.
     /// </summary>
+    /// <typeparam name="T">The category of content to search for.</typeparam>
     /// <param name="query">The query to search for.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SongSearchResult"/>'s.</returns>
+    /// <param name="scope">The scope of the search.</param>
+    /// <param name="ignoreSpelling">Weither to ignore spelling suggestions.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="SearchResult"/>'s.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    public PaginatedAsyncEnumerable<SongSearchResult> SongsAsync(
-        string query) =>
-        CreatePaginatorAsync(
-            query,
-            "EgWKAQIIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            "Songs",
-            SongSearchResult.Parse);
+    /// <exception cref="InvalidOperationException">Occurs when the type <c>T</c> is <see cref="CommunityPlaylistSearchResult"/> or <see cref="FeaturedPlaylistSearchResult"/> while <c>scope</c> is <see cref="SearchScope.Library"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Occurs when the given type <c>T</c> is invalid.</exception>
+    public PaginatedAsyncEnumerable<T> ByCategoryAsync<T>(
+        string query,
+        SearchScope scope = SearchScope.Global,
+        bool ignoreSpelling = true) where T : SearchResult
+    {
+        Ensure.NotNullOrEmpty(query, nameof(query));
 
-    /// <summary>
-    /// Creates a paginator that searches for videos on YouTube Music.
-    /// </summary>
-    /// <param name="query">The query to search for.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="VideoSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    public PaginatedAsyncEnumerable<VideoSearchResult> VideosAsync(
-        string query) =>
-        CreatePaginatorAsync(
-            query,
-            "EgWKAQIQAWoQEAMQBBAJEAoQBRAREBAQFQ%3D%3D",
-            "Videos",
-            VideoSearchResult.Parse);
+        Type categoryType = typeof(T);
+        if (scope == SearchScope.Library && categoryType == typeof(PlaylistSearchResult))
+            throw new InvalidOperationException("The categories 'CommunityPlaylists' and 'FeaturedPlaylists' not supported for the scope 'Library'.");
 
-    /// <summary>
-    /// Creates a paginator that searches for playlists on YouTube Music.
-    /// </summary>
-    /// <param name="query">The query to search for.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PlaylistSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    public PaginatedAsyncEnumerable<PlaylistSearchResult> PlaylistsAsync(
-        string query) =>
-        CreatePaginatorAsync(
-            query,
-            "EgeKAQQoAEABahAQAxAKEAkQBBAFEBEQEBAV",
-            "Community playlists",
-            PlaylistSearchResult.Parse);
+        (Func<JElement, T> parse, string categoryTitle, SearchCategory category) = categoryType switch
+        { // holy ugly switch statement, batman! :o still better than runtime casting using LINQ (apparently)...
+            Type _ when categoryType == typeof(SongSearchResult) => ((Func<JElement, T>)(object)SongSearchResult.Parse, "Songs", SearchCategory.Songs),
+            Type _ when categoryType == typeof(VideoSearchResult) => ((Func<JElement, T>)(object)VideoSearchResult.Parse, "Videos", SearchCategory.Videos),
+            Type _ when categoryType == typeof(AlbumSearchResult) => ((Func<JElement, T>)(object)AlbumSearchResult.Parse, "Albums", SearchCategory.Albums),
+            Type _ when categoryType == typeof(ArtistSearchResult) => ((Func<JElement, T>)(object)ArtistSearchResult.Parse, "Artists", SearchCategory.Artists),
+            Type _ when categoryType == typeof(PlaylistSearchResult) => ((Func<JElement, T>)(object)PlaylistSearchResult.Parse, "Community playlists", SearchCategory.CommunityPlaylists),
+            //Type _ when categoryType == typeof(PlaylistSearchResult) => ((Func<JElement, T>)(object)PlaylistSearchResult.Parse, "Featured playlists", SearchCategory.FeaturedPlaylists),
+            Type _ when categoryType == typeof(ProfileSearchResult) => ((Func<JElement, T>)(object)ProfileSearchResult.Parse, "Profiles", SearchCategory.Profiles),
+            Type _ when categoryType == typeof(PodcastSearchResult) => ((Func<JElement, T>)(object)PodcastSearchResult.Parse, "Podcasts", SearchCategory.Podcasts),
+            Type _ when categoryType == typeof(EpisodeSearchResult) => ((Func<JElement, T>)(object)EpisodeSearchResult.Parse, "Episodes", SearchCategory.Episodes),
+            _ => throw new ArgumentOutOfRangeException(nameof(T), categoryType, "The given category type is invalid.")
+        };
+        string queryParams = scope.ToQueryParams(category, ignoreSpelling);
 
-    /// <summary>
-    /// Creates a paginator that searches for albums on YouTube Music.
-    /// </summary>
-    /// <param name="query">The query to search for.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="AlbumSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    public PaginatedAsyncEnumerable<AlbumSearchResult> AlbumsAsync(
-        string query) =>
-        CreatePaginatorAsync(
-            query,
-            "EgWKAQIYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            "Albums",
-            AlbumSearchResult.Parse);
-
-    /// <summary>
-    /// Creates a paginator that searches for artists on YouTube Music.
-    /// </summary>
-    /// <param name="query">The query to search for.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ArtistSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    public PaginatedAsyncEnumerable<ArtistSearchResult> ArtistsAsync(
-        string query) =>
-        CreatePaginatorAsync(
-            query,
-            "EgWKAQIgAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            "Artists",
-            ArtistSearchResult.Parse);
-
-    /// <summary>
-    /// Creates a paginator that searches for profiles on YouTube Music.
-    /// </summary>
-    /// <param name="query">The query to search for.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="ProfileSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    public PaginatedAsyncEnumerable<ProfileSearchResult> ProfilesAsync(
-        string query) =>
-        CreatePaginatorAsync(
-            query,
-            "EgWKAQJYAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            "Profiles",
-            ProfileSearchResult.Parse);
-
-    /// <summary>
-    /// Creates a paginator that searches for podcasts on YouTube Music.
-    /// </summary>
-    /// <param name="query">The query to search for.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PodcastSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    public PaginatedAsyncEnumerable<PodcastSearchResult> PodcastsAsync(
-        string query) =>
-        CreatePaginatorAsync(
-            query,
-            "EgWKAQJQAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            "Podcasts",
-            PodcastSearchResult.Parse);
-
-    /// <summary>
-    /// Creates a paginator that searches for episodes on YouTube Music.
-    /// </summary>
-    /// <param name="query">The query to search for.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="EpisodeSearchResult"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
-    public PaginatedAsyncEnumerable<EpisodeSearchResult> EpisodesAsync(
-        string query) =>
-        CreatePaginatorAsync(
-            query,
-            "EgWKAQJIAWoQEAMQChAJEAQQBRAREBAQFQ%3D%3D",
-            "Episodes",
-            EpisodeSearchResult.Parse);
+        return new((contiuationToken, cancellationToken) =>
+            FetchPageAsync(query, contiuationToken, queryParams, parse, categoryTitle, cancellationToken));
+    }
 
 
     /// <summary>
     /// Searches for all kind of results on YouTUbe Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
+    /// <param name="scope">The scope of the search.</param>
+    /// <param name="ignoreSpelling">Weither to ignore spelling suggestions.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>A <see cref="SearchPage"/> containing all items, including the top result.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>query</c> is <see langword="null"/> or empty.</exception>
@@ -256,6 +202,8 @@ public sealed class SearchService(
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<SearchPage> AllAsync(
         string query,
+        SearchScope scope = SearchScope.Global,
+        bool ignoreSpelling = true,
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrEmpty(query, nameof(query));
@@ -263,7 +211,8 @@ public sealed class SearchService(
         // Send request
         KeyValuePair<string, object?>[] payload =
         [
-            new("query", query)
+            new("query", query),
+            new("params", scope.ToQueryParams(null, ignoreSpelling)),
         ];
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
@@ -277,11 +226,19 @@ public sealed class SearchService(
             .Get("contents")
             .Get("tabbedSearchResultsRenderer")
             .Get("tabs")
-            .GetAt(0)
-            .Get("tabRenderer")
-            .Get("content")
-            .Get("sectionListRenderer")
-            .Get("contents")
+            .Coalesce(
+                item => item
+                    .GetAt(0)
+                    .Get("tabRenderer")
+                    .Get("content")
+                    .Get("sectionListRenderer")
+                    .Get("contents"),
+                item => item
+                    .GetAt(1)
+                    .Get("tabRenderer")
+                    .Get("content")
+                    .Get("sectionListRenderer")
+                    .Get("contents"))
             .AsArray()
             .OrThrow();
 
@@ -295,42 +252,25 @@ public sealed class SearchService(
         client.Logger?.LogInformation("[SearchService-AllAsync] Parsing top result...");
         SearchResult? topResult = null;
 
-        string? category = cardShelf
+        string? categoryTitle = cardShelf
             .SelectRunTextAt("subtitle", 0);
-        switch (category)
+
+        Func<JElement, SearchResult>? parseTopResult = categoryTitle switch
         {
-            case "Song":
-                topResult = SongSearchResult.ParseTopResult(cardShelf);
-                break;
-
-            case "Video":
-                topResult = VideoSearchResult.ParseTopResult(cardShelf);
-                break;
-
-            case "Playlist":
-                topResult = PlaylistSearchResult.ParseTopResult(cardShelf);
-                break;
-
-            case "Album" or "EP" or "Single":
-                topResult = AlbumSearchResult.ParseTopResult(cardShelf);
-                break;
-
-            case "Artist":
-                topResult = ArtistSearchResult.ParseTopResult(cardShelf);
-                break;
-
-            case "Profile": // never found any top result profile; If u did, CREATE AN ISSUE plz :3
-            case "Podcast": // bruh; YT returns top result podcasts in a "musicShelfRenderer". cba rn to parse that shi frfr
-                break;
-
-            case "Episode":
-                topResult = EpisodeSearchResult.ParseTopResult(cardShelf);
-                break;
-
-            default:
-                client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse top result. Unsupported category: {categoryTitle}.", category);
-                break;
-        }
+            "Song" => SongSearchResult.ParseTopResult,
+            "Video" => VideoSearchResult.ParseTopResult,
+            "Playlist" => PlaylistSearchResult.ParseTopResult,
+            "Album" or "EP" or "Single" => AlbumSearchResult.ParseTopResult,
+            "Artist" => ArtistSearchResult.ParseTopResult,
+            "Profile" => null, // never found any top result profile; If u did, CREATE AN ISSUE plz :3
+            "Podcast" => null, // bruh; YT returns top result podcasts in a "musicShelfRenderer". cba rn to parse that shi frfr
+            "Episode" => EpisodeSearchResult.ParseTopResult,
+            _ => null
+        };
+        if (parseTopResult is null)
+            client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse top result. Unsupported category: {category}.", categoryTitle);
+        else
+            topResult = parseTopResult(cardShelf);
 
         // - Related
         List<SearchResult> relatedTopResults = cardShelf
@@ -351,10 +291,10 @@ public sealed class SearchService(
                 JElement firstDescriptionRun = descriptionRuns
                     .GetAt(0);
 
-                string? category = firstDescriptionRun
+                string? categoryTitle = firstDescriptionRun
                     .Get("text")
                     .AsString();
-                Func<JElement, SearchResult>? parseItem = category switch
+                Func<JElement, SearchResult>? parseItem = categoryTitle switch
                 {
                     "Song" => SongSearchResult.Parse,
                     "Video" => VideoSearchResult.Parse,
@@ -385,15 +325,11 @@ public sealed class SearchService(
                     parseItem = VideoSearchResult.Parse;
                 if (parseItem is null)
                 {
-                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse related top result. Unsupported caegory: {category}.", category);
+                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse related top result. Unsupported caegory: {category}.", categoryTitle);
                     return null;
                 }
 
-                if (content // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check for a 1/100 chance
-                    .Get("menu")
-                    .Get("menuRenderer")
-                    .Contains("topLevelButtons")
-                    .And(category != "Episodes"))
+                if (categoryTitle != "Episodes" && content.SelectIsPodcast()) // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check
                     return null;
 
                 return parseItem(content);
@@ -411,9 +347,9 @@ public sealed class SearchService(
                 JElement shelf = item
                     .Get("musicShelfRenderer");
 
-                string? category = shelf
+                string? categoryTitle = shelf
                     .SelectRunTextAt("title", 0);
-                Func<JElement, SearchResult>? parse = category switch
+                Func<JElement, SearchResult>? parse = categoryTitle switch
                 {
                     "Songs" => SongSearchResult.Parse,
                     "Videos" => VideoSearchResult.Parse,
@@ -427,23 +363,19 @@ public sealed class SearchService(
                 };
                 if (parse is null)
                 {
-                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse search result. Unsupported caegory: {category}.", category);
+                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse search result. Unsupported caegory: {category}.", categoryTitle);
                     return Enumerable.Empty<SearchResult>();
                 }
 
-                client.Logger?.LogInformation("[SearchService-AllAsync] Parsing '{categoryTitle}' shelf...", category);
+                client.Logger?.LogInformation("[SearchService-AllAsync] Parsing '{category}' shelf...", categoryTitle);
                 return shelf
                     .Get("contents")
                     .AsArray()
                     .Or(JArray.Empty)
                     .Select(item => item
                         .Get("musicResponsiveListItemRenderer"))
-                    .Where(item => item
-                        .Get("menu")
-                        .Get("menuRenderer")
-                        .Contains("topLevelButtons")
-                        .And(category != "Episodes")
-                        .Not())
+                    .Where(item => // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check
+                        categoryTitle == "Episodes" || !item.SelectIsPodcast()) // duh no fluent syntax >:( "short-circuiting" performance blabla
                     .Select(parse);
             })
             .Where(Syntax.IsNotNull)

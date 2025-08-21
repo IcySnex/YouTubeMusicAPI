@@ -13,14 +13,24 @@ public class SearchServiceTests
 
 
     [Test]
-    public void Should_search_for_songs()
+    [TestCase(SearchCategory.Songs)]
+    [TestCase(SearchCategory.Videos)]
+    [TestCase(SearchCategory.CommunityPlaylists)]
+    [TestCase(SearchCategory.FeaturedPlaylists)]
+    [TestCase(SearchCategory.Albums)]
+    [TestCase(SearchCategory.Artists)]
+    [TestCase(SearchCategory.Profiles)]
+    [TestCase(SearchCategory.Podcasts)]
+    [TestCase(SearchCategory.Episodes)]
+    public void Should_search_by_category(
+        SearchCategory category)
     {
         // Act
-        IReadOnlyList<SongSearchResult>? results = null;
+        IReadOnlyList<SearchResult>? results = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            PaginatedAsyncEnumerable<SongSearchResult> response = client.Search.SongsAsync(TestData.SearchQuery);
+            PaginatedAsyncEnumerable<SearchResult> response = client.Search.ByCategoryAsync(TestData.SearchQuery, category, TestData.SearchScope, TestData.SearchIgnoreSpelling);
 
             results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
         });
@@ -30,140 +40,6 @@ public class SearchServiceTests
 
         TestData.WriteResult(results);
     }
-
-    [Test]
-    public void Should_search_for_videos()
-    {
-        // Act
-        IReadOnlyList<VideoSearchResult>? results = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            PaginatedAsyncEnumerable<VideoSearchResult> response = client.Search.VideosAsync(TestData.SearchQuery);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
-        });
-
-        // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(results);
-    }
-
-    [Test]
-    public void Should_search_for_playlists()
-    {
-        // Act
-        IReadOnlyList<PlaylistSearchResult>? results = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            PaginatedAsyncEnumerable<PlaylistSearchResult> response = client.Search.PlaylistsAsync(TestData.SearchQuery);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
-        });
-
-        // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(results);
-    }
-
-    [Test]
-    public void Should_search_for_albums()
-    {
-        // Act
-        IReadOnlyList<AlbumSearchResult>? results = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            PaginatedAsyncEnumerable<AlbumSearchResult> response = client.Search.AlbumsAsync(TestData.SearchQuery);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
-        });
-
-        // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(results);
-    }
-
-    [Test]
-    public void Should_search_for_artists()
-    {
-        // Act
-        IReadOnlyList<ArtistSearchResult>? results = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            PaginatedAsyncEnumerable<ArtistSearchResult> response = client.Search.ArtistsAsync(TestData.SearchQuery);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
-        });
-
-        // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(results);
-    }
-
-    [Test]
-    public void Should_search_for_profiles()
-    {
-        // Act
-        IReadOnlyList<ProfileSearchResult>? results = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            PaginatedAsyncEnumerable<ProfileSearchResult> response = client.Search.ProfilesAsync(TestData.SearchQuery);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
-        });
-
-        // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(results);
-    }
-
-    [Test]
-    public void Should_search_for_podcasts()
-    {
-        // Act
-        IReadOnlyList<PodcastSearchResult>? results = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            PaginatedAsyncEnumerable<PodcastSearchResult> response = client.Search.PodcastsAsync(TestData.SearchQuery);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
-        });
-
-        // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(results);
-    }
-
-    [Test]
-    public void Should_search_for_episodes()
-    {
-        // Act
-        IReadOnlyList<EpisodeSearchResult>? results = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            PaginatedAsyncEnumerable<EpisodeSearchResult> response = client.Search.EpisodesAsync(TestData.SearchQuery);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
-        });
-
-        // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(results);
-    }
-
 
     [Test]
     public void Should_search_for_all()
@@ -173,14 +49,16 @@ public class SearchServiceTests
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Search.AllAsync(TestData.SearchQuery);
+            result = await client.Search.AllAsync(TestData.SearchQuery, TestData.SearchScope, TestData.SearchIgnoreSpelling);
         });
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Results, Is.Not.Null.Or.Empty);
 
-        TestData.WriteResult(result);
+        TestData.WriteResult(result.TopResult, "Top Result");
+        TestData.WriteResult(result.RelatedTopResults, "Related Top Results");
+        TestData.WriteResult(result.Results);
     }
 
 

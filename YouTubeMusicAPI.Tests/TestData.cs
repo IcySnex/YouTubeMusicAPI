@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using YouTubeMusicAPI.Http.Authentication;
 using YouTubeSessionGenerator;
 using YouTubeSessionGenerator.Js.Environments;
@@ -12,7 +13,11 @@ namespace YouTubeMusicAPI.Tests;
 internal static class TestData
 {
     // Write Output
-    static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        ReferenceHandler = ReferenceHandler.IgnoreCycles
+    };
 
     public static void WriteResult<T>(
         T result)
@@ -110,12 +115,12 @@ internal static class TestData
     public const string SearchQuery = "pashanim";
 
     // - Songs
-    public const string SongId = "wQjVjkRBAfw";
+    public const string SongId = "tzqtLQ1_bjU";
 
     public const string SongLyricsBrowseId = "MPLYt_Gz56kGj5oFL-1";
 
     // - Videos
-    public const string VideoId = "s70j3BHPt9w";
+    public const string VideoId = "J5-rJsiKJng";
 
     public const string VideoLyricsBrowseId = "MPLYt_l8m6XgFuxWq";
 }

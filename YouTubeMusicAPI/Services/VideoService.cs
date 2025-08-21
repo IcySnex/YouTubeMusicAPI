@@ -52,7 +52,7 @@ public sealed class VideoService(
         // Send request
         KeyValuePair<string, object?>[] payload =
         [
-            new("videoId", id),
+            new("videoId", id)
         ];
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Next, payload, ClientType.WebMusic, cancellationToken);

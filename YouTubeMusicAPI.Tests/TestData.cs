@@ -17,7 +17,7 @@ internal static class TestData
     public static void WriteResult<T>(
         T result)
     {
-        string json = JsonSerializer.Serialize(result, JsonOptions);
+        string json = JsonSerializer.Serialize<object?>(result, JsonOptions);
         TestContext.Out.WriteLine("Result: {0}", json);
     }
 
@@ -106,11 +106,16 @@ internal static class TestData
     public const int FetchOffset = 0;
     public const int FetchLimit = 20;
 
-    //  Search
+    // - Search
     public const string SearchQuery = "pashanim";
 
-    //  Info
+    // - Songs
     public const string SongId = "wQjVjkRBAfw";
 
-    public const string SongLyricsBrowseId = "MPLYt_l2cuqVhB8gx-1";
+    public const string SongLyricsBrowseId = "MPLYt_Gz56kGj5oFL-1";
+
+    // - Videos
+    public const string VideoId = "s70j3BHPt9w";
+
+    public const string VideoLyricsBrowseId = "MPLYt_l8m6XgFuxWq";
 }

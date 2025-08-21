@@ -1,9 +1,9 @@
 ﻿using YouTubeMusicAPI.Models.MediaItems;
-using YouTubeMusicAPI.Models.Songs;
+using YouTubeMusicAPI.Models.Videos;
 
 namespace YouTubeMusicAPI.Tests.Services;
 
-public class SongServiceTests
+public class VideoServiceTests
 {
     YouTubeMusicClient client;
 
@@ -16,28 +16,11 @@ public class SongServiceTests
     public void Should_get()
     {
         // Act
-        SongInfo? result = null;
+        VideoInfo? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Songs.GetAsync(TestData.SongId);
-        });
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-
-        TestData.WriteResult(result);
-    }
-
-    [Test]
-    public void Should_get_credits()
-    {
-        // Act
-        SongCredits? result = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            result = await client.Songs.GetCreditsAsync(TestData.SongId);
+            result = await client.Videos.GetAsync(TestData.VideoId);
         });
 
         // Assert
@@ -54,7 +37,7 @@ public class SongServiceTests
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Songs.GetLyricsAsync(TestData.SongLyricsBrowseId);
+            result = await client.Videos.GetLyricsAsync(TestData.VideoLyricsBrowseId);
         });
 
         // Assert
@@ -62,5 +45,4 @@ public class SongServiceTests
 
         TestData.WriteResult(result);
     }
-
 }

@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Models.Songs;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Videos;
@@ -19,6 +20,7 @@ namespace YouTubeMusicAPI.Models.Videos;
 /// <param name="viewsInfo">The information about the number of views this video has.</param>
 /// <param name="ratingsInfo">The information about the number of likes this video has.</param>
 /// <param name="radio">The radio related to this video, if available.</param>
+/// <param name="counterpartSong">The counterpart song of this video, if available.</param>
 public class VideoInfo(
     string name,
     string id,
@@ -29,7 +31,8 @@ public class VideoInfo(
     TimeSpan duration,
     string viewsInfo,
     string ratingsInfo,
-    Radio? radio) : YouTubeMusicEntity(name, id, null)
+    Radio? radio,
+    SongInfo? counterpartSong) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="VideoInfo"/>.
@@ -46,7 +49,7 @@ public class VideoInfo(
             .Get("watchNextTabbedResultsRenderer")
             .Get("tabs");
 
-        JElement item = tabs
+        JElement content = tabs
             .GetAt(0)
             .Get("tabRenderer")
             .Get("content")
@@ -54,7 +57,9 @@ public class VideoInfo(
             .Get("content")
             .Get("playlistPanelRenderer")
             .Get("contents")
-            .GetAt(0)
+            .GetAt(0);
+
+        JElement item = content
             .Coalesce(
                 item => item
                     .Get("playlistPanelVideoRenderer"),
@@ -63,29 +68,17 @@ public class VideoInfo(
                     .Get("primaryRenderer")
                     .Get("playlistPanelVideoRenderer"));
 
+        JElement counterpartItem = content
+            .Get("playlistPanelVideoWrapperRenderer")
+            .Get("counterpart")
+            .GetAt(0)
+            .Get("counterpartRenderer")
+            .Get("playlistPanelVideoRenderer");
+
         JElement lyricsTab = tabs
             .GetAt(1)
             .Get("tabRenderer");
 
-        JElement menu = item
-            .SelectMenu();
-
-        JElement descriptionRuns = item
-            .Get("longBylineText")
-            .Get("runs");
-
-
-        string name = item
-            .SelectRunTextAt("title", 0)
-            .OrThrow();
-
-        string id = item
-            .Get("videoId")
-            .AsString()
-            .OrThrow();
-
-        Thumbnail[] thumbnails = item
-            .SelectThumbnails();
 
         string relatedBrowseId = tabs
             .GetAt(2)
@@ -107,6 +100,44 @@ public class VideoInfo(
                     .Get("browseEndpoint")
                     .Get("browseId")
                     .AsString());
+
+        return Parse(item, counterpartItem, relatedBrowseId, lyricsBrowseId);
+    }
+
+    /// <summary>
+    /// Parses a <see cref="JElement"/> into a <see cref="VideoInfo"/>.
+    /// </summary>
+
+    /// <param name="item">The <see cref="JElement"/> '...content.playlistPanelVideoRenderer' to parse.</param>
+    /// <param name="counterpartItem">The <see cref="JElement"/> '...content.playlistPanelVideoWrapperRenderer.counterpart[0].counterpartRenderer.playlistPanelVideoRenderer' to parse.</param>
+    /// <param name="relatedBrowseId">The browse ID for related content associated with this video.</param>
+    /// <param name="lyricsBrowseId">The browse ID for lyrics associated with this video, if available.</param>
+    /// <returns>A <see cref="VideoInfo"/> representing the <see cref="JElement"/>.</returns>
+    internal static VideoInfo Parse(
+        JElement item,
+        JElement counterpartItem,
+        string relatedBrowseId,
+        string? lyricsBrowseId)
+    {
+        JElement menu = item
+            .SelectMenu();
+
+        JElement descriptionRuns = item
+            .Get("longBylineText")
+            .Get("runs");
+
+
+        string name = item
+            .SelectRunTextAt("title", 0)
+            .OrThrow();
+
+        string id = item
+            .Get("videoId")
+            .AsString()
+            .OrThrow();
+
+        Thumbnail[] thumbnails = item
+            .SelectThumbnails();
 
         YouTubeMusicEntity[] artists = descriptionRuns
             .SelectArtists();
@@ -131,7 +162,16 @@ public class VideoInfo(
         Radio? radio = menu
             .SelectRadio();
 
-        return new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, duration, viewsInfo, ratingsInfo, radio);
+
+        VideoInfo result = new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, duration, viewsInfo, ratingsInfo, radio, null);
+
+        if (!counterpartItem.IsUndefined)
+        {
+            result.CounterpartSong = SongInfo.Parse(counterpartItem, default, relatedBrowseId, lyricsBrowseId);
+            result.CounterpartSong.CounterpartVideo = result;
+        }
+
+        return result;
     }
 
 
@@ -180,4 +220,13 @@ public class VideoInfo(
     /// The radio associated with this video, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
+
+    /// <summary>
+    /// The counterpart song of this video, if available.
+    /// </summary>
+    /// <remarks>
+    /// Only available for authenticated users with premium subscription.<br/>
+    /// For more information about audio-only or video mode, see: <see href="https://support.google.com/youtubemusic/answer/6313574"/>
+    /// </remarks>
+    public SongInfo? CounterpartSong { get; internal set; } = counterpartSong;
 }

@@ -70,8 +70,8 @@ public sealed class SongService(
             .Contains("album");
         if (!isSong)
         {
-            client.Logger?.LogError("[SongService-GetAsync] The provided ID does not correspond to a song. Use 'GetVideoAsync' instead.");
-            throw new InvalidOperationException("The provided ID does not correspond to a song. Use 'GetVideoAsync' instead.");
+            client.Logger?.LogError("[SongService-GetAsync] The provided ID does not correspond to a song. Use 'client.Videos.GetAsync(string id)' instead.");
+            throw new InvalidOperationException("The provided ID does not correspond to a song. Use 'client.Videos.GetAsync(string id)' instead.");
         }
 
         SongInfo song = SongInfo.Parse(root);

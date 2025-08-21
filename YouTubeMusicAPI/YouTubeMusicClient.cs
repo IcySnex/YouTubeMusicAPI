@@ -29,6 +29,7 @@ public class YouTubeMusicClient
 
         Search = new(this);
         Songs = new(this);
+        Videos = new(this);
     }
 
 
@@ -47,6 +48,11 @@ public class YouTubeMusicClient
     /// The service which handles getting information about songs from YouTube Music.
     /// </summary>
     public SongService Songs { get; }
+
+    /// <summary>
+    /// The service which handles getting information about videos from YouTube Music.
+    /// </summary>
+    public VideoService Videos { get; }
 
 
     /// <summary>

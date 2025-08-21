@@ -20,7 +20,6 @@ namespace YouTubeMusicAPI.Models.Songs;
 /// <param name="isExplicit">Indicates whether this song is marked as explicit.</param>
 /// <param name="releaseYear">The year this song was released.</param>
 /// <param name="isCreditsAvailable">Whether credits are available to fetch for this song.</param>
-/// <param name="isRatingsAllowed">Whether ratings are allowed for this song.</param>
 /// <param name="radio">The radio related to this song, if available.</param>
 public class SongInfo(
     string name,
@@ -34,7 +33,6 @@ public class SongInfo(
     bool isExplicit,
     int? releaseYear,
     bool isCreditsAvailable,
-    bool isRatingsAllowed,
     Radio? radio) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
@@ -146,20 +144,10 @@ public class SongInfo(
         bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
 
-        bool isRatingsAllowed = element
-            .Get("playerOverlays")
-            .Get("playerOverlayRenderer")
-            .Get("actions")
-            .GetAt(0)
-            .Get("likeButtonRenderer")
-            .Get("likesAllowed")
-            .AsBool()
-            .OrThrow();
-
         Radio? radio = menu
             .SelectRadio();
 
-        return new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, isRatingsAllowed, radio);
+        return new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, radio);
     }
 
 
@@ -183,11 +171,6 @@ public class SongInfo(
     /// The browse ID for lyrics associated with this song, if available.
     /// </summary>
     public string? LyricsBrowseId { get; } = lyricsBrowseId;
-
-    /// <summary>
-    /// Whether credits are available to fetch for this song.
-    /// </summary>
-    public bool IsCreditsAvailable { get; } = isCreditsAvailable;
 
     /// <summary>
     /// The artists of this song.
@@ -215,9 +198,9 @@ public class SongInfo(
     public int? ReleaseYear { get; } = releaseYear;
 
     /// <summary>
-    /// Whether ratings are allowed for this song.
+    /// Whether credits are available to fetch for this song.
     /// </summary>
-    public bool IsRatingsAllowed { get; } = isRatingsAllowed;
+    public bool IsCreditsAvailable { get; } = isCreditsAvailable;
 
     /// <summary>
     /// The radio associated with this song, if available.

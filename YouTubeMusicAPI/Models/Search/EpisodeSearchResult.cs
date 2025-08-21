@@ -15,15 +15,13 @@ namespace YouTubeMusicAPI.Models.Search;
 /// <param name="browseId">The browse ID of this podcast episode.</param>
 /// <param name="releasedAt">The release data of this podcast episode.</param>
 /// <param name="podcast">The podcast to which this episode belongs.</param>
-/// <param name="isRatingsAllowed">Whether ratings are allowed for this podcast episode.</param>
 public class EpisodeSearchResult(
     string name,
     string id,
     string browseId,
     Thumbnail[] thumbnails,
     DateTime releasedAt,
-    YouTubeMusicEntity podcast,
-    bool isRatingsAllowed) : SearchResult(name, id, browseId, thumbnails)
+    YouTubeMusicEntity podcast) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="EpisodeSearchResult"/>.
@@ -86,17 +84,7 @@ public class EpisodeSearchResult(
             .GetAt(descriptionStartIndex + 2)
             .SelectPodcast();
 
-        bool isRatingsAllowed = element
-            .Get("menu")
-            .Get("menuRenderer")
-            .Get("topLevelButtons")
-            .GetAt(0)
-            .Get("likeButtonRenderer")
-            .Get("likesAllowed")
-            .AsBool()
-            .OrThrow();
-
-        return new(name, id, browseId, thumbnails, releasedAt, podcast, isRatingsAllowed);
+        return new(name, id, browseId, thumbnails, releasedAt, podcast);
     }
 
     /// <summary>
@@ -144,9 +132,7 @@ public class EpisodeSearchResult(
             .GetAt(4)
             .SelectPodcast();
 
-        bool isRatingsAllowed = true;
-
-        return new(name, id, browseId, thumbnails, releasedAt, podcast, isRatingsAllowed);
+        return new(name, id, browseId, thumbnails, releasedAt, podcast);
     }
 
 
@@ -165,9 +151,4 @@ public class EpisodeSearchResult(
     /// The podcast to which this episode belongs.
     /// </summary>
     public YouTubeMusicEntity Podcast { get; } = podcast;
-
-    /// <summary>
-    /// Whether ratings are allowed for this podcast episode.
-    /// </summary>
-    public bool IsRatingsAllowed { get; } = isRatingsAllowed;
 }

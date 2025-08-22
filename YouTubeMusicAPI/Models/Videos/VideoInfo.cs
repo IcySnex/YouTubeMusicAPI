@@ -107,7 +107,6 @@ public class VideoInfo(
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="VideoInfo"/>.
     /// </summary>
-
     /// <param name="item">The <see cref="JElement"/> '...content.playlistPanelVideoRenderer' to parse.</param>
     /// <param name="counterpartItem">The <see cref="JElement"/> '...content.playlistPanelVideoWrapperRenderer.counterpart[0].counterpartRenderer.playlistPanelVideoRenderer' to parse.</param>
     /// <param name="relatedBrowseId">The browse ID for related content associated with this video.</param>

@@ -134,4 +134,9 @@ internal static class TestData
     public const string VideoId = "J5-rJsiKJng";
 
     public const string VideoLyricsBrowseId = "MPLYt_l8m6XgFuxWq";
+
+    // - Playlists
+    public const string PlaylistId = "RDCLAK5uy_mPolD_J22gS1SKxufARWcTZd1UrAH_0ZI";
+
+    public const string PlaylistBrowseId = "VLRDAMPLPLUoI0V1lAvcLY47xdnLWGdf9zyUWKsulx";
 }

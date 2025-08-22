@@ -39,6 +39,25 @@ internal static class Ensure
 
 
     /// <summary>
+    /// Ensures that the given string starts with the given prefix.
+    /// </summary>
+    /// <param name="value">The string to ensure starts with the prefix.</param>
+    /// <param name="prefix">The prefix the <c>value</c> should start with.</param>
+    /// <param name="name">The name of the value.</param>
+    /// <exception cref="ArgumentException">Occurs when the <c>value</c> doesn't start with the <c>prefix</c>.</exception>
+    public static void StartsWith(
+        [NotNull] string value,
+        string prefix,
+        string name)
+    {
+        if (value.StartsWith(prefix))
+            return;
+
+        throw new ArgumentException($"The value doesn't start with the prefix '{prefix}'.", name);
+    }
+
+
+    /// <summary>
     /// Ensures that the user is authenticated in the provided <see cref="YouTubeMusicClient"/>.
     /// </summary>
     /// <param name="client">The client to check if authenticated.</param>

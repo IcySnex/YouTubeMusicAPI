@@ -13,7 +13,7 @@ namespace YouTubeMusicAPI.Models.Search;
 /// <param name="id">The ID of this featured playlist.</param>
 /// <param name="thumbnails">The thumbnails of this featured playlist.</param>
 /// <param name="browseId">The browse ID of this featured playlist.</param>
-/// <param name="isMix">Wether this featured playlist is a mix or not.</param>
+/// <param name="isMix">Whether this featured playlist is a mix.</param>
 /// <param name="songsInfo">The information about the number of songs this featured playlist has.</param>
 /// <param name="radio">The radio associated with this featured playlist, if available.</param>
 public class FeaturedPlaylistSearchResult(
@@ -213,7 +213,7 @@ public class FeaturedPlaylistSearchResult(
 
 
     /// <summary>
-    /// Wether this featured playlist is a mix or not.
+    /// Whether this featured playlist is a mix.
     /// </summary>
     /// <remarks>
     /// A Mix is a nonstop playlist tailored to an user.

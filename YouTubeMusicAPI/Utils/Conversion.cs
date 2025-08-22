@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Models;
+using YouTubeMusicAPI.Models.Playlists;
 using YouTubeMusicAPI.Models.Search;
 
 namespace YouTubeMusicAPI.Utils;
@@ -137,9 +138,24 @@ internal static class Conversion
         this string? text) =>
         text switch
         {
-            "Album" => (AlbumType?)AlbumType.Album,
-            "Single" => (AlbumType?)AlbumType.Single,
-            "EP" => (AlbumType?)AlbumType.Ep,
+            "Album" => AlbumType.Album,
+            "Single" => AlbumType.Single,
+            "EP" => AlbumType.Ep,
+            _ => null,
+        };
+
+    /// <summary>
+    /// Converts a <see langword="string"/> to a <see cref="PlaylistPrivacy"/>.
+    /// </summary>
+    /// <param name="text">The text to convert.</param>
+    /// <returns>An <see cref="PlaylistPrivacy"/> representing the text.</returns>
+    public static PlaylistPrivacy? ToPlaylistPrivacy(
+        this string? text) =>
+        text switch
+        {
+            "Public" => PlaylistPrivacy.Public,
+            "Unlisted" => PlaylistPrivacy.Unlisted,
+            "Private" => PlaylistPrivacy.Private,
             _ => null,
         };
 

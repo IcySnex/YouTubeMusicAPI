@@ -223,6 +223,32 @@ internal static class Selectors
                 .AsString()
                 .Is("MUSIC_EXPLICIT_BADGE"));
 
+    public static bool SelectIsCreditsAvailable(
+        this JElement element) =>
+        element
+            .AsArray()
+            .Or(JArray.Empty)
+            .FirstOrDefault(item => item
+                .Get("menuNavigationItemRenderer")
+                .SelectRunTextAt("text", 0)
+                .Is("View song credits"))
+            .Get("menuNavigationItemRenderer")
+            .SelectNavigationBrowseId()
+            .IsNotNull();
+
+    public static string? SelectPlaylistId(
+        this JElement element) =>
+        element
+            .AsArray()
+            .Or(JArray.Empty)
+            .FirstOrDefault(item => item
+                .Get("menuNavigationItemRenderer")
+                .SelectRunTextAt("text", 0)
+                .Is("Shuffle play"))
+            .Get("menuNavigationItemRenderer")
+            .SelectNavigationPlaylistId();
+
+
     public static bool SelectIsPodcast(
         this JElement element)
     {
@@ -243,7 +269,7 @@ internal static class Selectors
                 .Is("Start radio");
             if (hasStartRadio)
                 return false;
-            
+
             bool hasArtist = item
                 .Get("menuNavigationItemRenderer")
                 .SelectRunTextAt("text", 0)
@@ -294,28 +320,44 @@ internal static class Selectors
         return true;
     }
 
-    public static bool SelectIsCreditsAvailable(
-        this JElement element) =>
-        element
-            .AsArray()
-            .Or(JArray.Empty)
-            .FirstOrDefault(item => item
-                .Get("menuNavigationItemRenderer")
-                .SelectRunTextAt("text", 0)
-                .Is("View song credits"))
-            .Get("menuNavigationItemRenderer")
-            .SelectNavigationBrowseId()
-            .IsNotNull();
+    public static bool SelectIsFeaturedPlaylist(
+        this JElement element)
+    {
+        JElement descriptionRuns = element
+            .Coalesce(
+                item => item
+                    .Get("subtitle"),
+                item => item
+                    .Get("flexColumns")
+                    .GetAt(1)
+                    .Get("musicResponsiveListItemFlexColumnRenderer")
+                    .Get("text"))
+            .Get("runs");
 
-    public static string? SelectPlaylistId(
-        this JElement element) =>
-        element
-            .AsArray()
-            .Or(JArray.Empty)
-            .FirstOrDefault(item => item
-                .Get("menuNavigationItemRenderer")
-                .SelectRunTextAt("text", 0)
-                .Is("Shuffle play"))
-            .Get("menuNavigationItemRenderer")
-            .SelectNavigationPlaylistId();
+        string type = descriptionRuns
+            .GetAt(0)
+            .Get("text")
+            .AsString()
+            .OrThrow();
+        if (type == "Mix")
+            return true;
+
+        int descriptionStartIndex = type
+            .If("Playlist", 2, 0);
+
+
+        JElement creatorRun = descriptionRuns
+            .GetAt(descriptionStartIndex);
+
+        string name = creatorRun
+            .Get("text")
+            .AsString()
+            .OrThrow();
+        if (name != "YouTube Music")
+            return false;
+
+        string? id = creatorRun
+            .SelectNavigationBrowseId();
+        return id is null;
+    }
 }

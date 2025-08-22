@@ -134,8 +134,8 @@ public sealed class SearchService(
             SearchCategory.Videos => (VideoSearchResult.Parse, "Videos"),
             SearchCategory.Albums => (AlbumSearchResult.Parse, "Albums"),
             SearchCategory.Artists => (ArtistSearchResult.Parse, "Artists"),
-            SearchCategory.CommunityPlaylists => (PlaylistSearchResult.Parse, "Community playlists"),
-            SearchCategory.FeaturedPlaylists => (PlaylistSearchResult.Parse, "Featured playlists"),
+            SearchCategory.CommunityPlaylists => (CommunityPlaylistSearchResult.Parse, "Community playlists"),
+            SearchCategory.FeaturedPlaylists => (FeaturedPlaylistSearchResult.Parse, "Featured playlists"),
             SearchCategory.Profiles => (ProfileSearchResult.Parse, "Profiles"),
             SearchCategory.Podcasts => (PodcastSearchResult.Parse, "Podcasts"),
             SearchCategory.Episodes => (EpisodeSearchResult.Parse, "Episodes"),
@@ -166,7 +166,7 @@ public sealed class SearchService(
         Ensure.NotNullOrEmpty(query, nameof(query));
 
         Type categoryType = typeof(T);
-        if (scope == SearchScope.Library && categoryType == typeof(PlaylistSearchResult))
+        if (scope == SearchScope.Library && categoryType == typeof(CommunityPlaylistSearchResult))
             throw new InvalidOperationException("The categories 'CommunityPlaylists' and 'FeaturedPlaylists' not supported for the scope 'Library'.");
 
         (Func<JElement, T> parse, string categoryTitle, SearchCategory category) = categoryType switch
@@ -175,8 +175,8 @@ public sealed class SearchService(
             Type _ when categoryType == typeof(VideoSearchResult) => ((Func<JElement, T>)(object)VideoSearchResult.Parse, "Videos", SearchCategory.Videos),
             Type _ when categoryType == typeof(AlbumSearchResult) => ((Func<JElement, T>)(object)AlbumSearchResult.Parse, "Albums", SearchCategory.Albums),
             Type _ when categoryType == typeof(ArtistSearchResult) => ((Func<JElement, T>)(object)ArtistSearchResult.Parse, "Artists", SearchCategory.Artists),
-            Type _ when categoryType == typeof(PlaylistSearchResult) => ((Func<JElement, T>)(object)PlaylistSearchResult.Parse, "Community playlists", SearchCategory.CommunityPlaylists),
-            //Type _ when categoryType == typeof(PlaylistSearchResult) => ((Func<JElement, T>)(object)PlaylistSearchResult.Parse, "Featured playlists", SearchCategory.FeaturedPlaylists),
+            Type _ when categoryType == typeof(CommunityPlaylistSearchResult) => ((Func<JElement, T>)(object)CommunityPlaylistSearchResult.Parse, "Community playlists", SearchCategory.CommunityPlaylists),
+            Type _ when categoryType == typeof(FeaturedPlaylistSearchResult) => ((Func<JElement, T>)(object)FeaturedPlaylistSearchResult.Parse, "Featured playlists", SearchCategory.FeaturedPlaylists),
             Type _ when categoryType == typeof(ProfileSearchResult) => ((Func<JElement, T>)(object)ProfileSearchResult.Parse, "Profiles", SearchCategory.Profiles),
             Type _ when categoryType == typeof(PodcastSearchResult) => ((Func<JElement, T>)(object)PodcastSearchResult.Parse, "Podcasts", SearchCategory.Podcasts),
             Type _ when categoryType == typeof(EpisodeSearchResult) => ((Func<JElement, T>)(object)EpisodeSearchResult.Parse, "Episodes", SearchCategory.Episodes),
@@ -259,7 +259,9 @@ public sealed class SearchService(
         {
             "Song" => SongSearchResult.ParseTopResult,
             "Video" => VideoSearchResult.ParseTopResult,
-            "Playlist" => PlaylistSearchResult.ParseTopResult,
+            "Mix" => FeaturedPlaylistSearchResult.ParseTopResult,
+            "Playlist" when cardShelf.SelectIsFeaturedPlaylist() => FeaturedPlaylistSearchResult.ParseTopResult,
+            "Playlist" => CommunityPlaylistSearchResult.ParseTopResult,
             "Album" or "EP" or "Single" => AlbumSearchResult.ParseTopResult,
             "Artist" => ArtistSearchResult.ParseTopResult,
             "Profile" => null, // never found any top result profile; If u did, CREATE AN ISSUE plz :3
@@ -353,7 +355,8 @@ public sealed class SearchService(
                 {
                     "Songs" => SongSearchResult.Parse,
                     "Videos" => VideoSearchResult.Parse,
-                    "Community playlists" or "Featured playlists" => PlaylistSearchResult.Parse,
+                    "Featured playlists" => FeaturedPlaylistSearchResult.Parse,
+                    "Community playlists" => CommunityPlaylistSearchResult.Parse,
                     "Albums" => AlbumSearchResult.Parse,
                     "Artists" => ArtistSearchResult.Parse,
                     "Profiles" => ProfileSearchResult.Parse,
@@ -466,21 +469,25 @@ public sealed class SearchService(
             return new(searchSuggestions, historySuggestions, []);
 
         List<SearchResult> results = resultSuggestions
+            .Where(item => item
+                .Contains("musicResponsiveListItemRenderer"))
             .Select(item =>
             {
-                if (!item.Contains("musicResponsiveListItemRenderer", out JElement content))
-                    return null;
+                JElement content = item
+                    .Get("musicResponsiveListItemRenderer");
 
                 string? category = content
                     .Get("flexColumns")
-                    .GetAt(0)
+                    .GetAt(1)
                     .Get("musicResponsiveListItemFlexColumnRenderer")
                     .SelectRunTextAt("text", 0);
                 Func<JElement, SearchResult>? parseItem = category switch
                 {
                     "Song" => SongSearchResult.ParseSuggestion,
                     "Video" => VideoSearchResult.ParseSuggestion,
-                    "Playlist" => PlaylistSearchResult.ParseSuggestion,
+                    "Mix" => FeaturedPlaylistSearchResult.ParseSuggestion,
+                    "Playlist" when content.SelectIsFeaturedPlaylist() => FeaturedPlaylistSearchResult.ParseSuggestion,
+                    "Playlist" => CommunityPlaylistSearchResult.ParseSuggestion,
                     "Album" or "EP" or "Single" => AlbumSearchResult.ParseSuggestion,
                     "Artist" => ArtistSearchResult.ParseSuggestion,
                     "Profile" => null, // never found any search suggestion profiles; If u did, CREATE AN ISSUE plz :3
@@ -489,8 +496,10 @@ public sealed class SearchService(
                     _ => null,
                 };
                 if (parseItem is null && // // bruh; YT cmon why dont u have a description text for artists??? now i gotta do that dumb fallback again >:(
-                    content.SelectNavigationBrowseId() is string browseId &&
-                    browseId.StartsWith("UC"))
+                    content
+                        .SelectNavigationBrowseId()
+                        .IsNotNull(out string? browseId) &&
+                        browseId.StartsWith("UC"))
                 {
                     parseItem = ArtistSearchResult.ParseSuggestion;
                 }

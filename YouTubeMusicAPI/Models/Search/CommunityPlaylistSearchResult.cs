@@ -4,19 +4,19 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicAPI.Models.Search;
 
 /// <summary>
-/// Represents a playlist search result on YouTube Music.
+/// Represents a community playlist search result on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="PlaylistSearchResult"/> class.
+/// Creates a new instance of the <see cref="CommunityPlaylistSearchResult"/> class.
 /// </remarks>
-/// <param name="name">The name of this playlist.</param>
-/// <param name="id">The ID of this playlist.</param>
-/// <param name="thumbnails">The thumbnails of this playlist.</param>
-/// <param name="browseId">The browse ID of this playlist.</param>
-/// <param name="creator">The artists of this playlist.</param>
-/// <param name="viewsInfo">The information about the number of views this playlist has.</param>
-/// <param name="radio">The radio associated with this playlist, if available.</param>
-public class PlaylistSearchResult(
+/// <param name="name">The name of this community playlist.</param>
+/// <param name="id">The ID of this community playlist.</param>
+/// <param name="thumbnails">The thumbnails of this community playlist.</param>
+/// <param name="browseId">The browse ID of this community playlist.</param>
+/// <param name="creator">The artists of this community playlist.</param>
+/// <param name="viewsInfo">The information about the number of views this community playlist has.</param>
+/// <param name="radio">The radio associated with this community playlist, if available.</param>
+public class CommunityPlaylistSearchResult(
     string name,
     string id,
     string browseId,
@@ -26,10 +26,10 @@ public class PlaylistSearchResult(
     Radio? radio) : SearchResult(name, id, browseId, thumbnails)
 {
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="CommunityPlaylistSearchResult"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
-    internal static PlaylistSearchResult Parse(
+    internal static CommunityPlaylistSearchResult Parse(
         JElement element)
     {
         JElement flexColumns = element
@@ -77,13 +77,11 @@ public class PlaylistSearchResult(
             .GetAt(descriptionStartIndex)
             .SelectArtist();
 
-        string viewsSongsInfo = descriptionRuns
+        string viewsInfo = descriptionRuns
             .GetAt(descriptionStartIndex + 2)
             .Get("text")
             .AsString()
             .Or("N/A views");
-
-        string viewsInfo = viewsSongsInfo.EndsWith(" songs") ? "N/A views" : viewsSongsInfo; // bruh automated playlists dont have a "view count"
 
         Radio? radio = element
             .SelectMenu()
@@ -93,10 +91,10 @@ public class PlaylistSearchResult(
     }
 
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="CommunityPlaylistSearchResult"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "musicCardShelfRenderer".</param>
-    internal static PlaylistSearchResult ParseTopResult(
+    internal static CommunityPlaylistSearchResult ParseTopResult(
         JElement element)
     {
         JElement descriptionRuns = element
@@ -140,10 +138,10 @@ public class PlaylistSearchResult(
     }
 
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistSearchResult"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="CommunityPlaylistSearchResult"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
-    internal static PlaylistSearchResult ParseSuggestion(
+    internal static CommunityPlaylistSearchResult ParseSuggestion(
         JElement element)
     {
         JElement flexColumns = element
@@ -206,23 +204,23 @@ public class PlaylistSearchResult(
 
 
     /// <summary>
-    /// The browse ID of this playlist.
+    /// The browse ID of this community playlist.
     /// </summary>
     public override string BrowseId { get; } = browseId;
 
 
     /// <summary>
-    /// The creator of this playlist.
+    /// The creator of this community playlist.
     /// </summary>
     public YouTubeMusicEntity Creator { get; } = creator;
 
     /// <summary>
-    /// The information about the number of views this playlist has.
+    /// The information about the number of views this community playlist has.
     /// </summary>
     public string ViewsInfo { get; } = viewsInfo;
 
     /// <summary>
-    /// The radio associated with this playlist, if available.
+    /// The radio associated with this community playlist, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
 }

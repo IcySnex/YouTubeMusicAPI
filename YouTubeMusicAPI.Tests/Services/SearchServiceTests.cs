@@ -76,7 +76,9 @@ public class SearchServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
 
-        TestData.WriteResult(result);
+        TestData.WriteResult(result.Search, "Search");
+        TestData.WriteResult(result.History, "History");
+        TestData.WriteResult(result.Results);
     }
 
     [Test]

@@ -121,7 +121,7 @@ internal static class TestData
     public const int FetchLimit = 20;
 
     // - Search
-    public const string SearchQuery = "Cutty Vibez";
+    public const string SearchQuery = "relax";
     public const Models.Search.SearchScope SearchScope = Models.Search.SearchScope.Global;
     public const bool SearchIgnoreSpelling = true;
 

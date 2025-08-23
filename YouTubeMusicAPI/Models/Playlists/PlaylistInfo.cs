@@ -1,5 +1,4 @@
 ﻿using YouTubeMusicAPI.Json;
-using YouTubeMusicAPI.Models.Songs;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Models.Playlists;
@@ -24,6 +23,7 @@ namespace YouTubeMusicAPI.Models.Playlists;
 /// <param name="songsInfo">The information about the number of songs this playlist has</param>
 /// <param name="lengthInfo">The information about the length this playlist has</param>
 /// <param name="radio">The radio associated with this playlist, if available</param>
+/// <param name="relationsContinuationToken">The continuation token to fetch relations for this playlist.</param>
 public class PlaylistInfo(
     string name,
     string id,
@@ -38,7 +38,8 @@ public class PlaylistInfo(
     string viewsInfo,
     string songsInfo,
     string lengthInfo,
-    Radio? radio) : YouTubeMusicEntity(name, id, browseId)
+    Radio? radio,
+    string? relationsContinuationToken) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="PlaylistInfo"/>.
@@ -48,9 +49,11 @@ public class PlaylistInfo(
     internal static PlaylistInfo Parse(
         JElement element)
     {
-        JElement item = element
+        JElement twoColumn = element
             .Get("contents")
-            .Get("twoColumnBrowseResultsRenderer")
+            .Get("twoColumnBrowseResultsRenderer");
+
+        JElement item = twoColumn
             .Get("tabs")
             .GetAt(0)
             .Get("tabRenderer")
@@ -92,10 +95,7 @@ public class PlaylistInfo(
             .FirstOrDefault(item => item
                 .Contains("musicPlayButtonRenderer"))
             .Get("musicPlayButtonRenderer")
-            .Get("playNavigationEndpoint")
-            .SelectWatchEndpoint()
-            .Get("playlistId")
-            .AsString()
+            .SelectPlayPlaylistId()
             .OrThrow();
 
         string browseId = $"VL{id}";
@@ -110,19 +110,18 @@ public class PlaylistInfo(
             .Get("content")
             .AsString()
             .OrThrow();
-        string? creatorId = creatorName
-            .If("YouTube Music",
-                null,
-                avatarStack
-                    .Get("rendererContext")
-                    .Get("commandContext")
-                    .Get("onTap")
-                    .Get("innertubeCommand")
-                    .Get("browseEndpoint")
-                    .Get("browseId")
-                    .AsString());
+        string? creatorId = avatarStack
+            .Get("rendererContext")
+            .Get("commandContext")
+            .Get("onTap")
+            .Get("innertubeCommand")
+            .Get("browseEndpoint")
+            .Get("browseId")
+            .AsString();
         YouTubeMusicEntity? creator = creatorName
-            .If("YouTube Music",
+            .Is("YouTube Music")
+            .And(creatorId.IsNull())
+            .If(true,
                 null,
                 new YouTubeMusicEntity(creatorName, creatorId, creatorId));
 
@@ -192,7 +191,16 @@ public class PlaylistInfo(
             .Get("items")
             .SelectRadio();
 
-        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, songsInfo, lengthInfo, radio);
+        string? relationsContinuationToken = twoColumn
+            .Get("secondaryContents")
+            .Get("sectionListRenderer")
+            .Get("continuations")
+            .GetAt(0)
+            .Get("nextContinuationData")
+            .Get("continuation")
+            .AsString();
+
+        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, songsInfo, lengthInfo, radio, relationsContinuationToken);
     }
 
 
@@ -271,4 +279,12 @@ public class PlaylistInfo(
     /// </summary>
     public Radio? Radio { get; } = radio;
 
+
+    /// <summary>
+    /// The continuation token to fetch relations for this playlist.
+    /// </summary>
+    /// <remarks>
+    /// Only available when <see cref="IsMix"/> is <see langword="false"/>.
+    /// </remarks>
+    internal string? RelationsContinuationToken { get; } = relationsContinuationToken;
 }

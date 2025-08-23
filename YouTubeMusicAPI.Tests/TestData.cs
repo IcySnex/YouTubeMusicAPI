@@ -20,7 +20,7 @@ internal static class TestData
     };
 
     public static void WriteResult<T>(
-        T result,
+        T? result,
         string name = "Result")
     {
         string json = JsonSerializer.Serialize<object?>(result, JsonOptions);
@@ -28,10 +28,10 @@ internal static class TestData
     }
 
     public static void WriteResult<T>(
-        IReadOnlyList<T> results,
+        IReadOnlyList<T>? results,
         string name = "Results")
     {
-        string json = JsonSerializer.Serialize<object?>(results.Cast<object?>().ToList(), JsonOptions);
+        string json = JsonSerializer.Serialize<object?>(results?.Cast<object?>().ToList(), JsonOptions);
         TestContext.Out.WriteLine("{0}: {1}", name, json);
     }
 
@@ -138,5 +138,5 @@ internal static class TestData
     // - Playlists
     public const string PlaylistId = "RDCLAK5uy_mPolD_J22gS1SKxufARWcTZd1UrAH_0ZI";
 
-    public const string PlaylistBrowseId = "VLRDAMPLPLUoI0V1lAvcLY47xdnLWGdf9zyUWKsulx";
+    public const string PlaylistBrowseId = "VLRDCLAK5uy_ljm2pVSIkXSIKp1im9yxV0XgLmkBbGR-E";
 }

@@ -1,7 +1,5 @@
-﻿using YouTubeMusicAPI.Models.MediaItems;
-using YouTubeMusicAPI.Models.Playlists;
+﻿using YouTubeMusicAPI.Models.Playlists;
 using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Models.Videos;
 using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Tests.Services;
@@ -58,7 +56,7 @@ public class PlaylistsServiceTests
     public void Should_get_browse_id()
     {
         // Act
-        string? browseId  = null;
+        string? browseId = null;
 
         Assert.DoesNotThrow(() =>
         {
@@ -88,5 +86,26 @@ public class PlaylistsServiceTests
         Assert.That(result, Is.Not.Null);
 
         TestData.WriteResult(result);
+    }
+
+
+    [Test]
+    public void Should_get_relations()
+    {
+        // Act
+        PlaylistRelations? result = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PlaylistInfo playlist = await client.Playlists.GetAsync(TestData.PlaylistBrowseId);
+
+            result = await client.Playlists.GetRelationsAsync(playlist);
+        });
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+
+        TestData.WriteResult(result.Suggestions, "Suggestions");
+        TestData.WriteResult(result.Related, "Related");
     }
 }

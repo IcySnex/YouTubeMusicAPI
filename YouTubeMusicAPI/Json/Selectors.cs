@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Models;
+using YouTubeMusicAPI.Models.Playlists;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Json;
@@ -57,16 +58,30 @@ internal static class Selectors
             .AsString();
 
 
+    public static string? SelectPlayVideoId(
+        this JElement element) =>
+        element
+            .Get("playNavigationEndpoint")
+            .SelectWatchEndpoint()
+            .Get("videoId")
+            .AsString();
+
+    public static string? SelectPlayPlaylistId(
+        this JElement element) =>
+        element
+            .Get("playNavigationEndpoint")
+            .SelectWatchEndpoint()
+            .Get("playlistId")
+            .AsString();
+
+
     public static string? SelectOverlayVideoId(
         this JElement element) =>
         element
             .Get("musicItemThumbnailOverlayRenderer")
             .Get("content")
             .Get("musicPlayButtonRenderer")
-            .Get("playNavigationEndpoint")
-            .SelectWatchEndpoint()
-            .Get("videoId")
-            .AsString();
+            .SelectPlayVideoId();
 
     public static string? SelectOverlayPlaylistId(
         this JElement element) =>
@@ -74,10 +89,7 @@ internal static class Selectors
             .Get("musicItemThumbnailOverlayRenderer")
             .Get("content")
             .Get("musicPlayButtonRenderer")
-            .Get("playNavigationEndpoint")
-            .SelectWatchEndpoint()
-            .Get("playlistId")
-            .AsString();
+            .SelectPlayPlaylistId();
 
 
     public static string? SelectTapBrowseId(
@@ -222,6 +234,37 @@ internal static class Selectors
                 .Get("iconType")
                 .AsString()
                 .Is("MUSIC_EXPLICIT_BADGE"));
+
+    public static PlaylistItemType SelectPlaylistItemType(
+        this JElement element)
+    {
+        JArray menu = element
+            .AsArray()
+            .OrThrow(); // Soomething went wrong!! normally I just skip and use fallback values but not here.
+
+        if (menu.Length == 1)
+            return PlaylistItemType.Unavailable; // Only unavailable items have a single item
+
+        foreach (JElement item in menu)
+        {
+            // If menu contains unique song items, it's a song
+            bool hasGoToArtist = item
+                .Get("menuNavigationItemRenderer")
+                .SelectRunTextAt("text", 0)
+                .Is("Go to artist");
+            if (hasGoToArtist)
+                return PlaylistItemType.Song;
+
+            bool hasGoToAlbum = item
+                .Get("menuNavigationItemRenderer")
+                .SelectRunTextAt("text", 0)
+                .Is("Go to album");
+            if (hasGoToAlbum)
+                return PlaylistItemType.Song;
+        }
+
+        return PlaylistItemType.Video; // If none of the unique song items were found, treat it as a video.
+    }
 
     public static bool SelectIsCreditsAvailable(
         this JElement element) =>

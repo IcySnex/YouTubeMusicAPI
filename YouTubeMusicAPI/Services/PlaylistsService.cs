@@ -4,7 +4,6 @@ using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models.Playlists;
 using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Models.Songs;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Utils;
 
@@ -109,4 +108,74 @@ public sealed class PlaylistsService(
         return playlist;
     }
 
+
+    /// <summary>
+    /// Gets the related content for the playlist.
+    /// </summary>
+    /// <remarks>
+    /// Only available when <see cref="PlaylistInfo.IsMix"/> is <see langword="false"/>."/>
+    /// </remarks>
+    /// <param name="playlist">The playlist to get the relations for.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The <see cref="PlaylistRelations"/> containing the related content for the playlist.</returns>
+    /// <exception cref="ArgumentException">Occurs when the <c>playlist</c> does not support getting related playlists.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    public async Task<PlaylistRelations> GetRelationsAsync(
+        PlaylistInfo playlist,
+        CancellationToken cancellationToken = default)
+    {
+        Ensure.NotNullOrEmpty(playlist.RelationsContinuationToken, nameof(playlist.RelationsContinuationToken));
+
+        PlaylistRelations relations;
+
+        // Send first request (either suggestions or directly related)
+        string firstUrl = Endpoints.Browse
+            .SetQueryParameter("ctoken", playlist.RelationsContinuationToken)
+            .SetQueryParameter("continuation", playlist.RelationsContinuationToken);
+
+        string firstResponse = await client.RequestHandler.PostAsync(firstUrl, null, ClientType.WebMusic, cancellationToken);
+
+        // Parse first response
+        client.Logger?.LogInformation("[PlaylistService-GetRelationsAsync] Parsing first response (either suggestions or directly related)...");
+        using JsonDocument firstJson = JsonDocument.Parse(firstResponse);
+        JElement firstRoot = new(firstJson.RootElement);
+
+        JElement firstSection = firstRoot
+            .Get("continuationContents")
+            .Get("sectionListContinuation");
+
+        string? secondContinuationToken = firstSection
+            .Get("continuations")
+            .GetAt(0)
+            .Get("nextContinuationData")
+            .Get("continuation")
+            .AsString();
+        if (secondContinuationToken is null)
+        { // firstRoot was already related so ignore em suggestions
+            client.Logger?.LogInformation("[PlaylistService-GetRelationsAsync] First response was related, skipping suggestions...");
+
+            relations = PlaylistRelations.Parse(default, firstRoot);
+        }
+        else
+        { // firstRoot is suggestions, lezz fetch them related
+            client.Logger?.LogInformation("[PlaylistService-GetRelationsAsync] First response was suggestions, getting related...");
+
+            // Send related request
+            string relatedUrl = Endpoints.Browse
+                .SetQueryParameter("ctoken", secondContinuationToken)
+                .SetQueryParameter("continuation", secondContinuationToken);
+
+            string relatedResponse = await client.RequestHandler.PostAsync(relatedUrl, null, ClientType.WebMusic, cancellationToken);
+
+            // Parse first response
+            client.Logger?.LogInformation("[PlaylistService-GetRelationsAsync] Parsing related response...");
+            using JsonDocument relatedJson = JsonDocument.Parse(relatedResponse);
+            JElement relatedRoot = new(relatedJson.RootElement);
+
+            relations = PlaylistRelations.Parse(firstSection, relatedRoot);
+        }
+
+        return relations;
+    }
 }

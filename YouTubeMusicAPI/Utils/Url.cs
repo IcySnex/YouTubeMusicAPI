@@ -13,7 +13,7 @@ internal static class Url
     /// <returns>The URL with the specified query parameter removed. If the parameter is not found, the original URL is returned.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>url</c> or <c>key</c> is <see langword="null"/> or empty.</exception>
     public static string RemoveQueryParameter(
-        string url,
+        this string url,
         string key)
     {
         Ensure.NotNullOrEmpty(url, nameof(url));
@@ -47,7 +47,7 @@ internal static class Url
     /// <returns>A new URL with the specified query parameter added or updated. If the key already exists in the query string, its value is replaced.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>url</c> or <c>key</c> is <see langword="null"/> or empty.</exception>
     public static string SetQueryParameter(
-        string url,
+        this string url,
         string key,
         string value)
     {

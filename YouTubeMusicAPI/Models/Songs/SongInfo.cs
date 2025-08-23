@@ -179,7 +179,7 @@ public class SongInfo(
 
 
         SongInfo result = new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, radio, null);
-        
+
         if (!counterpartItem.IsUndefined)
         {
             result.CounterpartVideo = VideoInfo.Parse(counterpartItem, default, result.RelatedBrowseId, result.LyricsBrowseId);

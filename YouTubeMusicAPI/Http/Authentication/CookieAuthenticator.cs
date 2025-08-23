@@ -2,7 +2,6 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Http.Authentication;
 

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models.Playlists;
@@ -106,8 +105,7 @@ public sealed class PlaylistsService
 
         // Parse response
         client.Logger?.LogInformation("[PlaylistService-GetAsync] Parsing response...");
-        using JsonDocument json = JsonDocument.Parse(response);
-        JElement root = new(json.RootElement);
+        using IDisposable _ = response.ParseJson(out JElement root);
 
         PlaylistInfo playlist = PlaylistInfo.Parse(root);
         return playlist;
@@ -143,8 +141,7 @@ public sealed class PlaylistsService
 
         // Parse first response
         client.Logger?.LogInformation("[PlaylistService-GetRelationsAsync] Parsing first response (either suggestions or directly related)...");
-        using JsonDocument firstJson = JsonDocument.Parse(firstResponse);
-        JElement firstRoot = new(firstJson.RootElement);
+        using IDisposable _ = firstResponse.ParseJson(out JElement firstRoot);
 
         JElement firstSection = firstRoot
             .Get("continuationContents")
@@ -175,8 +172,7 @@ public sealed class PlaylistsService
 
             // Parse first response
             client.Logger?.LogInformation("[PlaylistService-GetRelationsAsync] Parsing related response...");
-            using JsonDocument relatedJson = JsonDocument.Parse(relatedResponse);
-            JElement relatedRoot = new(relatedJson.RootElement);
+            using IDisposable _1 = relatedResponse.ParseJson(out JElement relatedRoot);
 
             relations = PlaylistRelations.Parse(firstSection, relatedRoot);
         }

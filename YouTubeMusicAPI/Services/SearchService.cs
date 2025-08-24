@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models.Search;
@@ -59,8 +58,7 @@ public sealed class SearchService
 
         // Parse response
         client.Logger?.LogInformation("[SearchService-FetchPageAsync] Parsing response...");
-        using JsonDocument json = JsonDocument.Parse(response);
-        JElement root = new(json.RootElement);
+        using IDisposable _ = response.ParseJson(out JElement root);
 
         bool isContinued = root
             .Contains("continuationContents", out JElement continuationContents);
@@ -224,8 +222,7 @@ public sealed class SearchService
 
         // Parse response
         client.Logger?.LogInformation("[SearchService-AllAsync] Parsing response...");
-        using JsonDocument json = JsonDocument.Parse(response);
-        JElement root = new(json.RootElement);
+        using IDisposable _ = response.ParseJson(out JElement root);
 
         JArray contents = root
             .Get("contents")
@@ -418,8 +415,7 @@ public sealed class SearchService
 
         // Parse response
         client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing response...");
-        using JsonDocument json = JsonDocument.Parse(response);
-        JElement root = new(json.RootElement);
+        using IDisposable _ = response.ParseJson(out JElement root);
         if (!root.Contains("contents", out JElement contents))
             return new([], [], []);
 
@@ -556,8 +552,7 @@ public sealed class SearchService
 
         // Parse suggestions response
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Parsing suggestions response...");
-        using JsonDocument suggestionsJson = JsonDocument.Parse(suggestionsResponse);
-        JElement suggestionsRoot = new(suggestionsJson.RootElement);
+        using IDisposable _ = suggestionsResponse.ParseJson(out JElement suggestionsRoot);
 
         string? feedbackToken = suggestionsRoot
             .Get("contents")
@@ -593,8 +588,7 @@ public sealed class SearchService
 
         // Parse remove response
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Parsing remove response...");
-        using JsonDocument removeJson = JsonDocument.Parse(removeResponse);
-        JElement removeRoot = new(removeJson.RootElement);
+        using IDisposable _1 = removeResponse.ParseJson(out JElement removeRoot);
 
         bool isProcessed = removeRoot
             .Get("feedbackResponses")

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using YouTubeMusicAPI.Json;
 
 namespace YouTubeMusicAPI.Utils;
@@ -105,42 +106,6 @@ internal static class Syntax
 
 
     /// <summary>
-    /// Returns the logical AND of the specified boolean values.
-    /// </summary>
-    /// <param name="value">The first boolean value.</param>
-    /// <param name="other">The second boolean value.</param>
-    /// <returns>
-    /// <see langword="true"/> if both <c>value</c> and <c>other</c> are <see langword="true"/>; otherwise, <see langword="false"/>.
-    /// </returns>
-    public static bool And(
-        this bool value,
-        bool other) =>
-        value && other;
-
-    /// <summary>
-    /// Returns the logical OR of the specified boolean values.
-    /// </summary>
-    /// <param name="value">The first boolean value.</param>
-    /// <param name="other">The second boolean value.</param>
-    /// <returns>
-    /// <see langword="true"/> if either <c>value</c> or <c>other</c> is <see langword="true"/>; otherwise, <see langword="false"/>.
-    /// </returns>
-    public static bool Or(
-        this bool value,
-        bool other) =>
-        value || other;
-
-    /// <summary>
-    /// Returns the logical negation of the specified <paramref name="value"/>.
-    /// </summary>
-    /// <param name="value">The boolean value to negate.</param>
-    /// <returns><see langword="true"/> if <paramref name="value"/> is <see langword="false"/>, otherwise <see langword="false"/>.</returns>
-    public static bool Not(
-        this bool value) =>
-        !value;
-
-
-    /// <summary>
     /// Returns whether the <c>value</c> is <see langword="null"/>.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
@@ -180,6 +145,7 @@ internal static class Syntax
     public static bool IsNotNull<T>(
         this T? value) where T : struct =>
         value is not null;
+
 
     /// <summary>
     /// Returns whether the <c>value</c> is not <see langword="null"/>.
@@ -224,6 +190,48 @@ internal static class Syntax
     }
 
 
+    /// <summary>
+    /// Returns the logical AND of the specified boolean values.
+    /// </summary>
+    /// <param name="value">The first boolean value.</param>
+    /// <param name="other">The second boolean value.</param>
+    /// <returns>
+    /// <see langword="true"/> if both <c>value</c> and <c>other</c> are <see langword="true"/>; otherwise, <see langword="false"/>.
+    /// </returns>
+    public static bool And(
+        this bool value,
+        bool other) =>
+        value && other;
+
+    /// <summary>
+    /// Returns the logical OR of the specified boolean values.
+    /// </summary>
+    /// <param name="value">The first boolean value.</param>
+    /// <param name="other">The second boolean value.</param>
+    /// <returns>
+    /// <see langword="true"/> if either <c>value</c> or <c>other</c> is <see langword="true"/>; otherwise, <see langword="false"/>.
+    /// </returns>
+    public static bool Or(
+        this bool value,
+        bool other) =>
+        value || other;
+
+    /// <summary>
+    /// Returns the logical negation of the specified <paramref name="value"/>.
+    /// </summary>
+    /// <param name="value">The boolean value to negate.</param>
+    /// <returns><see langword="true"/> if <paramref name="value"/> is <see langword="false"/>, otherwise <see langword="false"/>.</returns>
+    public static bool Not(
+        this bool value) =>
+        !value;
+
+
+    /// <summary>
+    /// Performs the specified <c>action</c> on each element of the <c>source</c>.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The sequence of elements to iterate over.</param>
+    /// <param name="action">The action to perform on each element.</param>
     public static void ForEach<T>(
         this IEnumerable<T> source,
         Action<T> action)
@@ -233,37 +241,17 @@ internal static class Syntax
     }
 
 
+    /// <summary>
+    /// Concatenates the elements of a string sequence using the specified <c>separator</c>.
+    /// </summary>
+    /// <param name="source">The sequence of strings to join.</param>
+    /// <param name="separator">The string to use as a separator.</param>
+    /// <returns>The connected string.</returns>
     public static string Join(
         this IEnumerable<string> source,
         string separator) =>
         string.Join(separator, source);
 
-
-    /// <summary>
-    /// Converts a value type to its nullable equivalent.
-    /// </summary>
-    /// <typeparam name="T">The value type.</typeparam>
-    /// <param name="value">The value to convert.</param>
-    /// <returns>The <c>value</c> as a nullable <c>T?</c>.</returns>
-    public static T? AsNullable<T>(
-        this T value) where T : struct =>
-        EqualityComparer<T>.Default.Equals(value, default) ? null : value;
-
-
-    /// <summary>
-    /// Evaluates two expressions on the same object and returns the first non-null result.
-    /// </summary>
-    /// <typeparam name="TSource">The type of the source object.</typeparam>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="source">The source object.</param>
-    /// <param name="first">The first expression to evaluate.</param>
-    /// <param name="second">The fallback expression to evaluate if the first returns null.</param>
-    /// <returns>The first non-null result of <c>first</c> or <c>second</c>.</returns>
-    public static TResult Coalesce<TSource, TResult>(
-        this TSource source,
-        Func<TSource, TResult> first,
-        Func<TSource, TResult> second) =>
-        first(source) ?? second(source);
 
     /// <summary>
     /// Evaluates two expressions on the same <see cref="JElement"/> and returns the first non-undefined result.
@@ -282,5 +270,21 @@ internal static class Syntax
             result = second(source);
 
         return result;
+    }
+
+    /// <summary>
+    /// Parses a JSON string into a <see cref="JsonDocument"/> and wraps its root element in a <see cref="JElement"/>.
+    /// </summary>
+    /// <param name="json">The JSON string to parse.</param>
+    /// <param name="root">A <see cref="JElement"/> wrapping the root element of the docuemnt.</param>
+    /// <returns>An <see cref="IDisposable"/> representing the document. Has to be disposed.</returns>
+    public static IDisposable ParseJson(
+        this string json,
+        out JElement root)
+    {
+        JsonDocument document = JsonDocument.Parse(json);
+        root = new JElement(document.RootElement);
+
+        return document;
     }
 }

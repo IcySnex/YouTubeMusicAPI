@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models.Lyrics;
@@ -77,8 +76,7 @@ public sealed class VideoService
 
         // Parse response
         client.Logger?.LogInformation("[VideoService-GetAsync] Parsing response...");
-        using JsonDocument json = JsonDocument.Parse(response);
-        JElement root = new(json.RootElement);
+        using IDisposable _ = response.ParseJson(out JElement root);
 
         bool isSong = root
             .Get("playerOverlays")

@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Services;
 using YouTubeMusicAPI.Services.Sub;
+using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI;
 
@@ -85,8 +85,7 @@ public class YouTubeMusicClient
 
         // Parse
         Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] Parsing response...");
-        using JsonDocument json = JsonDocument.Parse(response);
-        JElement root = new(json.RootElement);
+        using IDisposable _ = response.ParseJson(out JElement root);
 
         JElement menuRenderer = root
             .Get("actions")

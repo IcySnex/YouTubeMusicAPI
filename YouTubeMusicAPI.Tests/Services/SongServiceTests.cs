@@ -53,14 +53,20 @@ public class SongServiceTests
 
 
     [Test]
-    public void Should_get_credits()
+    public async Task Should_get_credits()
     {
+        // Arrange
+        SongInfo song = await client.Songs.GetAsync(TestData.SongId);
+
+        if (!song.IsCreditsAvailable)
+            Assert.Inconclusive("The provided song does not have available credits.");
+
         // Act
         SongCredits? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Songs.GetCreditsAsync(TestData.SongId);
+            result = await client.Songs.GetCreditsAsync(song.Id);
         });
 
         // Assert

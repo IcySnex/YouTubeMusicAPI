@@ -84,6 +84,10 @@ public class SearchServiceTests
     [Test]
     public void Should_remove_suggestion()
     {
+        // Arrange
+        if (!client.RequestHandler.IsAuthenticated)
+            Assert.Inconclusive("The user must be authenticate before using this endpoint.");
+
         // Act
         Assert.DoesNotThrowAsync(async () =>
         {

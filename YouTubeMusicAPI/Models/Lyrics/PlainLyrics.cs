@@ -1,7 +1,7 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Models.MediaItems;
+namespace YouTubeMusicAPI.Models.Lyrics;
 
 /// <summary>
 /// Represents non-synced lyrics for a media item on YouTube Music.
@@ -21,7 +21,7 @@ public class PlainLyrics(
     /// Parses a <see cref="JElement"/> into a <see cref="PlainLyrics"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "lyricsData".</param>
-    internal static PlainLyrics Parse(
+    internal new static PlainLyrics Parse(
         JElement element)
     {
         string source = element

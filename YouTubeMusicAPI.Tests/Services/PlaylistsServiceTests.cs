@@ -74,12 +74,15 @@ public class PlaylistsServiceTests
     [Test]
     public void Should_get()
     {
+        // Arrange
+        string browseId = client.Playlists.GetBrowseId(TestData.PlaylistId);
+
         // Act
         PlaylistInfo? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Playlists.GetAsync(TestData.PlaylistBrowseId);
+            result = await client.Playlists.GetAsync(browseId);
         });
 
         // Assert
@@ -90,15 +93,17 @@ public class PlaylistsServiceTests
 
 
     [Test]
-    public void Should_get_relations()
+    public async Task Should_get_relations()
     {
+        // Arrange
+        string browseId = client.Playlists.GetBrowseId(TestData.PlaylistId);
+        PlaylistInfo playlist = await client.Playlists.GetAsync(browseId);
+
         // Act
         PlaylistRelations? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            PlaylistInfo playlist = await client.Playlists.GetAsync(TestData.PlaylistBrowseId);
-
             result = await client.Playlists.GetRelationsAsync(playlist);
         });
 

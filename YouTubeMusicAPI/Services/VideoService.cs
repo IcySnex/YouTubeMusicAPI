@@ -2,9 +2,11 @@
 using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Models.Lyrics;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Videos;
 using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Sub;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services;
@@ -12,13 +14,25 @@ namespace YouTubeMusicAPI.Services;
 /// <summary>
 /// Service which handles getting information about videos from YouTube Music.
 /// </summary>
-/// <remarks>
-/// Creates a new instance of the <see cref="VideoService"/> class.
-/// </remarks>
-/// <param name="client">The shared base client.</param>
-public sealed class VideoService(
-    YouTubeMusicClient client) : MediaItemService(client)
+public sealed class VideoService
 {
+    readonly YouTubeMusicClient client;
+    readonly LyricsService lyrics;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="VideoService"/> class.
+    /// </summary>
+    /// <param name="client">The shared base client.</param>
+    /// <param name="lyrics">The shared lyrics service.</param>
+    internal VideoService(
+        YouTubeMusicClient client,
+        LyricsService lyrics)
+    {
+        this.client = client;
+        this.lyrics = lyrics;
+    }
+
+
     /// <summary>
     /// Creates a paginator that searches for videos on YouTube Music.
     /// </summary>
@@ -38,7 +52,7 @@ public sealed class VideoService(
 
 
     /// <summary>
-    /// Gets detailed information about a videos from YouTube Music.
+    /// Gets detailed information about a video on YouTube Music.
     /// </summary>
     /// <param name="id">The ID of the videos.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
@@ -80,5 +94,31 @@ public sealed class VideoService(
 
         VideoInfo song = VideoInfo.Parse(root);
         return song;
+    }
+
+
+    /// <summary>
+    /// Gets the lyrics for a video on YouTube Music.
+    /// </summary>
+    /// <remarks>
+    /// Only available if the <see cref="VideoInfo.IsLyricsAvailable"/> is <see langword="true"/>.
+    /// </remarks>
+    /// <param name="video">The video to get the lyrics for.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The <see cref="Lyrics"/> containing the either synced or plain lyrics text.</returns>
+    /// <exception cref="InvalidOperationException">Occurs when the provided video does not have available lyrics.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    public Task<Lyrics> GetLyricsAsync(
+        VideoInfo video,
+        CancellationToken cancellationToken = default)
+    {
+        if (video.LyricsBrowseId is null)
+        {
+            client.Logger?.LogError("[VideoService-GetLyricsAsync] The provided video does not have available lyrics.");
+            throw new InvalidOperationException("The provided video does not have available lyrics.");
+        }
+
+        return lyrics.GetAsync(video.LyricsBrowseId, cancellationToken);
     }
 }

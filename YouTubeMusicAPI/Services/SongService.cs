@@ -2,9 +2,12 @@
 using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Models.Lyrics;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Songs;
+using YouTubeMusicAPI.Models.Videos;
 using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Sub;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services;
@@ -12,13 +15,25 @@ namespace YouTubeMusicAPI.Services;
 /// <summary>
 /// Service which handles getting information about songs from YouTube Music.
 /// </summary>
-/// <remarks>
-/// Creates a new instance of the <see cref="SongService"/> class.
-/// </remarks>
-/// <param name="client">The shared base client.</param>
-public sealed class SongService(
-    YouTubeMusicClient client) : MediaItemService(client)
+public sealed class SongService
 {
+    readonly YouTubeMusicClient client;
+    readonly LyricsService lyrics;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="SongService"/> class.
+    /// </summary>
+    /// <param name="client">The shared base client.</param>
+    /// <param name="lyrics">The shared lyrics service.</param>
+    internal SongService(
+        YouTubeMusicClient client,
+        LyricsService lyrics)
+    {
+        this.client = client;
+        this.lyrics = lyrics;
+    }
+
+
     /// <summary>
     /// Creates a paginator that searches for songs on YouTube Music.
     /// </summary>
@@ -82,9 +97,13 @@ public sealed class SongService(
         return song;
     }
 
+
     /// <summary>
     /// Gets the credits (like performers, writers, producers etc.) of a song from YouTube Music.
     /// </summary>
+    /// <remarks>
+    /// Only available if <see cref="SongInfo.IsCreditsAvailable"/> is <see langword="true"/>."/>
+    /// </remarks>
     /// <param name="id">The ID of the song.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The <see cref="SongCredits"/> containing the information about the credits.</returns>
@@ -125,5 +144,30 @@ public sealed class SongService(
 
         SongCredits credits = SongCredits.Parse(dialogRenderer);
         return credits;
+    }
+
+    /// <summary>
+    /// Gets the lyrics for a song on YouTube Music.
+    /// </summary>
+    /// <remarks>
+    /// Only available if the <see cref="SongInfo.IsLyricsAvailable"/> is <see langword="true"/>.
+    /// </remarks>
+    /// <param name="song">The song to get the lyrics for.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The <see cref="Lyrics"/> containing the either synced or plain lyrics text.</returns>
+    /// <exception cref="InvalidOperationException">Occurs when the provided song does not have available lyrics.</exception>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    public Task<Lyrics> GetLyricsAsync(
+        SongInfo song,
+        CancellationToken cancellationToken = default)
+    {
+        if (song.LyricsBrowseId is null)
+        {
+            client.Logger?.LogError("[SongService-GetLyricsAsync] The provided song does not have available lyrics.");
+            throw new InvalidOperationException("The provided song does not have available lyrics.");
+        }
+
+        return lyrics.GetAsync(song.LyricsBrowseId, cancellationToken);
     }
 }

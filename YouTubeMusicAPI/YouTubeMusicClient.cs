@@ -4,6 +4,7 @@ using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Services;
+using YouTubeMusicAPI.Services.Sub;
 
 namespace YouTubeMusicAPI;
 
@@ -27,9 +28,11 @@ public class YouTubeMusicClient
         RequestHandler = new(Config.GeographicalLocation, Config.Authenticator, Config.HttpClient, Config.Logger);
         Logger = Config.Logger;
 
+        LyricsService lyrics = new(this);
+
         Search = new(this);
-        Songs = new(this);
-        Videos = new(this);
+        Songs = new(this, lyrics);
+        Videos = new(this, lyrics);
         Playlists = new(this);
     }
 

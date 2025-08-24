@@ -1,4 +1,4 @@
-﻿using YouTubeMusicAPI.Models.MediaItems;
+﻿using YouTubeMusicAPI.Models.Lyrics;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Videos;
 using YouTubeMusicAPI.Pagination;
@@ -51,15 +51,22 @@ public class VideoServiceTests
         TestData.WriteResult(result);
     }
 
+
     [Test]
-    public void Should_get_lyrics()
+    public async Task Should_get_lyrics()
     {
+        // Arrange
+        VideoInfo video = await client.Videos.GetAsync(TestData.VideoId);
+
+        if (!video.IsLyricsAvailable)
+            Assert.Inconclusive("The provided video does not have available lyrics.");
+
         // Act
         Lyrics? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Videos.GetLyricsAsync(TestData.VideoLyricsBrowseId);
+            result = await client.Videos.GetLyricsAsync(video);
         });
 
         // Assert

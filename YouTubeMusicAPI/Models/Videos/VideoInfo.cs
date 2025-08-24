@@ -13,26 +13,24 @@ namespace YouTubeMusicAPI.Models.Videos;
 /// <param name="name">The name of this video.</param>
 /// <param name="id">The ID of this video.</param>
 /// <param name="thumbnails">The thumbnails of this video.</param>
-/// <param name="relatedBrowseId">The browse ID related to this video for full navigation.</param>
-/// <param name="lyricsBrowseId">The browse ID used to fetch lyrics for this video, if available.</param>
 /// <param name="artists">The artists who performed this video.</param>
 /// <param name="duration">The duration of this video.</param>
 /// <param name="viewsInfo">The information about the number of views this video has.</param>
 /// <param name="ratingsInfo">The information about the number of likes this video has.</param>
 /// <param name="radio">The radio related to this video, if available.</param>
-/// <param name="counterpartSong">The counterpart song of this video, if available.</param>
+/// <param name="relatedBrowseId">The browse ID related to this video for full navigation.</param>
+/// <param name="lyricsBrowseId">The browse ID used to fetch lyrics for this video, if available.</param>
 public class VideoInfo(
     string name,
     string id,
     Thumbnail[] thumbnails,
-    string relatedBrowseId,
-    string? lyricsBrowseId,
     YouTubeMusicEntity[] artists,
     TimeSpan duration,
     string viewsInfo,
     string ratingsInfo,
     Radio? radio,
-    SongInfo? counterpartSong) : YouTubeMusicEntity(name, id, null)
+    string relatedBrowseId,
+    string? lyricsBrowseId) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="VideoInfo"/>.
@@ -162,7 +160,7 @@ public class VideoInfo(
             .SelectRadio();
 
 
-        VideoInfo result = new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, duration, viewsInfo, ratingsInfo, radio, null);
+        VideoInfo result = new(name, id, thumbnails, artists, duration, viewsInfo, ratingsInfo, radio, relatedBrowseId, lyricsBrowseId);
 
         if (!counterpartItem.IsUndefined)
         {
@@ -186,16 +184,6 @@ public class VideoInfo(
     public Thumbnail[] Thumbnails { get; } = thumbnails;
 
     /// <summary>
-    /// The browse ID for related content associated with this video.
-    /// </summary>
-    public string RelatedBrowseId { get; } = relatedBrowseId;
-
-    /// <summary>
-    /// The browse ID for lyrics associated with this video, if available.
-    /// </summary>
-    public string? LyricsBrowseId { get; } = lyricsBrowseId;
-
-    /// <summary>
     /// The artists of this video.
     /// </summary>
     public YouTubeMusicEntity[] Artists { get; } = artists;
@@ -216,9 +204,15 @@ public class VideoInfo(
     public string RatingsInfo { get; } = ratingsInfo;
 
     /// <summary>
+    /// Whether lyrics are available to fetch for this video.
+    /// </summary>
+    public bool IsLyricsAvailable { get; } = lyricsBrowseId is not null;
+
+    /// <summary>
     /// The radio associated with this video, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
+
 
     /// <summary>
     /// The counterpart song of this video, if available.
@@ -227,5 +221,16 @@ public class VideoInfo(
     /// Only available for authenticated users with premium subscription.<br/>
     /// For more information about audio-only or video mode, see: <see href="https://support.google.com/youtubemusic/answer/6313574"/>
     /// </remarks>
-    public SongInfo? CounterpartSong { get; internal set; } = counterpartSong;
+    public SongInfo? CounterpartSong { get; internal set; }
+
+
+    /// <summary>
+    /// The browse ID for related content associated with this video.
+    /// </summary>
+    internal string RelatedBrowseId { get; } = relatedBrowseId;
+
+    /// <summary>
+    /// The browse ID for lyrics associated with this video, if available.
+    /// </summary>
+    internal string? LyricsBrowseId { get; } = lyricsBrowseId;
 }

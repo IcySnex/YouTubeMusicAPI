@@ -1,4 +1,7 @@
-﻿namespace YouTubeMusicAPI.Models.MediaItems;
+﻿using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Utils;
+
+namespace YouTubeMusicAPI.Models.Lyrics;
 
 /// <summary>
 /// Represents lyrics for a media item on YouTube Music.
@@ -9,6 +12,22 @@ public abstract class Lyrics(
     string source,
     string backgroundImage)
 {
+    /// <summary>
+    /// Parses a <see cref="JElement"/> into a <see cref="Lyrics"/>.
+    /// </summary>
+    /// <param name="element">The <see cref="JElement"/> "lyricsData".</param>
+    internal static Lyrics Parse(
+        JElement element)
+    {
+        bool isPlain = element
+            .Get("staticLayout")
+            .AsBool()
+            .Or(false);
+
+        return isPlain ? PlainLyrics.Parse(element) : SyncedLyrics.Parse(element);
+    }
+
+
     /// <summary>
     /// The source of the lyrics from which they come.
     /// </summary>

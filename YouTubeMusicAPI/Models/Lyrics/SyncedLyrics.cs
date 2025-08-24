@@ -1,7 +1,7 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Models.MediaItems;
+namespace YouTubeMusicAPI.Models.Lyrics;
 
 /// <summary>
 /// Represents lyrics with synchronized timing information for a media item on YouTube Music.
@@ -86,7 +86,7 @@ public class SyncedLyrics(
     /// Parses a <see cref="JElement"/> into a <see cref="SyncedLyrics"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "lyricsData".</param>
-    internal static SyncedLyrics Parse(
+    internal new static SyncedLyrics Parse(
         JElement element)
     {
         string source = element

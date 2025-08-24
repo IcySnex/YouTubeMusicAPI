@@ -238,12 +238,11 @@ internal static class Selectors
     public static PlaylistItemType SelectPlaylistItemType(
         this JElement element)
     {
-        JArray menu = element
-            .AsArray()
-            .OrThrow(); // Soomething went wrong!! normally I just skip and use fallback values but not here.
+        JArray? menu = element
+            .AsArray();
 
-        if (menu.Length == 1)
-            return PlaylistItemType.Unavailable; // Only unavailable items have a single item
+        if (menu is null)
+            return PlaylistItemType.Unavailable; // Only unavailable items don't have a menu.
 
         foreach (JElement item in menu)
         {

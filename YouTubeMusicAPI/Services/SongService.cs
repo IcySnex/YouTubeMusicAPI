@@ -51,7 +51,7 @@ public sealed class SongService
 
 
     /// <summary>
-    /// Gets detailed information about a song from YouTube Music.
+    /// Gets detailed information about a song on YouTube Music.
     /// </summary>
     /// <param name="id">The ID of the song.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
@@ -96,7 +96,7 @@ public sealed class SongService
 
 
     /// <summary>
-    /// Gets the credits (like performers, writers, producers etc.) of a song from YouTube Music.
+    /// Gets the credits (like performers, writers, producers etc.) of a song on YouTube Music.
     /// </summary>
     /// <remarks>
     /// Only available if <see cref="SongInfo.IsCreditsAvailable"/> is <see langword="true"/>."/>

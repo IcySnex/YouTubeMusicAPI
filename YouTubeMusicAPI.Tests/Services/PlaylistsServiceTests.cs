@@ -91,6 +91,28 @@ public class PlaylistsServiceTests
         TestData.WriteResult(result);
     }
 
+    [Test]
+    public void Should_get_items()
+    {
+        // Arrange
+        string browseId = client.Playlists.GetBrowseId(TestData.PlaylistId);
+
+        // Act
+        IReadOnlyList<PlaylistItem>? results = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            PaginatedAsyncEnumerable<PlaylistItem> response = client.Playlists.GetItemsAsync(browseId);
+
+            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
+        });
+
+        // Assert
+        Assert.That(results, Is.Not.Null.Or.Empty);
+
+        TestData.WriteResult(results);
+    }
+
 
     [Test]
     public async Task Should_get_relations()

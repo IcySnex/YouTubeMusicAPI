@@ -25,17 +25,6 @@ public sealed class SearchService
     }
 
 
-    /// <summary>
-    /// Fetches a page of search results from YouTube Music.
-    /// </summary>
-    /// <typeparam name="T">The type of search results to parse.</typeparam>
-    /// <param name="query">The query to search for.</param>
-    /// <param name="continuationToken">The token used to continue a previous search.</param>
-    /// <param name="queryParams">The query params to filter.</param>
-    /// <param name="parse">The function to parse JSON elements to a search result.</param>
-    /// <param name="categoryTitle">The category title of the shelf.</param>
-    /// <param name="cancellationToken">The token to cancel this tas.</param>
-    /// <returns>A page of search results.</returns>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     async Task<Page<T>> FetchPageAsync<T>(
@@ -193,7 +182,7 @@ public sealed class SearchService
 
 
     /// <summary>
-    /// Searches for all kind of results on YouTUbe Music.
+    /// Searches for all content types of results on YouTUbe Music.
     /// </summary>
     /// <param name="query">The query to search for.</param>
     /// <param name="scope">The scope of the search.</param>
@@ -391,7 +380,7 @@ public sealed class SearchService
 
 
     /// <summary>
-    /// Gets search, history and result suggestions for a specific input.
+    /// Gets search, history and result suggestions for a specific input on YouTube Music.
     /// </summary>
     /// <remarks>
     /// For history suggestions, the user must be authenticated.
@@ -521,7 +510,7 @@ public sealed class SearchService
 
 
     /// <summary>
-    /// Removes the specific input from the search history suggestions.
+    /// Removes the specific input from the search history suggestions on YouTube Music.
     /// </summary>
     /// <remarks>
     /// The user must be authenticated.

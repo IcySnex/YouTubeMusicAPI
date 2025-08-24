@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models.Lyrics;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Songs;
-using YouTubeMusicAPI.Models.Videos;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Services.Sub;
 using YouTubeMusicAPI.Utils;
@@ -78,8 +76,7 @@ public sealed class SongService
 
         // Parse response
         client.Logger?.LogInformation("[SongService-GetAsync] Parsing response...");
-        using JsonDocument json = JsonDocument.Parse(response);
-        JElement root = new(json.RootElement);
+        using IDisposable _ = response.ParseJson(out JElement root);
 
         bool isSong = root
             .Get("playerOverlays")
@@ -127,8 +124,7 @@ public sealed class SongService
 
         // Parse response
         client.Logger?.LogInformation("[SongService-GetCreditsAsync] Parsing response...");
-        using JsonDocument json = JsonDocument.Parse(response);
-        JElement root = new(json.RootElement);
+        using IDisposable _ = response.ParseJson(out JElement root);
 
         JElement dialogRenderer = root
             .Get("onResponseReceivedActions")

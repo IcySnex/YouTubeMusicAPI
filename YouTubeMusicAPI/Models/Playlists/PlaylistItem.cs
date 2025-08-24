@@ -137,7 +137,7 @@ public class PlaylistItem(
     /// The album of this playlist item.
     /// </summary>
     /// <remarks>
-    /// Only available if this item is a song, else <see langword="null"/>.
+    /// Only available if <see cref="Type"/> is <see cref="PlaylistItemType.Song"/>, else <see langword="null"/>.
     /// </remarks>
     public YouTubeMusicEntity? Album { get; } = album;
 

@@ -80,7 +80,7 @@ public sealed class PlaylistsService
 
 
     /// <summary>
-    /// Gets detailed information about a playlist from YouTube Music.
+    /// Gets detailed information about a playlist on YouTube Music.
     /// </summary>
     /// <param name="browseId">The browse ID of the playlist.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
@@ -111,9 +111,83 @@ public sealed class PlaylistsService
         return playlist;
     }
 
+    /// <summary>
+    /// Creates an async paginator that fetches items from a playlist on YouTube Music.
+    /// </summary>
+    /// <param name="browseId">The browse ID of the playlist.</param>
+    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PlaylistItem"/>'s.</returns>
+    /// <exception cref="ArgumentException">Occurs when the <c>browseId</c> is <see langword="null"/> or empty or it is not a valid browse ID.</exception>
+    public PaginatedAsyncEnumerable<PlaylistItem> GetItemsAsync(
+        string browseId)
+    {
+        Ensure.NotNullOrEmpty(browseId, nameof(browseId));
+        Ensure.StartsWith(browseId, "VL", nameof(browseId));
+
+        // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+        // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+        async Task<Page<PlaylistItem>> FetchPageAsync(
+            string browseId,
+            string? continuationToken,
+            CancellationToken cancellationToken = default)
+        {
+            // Send request
+            KeyValuePair<string, object?>[] payload =
+            [
+                new("browseId", browseId),
+                new("continuation", continuationToken),
+            ];
+
+            string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
+
+            // Parse response
+            client.Logger?.LogInformation("[PlaylistService-GetAsync] Parsing response...");
+            using IDisposable _ = response.ParseJson(out JElement root);
+
+            JElement contents = root
+                .Coalesce(
+                    item => item
+                        .Get("contents")
+                        .Get("twoColumnBrowseResultsRenderer")
+                        .Get("secondaryContents")
+                        .Get("sectionListRenderer")
+                        .Get("contents")
+                        .GetAt(0)
+                        .Get("musicPlaylistShelfRenderer")
+                        .Get("contents"),
+                    item => item
+                        .Get("onResponseReceivedActions")
+                        .GetAt(0)
+                        .Get("appendContinuationItemsAction")
+                        .Get("continuationItems"));
+
+            string? nextContinuationToken = contents
+                .GetAt(contents.ArrayLength - 1)
+                .Get("continuationItemRenderer")
+                .Get("continuationEndpoint")
+                .Get("continuationCommand")
+                .Get("token")
+                .AsString();
+
+            List<PlaylistItem> result = contents
+                .AsArray()
+                .Or(JArray.Empty)
+                .Where(item => item
+                    .Contains("musicResponsiveListItemRenderer"))
+                .Select(item => item
+                    .Get("musicResponsiveListItemRenderer"))
+                .Select(PlaylistItem.Parse)
+                .ToList();
+
+            return new(result, nextContinuationToken);
+        }
+
+        return new((contiuationToken, cancellationToken) =>
+            FetchPageAsync(browseId, contiuationToken, cancellationToken));
+    }
+
 
     /// <summary>
-    /// Gets the related content for the playlist.
+    /// Gets the related content for the playlist on YouTube Music.
     /// </summary>
     /// <remarks>
     /// Only available when <see cref="PlaylistInfo.IsMix"/> is <see langword="false"/>."/>

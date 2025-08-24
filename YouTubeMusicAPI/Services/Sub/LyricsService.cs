@@ -2,34 +2,31 @@
 using System.Text.Json;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
-using YouTubeMusicAPI.Models.MediaItems;
+using YouTubeMusicAPI.Models.Lyrics;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services;
+namespace YouTubeMusicAPI.Services.Sub;
 
 /// <summary>
-/// Service which handles getting information about media items from YouTube Music
+/// Service which handles getting lyrics for media items from YouTube Music
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="MediaItemService"/> class.
+/// Creates a new instance of the <see cref="LyricsService"/> class.
 /// </remarks>
 /// <param name="client">The shared base client.</param>
-public abstract class MediaItemService(
+internal sealed class LyricsService(
     YouTubeMusicClient client)
 {
-    /// <summary>
-    /// The shared base client.
-    /// </summary>
-    protected readonly YouTubeMusicClient client = client;
+    readonly YouTubeMusicClient client = client;
 
 
     /// <summary>
     /// Gets the lyrics for a media item from YouTube Music.
     /// </summary>
-    /// <param name="browseId">The lyrics browse ID, obtained from <c>GetAsync()</c>.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<Lyrics> GetLyricsAsync(
+    /// <param name="browseId">The lyrics browse ID, obtained from <c>MediaItemService.GetAsync()</c>.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The <see cref="Lyrics"/> containing the either synced or plain lyrics text.</returns>
+    public async Task<Lyrics> GetAsync(
         string browseId,
         CancellationToken cancellationToken = default)
     {
@@ -44,7 +41,7 @@ public abstract class MediaItemService(
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.IOSMusic, cancellationToken);
 
         // Parse response
-        client.Logger?.LogInformation("[MediaItemService-GetLyricsAsync] Parsing response...");
+        client.Logger?.LogInformation("[LyricsService-GetAsync] Parsing response...");
         using JsonDocument json = JsonDocument.Parse(response);
         JElement root = new(json.RootElement);
 
@@ -59,14 +56,10 @@ public abstract class MediaItemService(
             .Get("lyricsData");
         if (lyricsData.IsUndefined)
         {
-            client.Logger?.LogError("[MediaItemService-GetLyricsAsync] The provided ID does not correspond to a song with available lyrics.");
-            throw new InvalidOperationException("The provided ID does not correspond to a song with available lyrics.");
+            client.Logger?.LogError("[LyricsService-GetAsync] The provided song/video does not have available lyrics.");
+            throw new InvalidOperationException("The provided song/video does not have available lyrics.");
         }
 
-        bool isPlain = lyricsData
-            .Get("staticLayout")
-            .AsBool()
-            .Or(false);
-        return isPlain ? PlainLyrics.Parse(lyricsData) : SyncedLyrics.Parse(lyricsData);
+        return Lyrics.Parse(lyricsData);
     }
 }

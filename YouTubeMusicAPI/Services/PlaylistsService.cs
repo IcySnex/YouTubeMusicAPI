@@ -12,14 +12,19 @@ namespace YouTubeMusicAPI.Services;
 /// <summary>
 /// Service which handles getting information about playlists from YouTube Music.
 /// </summary>
-/// <remarks>
-/// Creates a new instance of the <see cref="PlaylistsService"/> class.
-/// </remarks>
-/// <param name="client">The shared base client.</param>
-public sealed class PlaylistsService(
-    YouTubeMusicClient client)
+public sealed class PlaylistsService
 {
-    readonly YouTubeMusicClient client = client;
+    readonly YouTubeMusicClient client;
+    /// <summary>
+    /// Creates a new instance of the <see cref="PlaylistsService"/> class.
+    /// </summary>
+    /// <param name="client">The shared base client.</param>
+    internal PlaylistsService(
+        YouTubeMusicClient client)
+    {
+        this.client = client;
+    }
+
 
     /// <summary>
     /// Creates a paginator that searches for community playlists on YouTube Music.

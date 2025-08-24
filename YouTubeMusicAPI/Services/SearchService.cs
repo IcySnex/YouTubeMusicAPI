@@ -11,14 +11,19 @@ namespace YouTubeMusicAPI.Services;
 /// <summary>
 /// Service which handles searches on YouTube Music.
 /// </summary>
-/// <remarks>
-/// Creates a new instance of the <see cref="SearchService"/> class.
-/// </remarks>
-/// <param name="client">The shared base client.</param>
-public sealed class SearchService(
-    YouTubeMusicClient client)
+public sealed class SearchService
 {
-    readonly YouTubeMusicClient client = client;
+    readonly YouTubeMusicClient client;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="SearchService"/> class.
+    /// </summary>
+    /// <param name="client">The shared base client.</param>
+    internal SearchService(
+        YouTubeMusicClient client)
+    {
+        this.client = client;
+    }
 
 
     /// <summary>

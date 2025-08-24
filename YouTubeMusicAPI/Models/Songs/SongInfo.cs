@@ -22,13 +22,10 @@ namespace YouTubeMusicAPI.Models.Songs;
 /// <param name="releaseYear">The year this song was released.</param>
 /// <param name="isCreditsAvailable">Whether credits are available to fetch for this song.</param>
 /// <param name="radio">The radio related to this song, if available.</param>
-/// <param name="counterpartVideo">The counterpart video of this song, if available.</param>
 public class SongInfo(
     string name,
     string id,
     Thumbnail[] thumbnails,
-    string relatedBrowseId,
-    string? lyricsBrowseId,
     YouTubeMusicEntity[] artists,
     YouTubeMusicEntity album,
     TimeSpan duration,
@@ -36,7 +33,8 @@ public class SongInfo(
     int? releaseYear,
     bool isCreditsAvailable,
     Radio? radio,
-    VideoInfo? counterpartVideo) : YouTubeMusicEntity(name, id, null)
+    string relatedBrowseId,
+    string? lyricsBrowseId) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="SongInfo"/>.
@@ -178,7 +176,7 @@ public class SongInfo(
             .SelectRadio();
 
 
-        SongInfo result = new(name, id, thumbnails, relatedBrowseId, lyricsBrowseId, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, radio, null);
+        SongInfo result = new(name, id, thumbnails, artists, album, duration, isExplicit, releaseYear, isCreditsAvailable, radio, relatedBrowseId, lyricsBrowseId);
 
         if (!counterpartItem.IsUndefined)
         {
@@ -199,16 +197,6 @@ public class SongInfo(
     /// The thumbnails of this song.
     /// </summary>
     public Thumbnail[] Thumbnails { get; } = thumbnails;
-
-    /// <summary>
-    /// The browse ID for related content associated with this song.
-    /// </summary>
-    public string RelatedBrowseId { get; } = relatedBrowseId;
-
-    /// <summary>
-    /// The browse ID for lyrics associated with this song, if available.
-    /// </summary>
-    public string? LyricsBrowseId { get; } = lyricsBrowseId;
 
     /// <summary>
     /// The artists of this song.
@@ -241,9 +229,15 @@ public class SongInfo(
     public bool IsCreditsAvailable { get; } = isCreditsAvailable;
 
     /// <summary>
+    /// Whether lyrics are available to fetch for this song.
+    /// </summary>
+    public bool IsLyricsAvailable { get; } = lyricsBrowseId is not null;
+
+    /// <summary>
     /// The radio associated with this song, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
+
 
     /// <summary>
     /// The counterpart video of this song, if available.
@@ -252,5 +246,16 @@ public class SongInfo(
     /// Only available for authenticated users with premium subscription.<br/>
     /// For more information about audio-only or video mode, see: <see href="https://support.google.com/youtubemusic/answer/6313574"/>
     /// </remarks>
-    public VideoInfo? CounterpartVideo { get; internal set; } = counterpartVideo;
+    public VideoInfo? CounterpartVideo { get; internal set; }
+
+
+    /// <summary>
+    /// The browse ID for related content associated with this song.
+    /// </summary>
+    internal string RelatedBrowseId { get; } = relatedBrowseId;
+
+    /// <summary>
+    /// The browse ID for lyrics associated with this song, if available.
+    /// </summary>
+    internal string? LyricsBrowseId { get; } = lyricsBrowseId;
 }

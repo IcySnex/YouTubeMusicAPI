@@ -1,4 +1,4 @@
-﻿using YouTubeMusicAPI.Models.MediaItems;
+﻿using YouTubeMusicAPI.Models.Lyrics;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Songs;
 using YouTubeMusicAPI.Pagination;
@@ -51,6 +51,7 @@ public class SongServiceTests
         TestData.WriteResult(result);
     }
 
+
     [Test]
     public void Should_get_credits()
     {
@@ -69,14 +70,20 @@ public class SongServiceTests
     }
 
     [Test]
-    public void Should_get_lyrics()
+    public async Task Should_get_lyrics()
     {
+        // Arrange
+        SongInfo song = await client.Songs.GetAsync(TestData.SongId);
+
+        if (!song.IsLyricsAvailable)
+            Assert.Inconclusive("The provided song does not have available lyrics.");
+
         // Act
         Lyrics? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Songs.GetLyricsAsync(TestData.SongLyricsBrowseId);
+            result = await client.Songs.GetLyricsAsync(song);
         });
 
         // Assert

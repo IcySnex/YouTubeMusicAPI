@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using YouTubeMusicAPI.Http.Authentication;
+using YouTubeMusicAPI.Models.Search;
 using YouTubeSessionGenerator;
 using YouTubeSessionGenerator.Js.Environments;
 
@@ -120,23 +121,13 @@ internal static class TestData
     public const int FetchOffset = 0;
     public const int FetchLimit = 20;
 
-    // - Search
     public const string SearchQuery = "relax";
-    public const Models.Search.SearchScope SearchScope = Models.Search.SearchScope.Global;
+    public const SearchScope SearchScope = Models.Search.SearchScope.Global;
     public const bool SearchIgnoreSpelling = true;
 
-    // - Songs
     public const string SongId = "tzqtLQ1_bjU";
 
-    public const string SongLyricsBrowseId = "MPLYt_Gz56kGj5oFL-1";
+    public const string VideoId = "Yh4Sgkak1Yg";
 
-    // - Videos
-    public const string VideoId = "J5-rJsiKJng";
-
-    public const string VideoLyricsBrowseId = "MPLYt_l8m6XgFuxWq";
-
-    // - Playlists
     public const string PlaylistId = "RDCLAK5uy_mPolD_J22gS1SKxufARWcTZd1UrAH_0ZI";
-
-    public const string PlaylistBrowseId = "VLRDCLAK5uy_ljm2pVSIkXSIKp1im9yxV0XgLmkBbGR-E";
 }

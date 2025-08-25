@@ -113,6 +113,69 @@ public class PlaylistItem(
         return new(name, id, thumbnails, artists, album, duration, isExplicit, isCreditsAvailable, type, radio);
     }
 
+    /// <summary>
+    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistItem"/>.
+    /// </summary>
+    /// <param name="element">The <see cref="JElement"/> "playlistPanelVideoRenderer".</param>
+    internal static PlaylistItem ParseRadio(
+        JElement element)
+    {
+        JElement menu = element
+            .SelectMenu();
+
+        JElement descriptionRuns = element
+            .Get("longBylineText")
+            .Get("runs");
+
+
+        string name = element
+            .SelectRunTextAt("title", 0)
+            .OrThrow();
+
+        string id = element
+            .SelectNavigationVideoId()
+            .OrThrow();
+
+        Thumbnail[] thumbnails = element
+            .SelectThumbnails();
+
+        YouTubeMusicEntity[] artists = descriptionRuns
+            .SelectArtists();
+
+        YouTubeMusicEntity? album = descriptionRuns
+            .GetAt(artists.Length * 2)
+            .SelectNavigationBrowseId()
+            .IsNotNull(out string? albumBrowseId)
+                ? new YouTubeMusicEntity(
+                    descriptionRuns
+                        .GetAt(artists.Length * 2)
+                        .Get("text")
+                        .AsString()
+                        .OrThrow(),
+                    null,
+                    albumBrowseId)
+                : null; // ahh my beloved fluent syntax.. :(
+
+        TimeSpan duration = element
+            .SelectRunTextAt("lengthText", 0)
+            .ToTimeSpan()
+            .Or(TimeSpan.Zero);
+
+        bool isExplicit = element
+            .SelectIsExplicit();
+
+        bool isCreditsAvailable = menu
+            .SelectIsCreditsAvailable();
+
+        PlaylistItemType type = menu
+            .SelectPlaylistItemType();
+
+        Radio? radio = menu
+            .SelectRadio();
+
+        return new(name, id, thumbnails, artists, album, duration, isExplicit, isCreditsAvailable, type, radio);
+    }
+
 
     /// <summary>
     /// The ID of this playlist item.

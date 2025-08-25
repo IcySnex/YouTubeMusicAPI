@@ -158,7 +158,7 @@ public class PlaylistInfo(
             .Get("text")
             .AsString()
             .ToInt32()
-            .OrThrow();
+            .Or(DateTime.Now.Year);
 
         bool hasViewsInfo = secondSubtitleRuns
             .ArrayLength
@@ -199,6 +199,72 @@ public class PlaylistInfo(
             .Get("nextContinuationData")
             .Get("continuation")
             .AsString();
+
+        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, songsInfo, lengthInfo, radio, relationsContinuationToken);
+    }
+    
+    /// <summary>
+    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistInfo"/>.
+    /// </summary>
+    /// <param name="element">The <see cref="JElement"/> '$' to parse.</param>
+    /// <returns>A <see cref="PlaylistInfo"/> representing the <see cref="JElement"/>.</returns>
+    internal static PlaylistInfo ParseRadio(
+        JElement element)
+    {
+        JElement queue = element
+            .Get("contents")
+            .Get("singleColumnMusicWatchNextResultsRenderer")
+            .Get("tabbedRenderer")
+            .Get("watchNextTabbedResultsRenderer")
+            .Get("tabs")
+            .GetAt(0)
+            .Get("tabRenderer")
+            .Get("content")
+            .Get("musicQueueRenderer");
+
+        JElement item = queue
+            .Get("content")
+            .Get("playlistPanelRenderer");
+
+
+        string name = queue
+            .Get("header")
+            .Get("musicQueueHeaderRenderer")
+            .SelectRunTextAt("subtitle", 0)
+            .OrThrow();
+
+        string id = item
+            .Get("playlistId")
+            .AsString()
+            .OrThrow();
+
+        string browseId = $"VL{id}"; // doesn't even have a browseId so fake it 'till we make it ig
+
+        Thumbnail[] thumbnails = [
+            new($"https://www.gstatic.com/youtube/media/ytm/images/pbg/attribute-radio-fallback-{(Math.Abs(id.Aggregate(0, (h, c) => h * 31 + c)) % 5) + 1}@1000.png", 1000, 1000)
+            ]; // whoops again some fake data :3
+
+        YouTubeMusicEntity? creator = null;
+
+        string? description = null;
+
+        bool isOwner = false;
+
+        bool isMix = true; // is it really tho?? not really
+
+        PlaylistPrivacy privacy = PlaylistPrivacy.Public;
+
+        int creationYear = DateTime.Now.Year;
+
+        string viewsInfo = "N/A views";
+
+        string songsInfo = "N/A songs";
+
+        string lengthInfo = "N/A minutes";
+
+        Radio? radio = null;
+
+        string? relationsContinuationToken = null;
 
         return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, songsInfo, lengthInfo, radio, relationsContinuationToken);
     }

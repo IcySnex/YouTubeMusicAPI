@@ -95,19 +95,22 @@ public sealed class PlaylistsService
         Ensure.NotNullOrEmpty(browseId, nameof(browseId));
         Ensure.StartsWith(browseId, "VL", nameof(browseId));
 
+        bool isRadio = browseId.StartsWith("VLRDAM");
+
         // Send request
         KeyValuePair<string, object?>[] payload =
         [
             new("browseId", browseId),
+            new("playlistId", browseId[2..])
         ];
 
-        string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
+        string response = await client.RequestHandler.PostAsync(isRadio ? Endpoints.Next : Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
         // Parse response
-        client.Logger?.LogInformation("[PlaylistService-GetAsync] Parsing response...");
+        client.Logger?.LogInformation("[PlaylistService-GetAsync] Parsing {radioInfo}response...", isRadio ? "radio " : "");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        PlaylistInfo playlist = PlaylistInfo.Parse(root);
+        PlaylistInfo playlist = isRadio ? PlaylistInfo.ParseRadio(root) : PlaylistInfo.Parse(root);
         return playlist;
     }
 
@@ -122,6 +125,8 @@ public sealed class PlaylistsService
     {
         Ensure.NotNullOrEmpty(browseId, nameof(browseId));
         Ensure.StartsWith(browseId, "VL", nameof(browseId));
+
+        bool isRadio = browseId.StartsWith("VLRDAM");
 
         // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
         // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
@@ -140,7 +145,7 @@ public sealed class PlaylistsService
             string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
             // Parse response
-            client.Logger?.LogInformation("[PlaylistService-GetAsync] Parsing response...");
+            client.Logger?.LogInformation("[PlaylistService-FetchPageAsync] Parsing response...");
             using IDisposable _ = response.ParseJson(out JElement root);
 
             JElement contents = root
@@ -181,8 +186,70 @@ public sealed class PlaylistsService
             return new(result, nextContinuationToken);
         }
 
-        return new((contiuationToken, cancellationToken) =>
-            FetchPageAsync(browseId, contiuationToken, cancellationToken));
+        // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+        // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+        async Task<Page<PlaylistItem>> FetchRadioPageAsync(
+            string id,
+            string? continuationToken,
+            CancellationToken cancellationToken = default)
+        {
+            // Send request
+            KeyValuePair<string, object?>[] payload =
+            [
+                new("playlistId", id),
+                new("continuation", continuationToken),
+            ];
+
+            string response = await client.RequestHandler.PostAsync(Endpoints.Next, payload, ClientType.WebMusic, cancellationToken);
+
+            // Parse response
+            client.Logger?.LogInformation("[PlaylistService-FetchRadioPageAsync] Parsing radio response...");
+            using IDisposable _ = response.ParseJson(out JElement root);
+
+            JElement playlistPanel = root
+                .Coalesce(
+                    item => item
+                        .Get("contents")
+                        .Get("singleColumnMusicWatchNextResultsRenderer")
+                        .Get("tabbedRenderer")
+                        .Get("watchNextTabbedResultsRenderer")
+                        .Get("tabs")
+                        .GetAt(0)
+                        .Get("tabRenderer")
+                        .Get("content")
+                        .Get("musicQueueRenderer")
+                        .Get("content")
+                        .Get("playlistPanelRenderer"),
+                    item => item
+                        .Get("continuationContents")
+                        .Get("playlistPanelContinuation"));
+
+            string? nextContinuationToken = playlistPanel
+                .Get("continuations")
+                .GetAt(0)
+                .Get("nextRadioContinuationData")
+                .Get("continuation")
+                .AsString();
+
+            List<PlaylistItem> result = playlistPanel
+                .Get("contents")
+                .AsArray()
+                .Or(JArray.Empty)
+                .Where(item => item
+                    .Contains("playlistPanelVideoRenderer"))
+                .Select(item => item
+                    .Get("playlistPanelVideoRenderer"))
+                .Select(PlaylistItem.ParseRadio)
+                .ToList();
+
+            return new(result, nextContinuationToken);
+        }
+
+        return isRadio
+            ? new((contiuationToken, cancellationToken) =>
+                FetchRadioPageAsync(browseId[2..], contiuationToken, cancellationToken))
+            : new((contiuationToken, cancellationToken) =>
+                FetchPageAsync(browseId, contiuationToken, cancellationToken));
     }
 
 

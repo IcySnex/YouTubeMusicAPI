@@ -250,7 +250,7 @@ internal static class Selectors
             bool hasGoToArtist = item
                 .Get("menuNavigationItemRenderer")
                 .SelectRunTextAt("text", 0)
-                .Is("Go to artist");
+                .Is("´Save to library", "Remove from library");
             if (hasGoToArtist)
                 return PlaylistItemType.Song;
 

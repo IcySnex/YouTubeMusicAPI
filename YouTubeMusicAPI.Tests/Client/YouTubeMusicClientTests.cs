@@ -1,4 +1,4 @@
-﻿using YouTubeMusicAPI.Models;
+﻿using YouTubeMusicAPI.Http.Authentication;
 
 namespace YouTubeMusicAPI.Tests.Client;
 

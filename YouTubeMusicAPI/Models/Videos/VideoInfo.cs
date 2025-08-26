@@ -18,7 +18,7 @@ namespace YouTubeMusicAPI.Models.Videos;
 /// <param name="viewsInfo">The information about the number of views this video has.</param>
 /// <param name="ratingsInfo">The information about the number of likes this video has.</param>
 /// <param name="radio">The radio related to this video, if available.</param>
-/// <param name="relatedBrowseId">The browse ID related to this video for full navigation.</param>
+/// <param name="relationsBrowseId">The browse ID related to this video for full navigation.</param>
 /// <param name="lyricsBrowseId">The browse ID used to fetch lyrics for this video, if available.</param>
 public class VideoInfo(
     string name,
@@ -29,7 +29,7 @@ public class VideoInfo(
     string viewsInfo,
     string ratingsInfo,
     Radio? radio,
-    string relatedBrowseId,
+    string relationsBrowseId,
     string? lyricsBrowseId) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
@@ -78,7 +78,7 @@ public class VideoInfo(
             .Get("tabRenderer");
 
 
-        string relatedBrowseId = tabs
+        string relationsBrowseId = tabs
             .GetAt(2)
             .Get("tabRenderer")
             .Get("endpoint")
@@ -99,7 +99,7 @@ public class VideoInfo(
                     .Get("browseId")
                     .AsString());
 
-        return Parse(item, counterpartItem, relatedBrowseId, lyricsBrowseId);
+        return Parse(item, counterpartItem, relationsBrowseId, lyricsBrowseId);
     }
 
     /// <summary>
@@ -107,13 +107,13 @@ public class VideoInfo(
     /// </summary>
     /// <param name="item">The <see cref="JElement"/> '...content.playlistPanelVideoRenderer' to parse.</param>
     /// <param name="counterpartItem">The <see cref="JElement"/> '...content.playlistPanelVideoWrapperRenderer.counterpart[0].counterpartRenderer.playlistPanelVideoRenderer' to parse.</param>
-    /// <param name="relatedBrowseId">The browse ID for related content associated with this video.</param>
+    /// <param name="relationsBrowseId">The browse ID for related content associated with this video.</param>
     /// <param name="lyricsBrowseId">The browse ID for lyrics associated with this video, if available.</param>
     /// <returns>A <see cref="VideoInfo"/> representing the <see cref="JElement"/>.</returns>
     internal static VideoInfo Parse(
         JElement item,
         JElement counterpartItem,
-        string relatedBrowseId,
+        string relationsBrowseId,
         string? lyricsBrowseId)
     {
         JElement menu = item
@@ -160,11 +160,11 @@ public class VideoInfo(
             .SelectRadio();
 
 
-        VideoInfo result = new(name, id, thumbnails, artists, duration, viewsInfo, ratingsInfo, radio, relatedBrowseId, lyricsBrowseId);
+        VideoInfo result = new(name, id, thumbnails, artists, duration, viewsInfo, ratingsInfo, radio, relationsBrowseId, lyricsBrowseId);
 
         if (!counterpartItem.IsUndefined)
         {
-            result.CounterpartSong = SongInfo.Parse(counterpartItem, default, relatedBrowseId, lyricsBrowseId);
+            result.CounterpartSong = SongInfo.Parse(counterpartItem, default, relationsBrowseId, lyricsBrowseId);
             result.CounterpartSong.CounterpartVideo = result;
         }
 
@@ -227,7 +227,7 @@ public class VideoInfo(
     /// <summary>
     /// The browse ID for related content associated with this video.
     /// </summary>
-    internal string RelatedBrowseId { get; } = relatedBrowseId;
+    internal string RelationsBrowseId { get; } = relationsBrowseId;
 
     /// <summary>
     /// The browse ID for lyrics associated with this video, if available.

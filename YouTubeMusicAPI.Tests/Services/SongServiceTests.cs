@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Models.Lyrics;
+using YouTubeMusicAPI.Models.Relations;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Songs;
 using YouTubeMusicAPI.Pagination;
@@ -76,6 +77,31 @@ public class SongServiceTests
     }
 
     [Test]
+    public async Task Should_get_relations()
+    {
+        // Arrange
+        SongInfo song = await client.Songs.GetAsync(TestData.SongId);
+
+        // Act
+        SongVideoRelations? result = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            result = await client.Songs.GetRelationsAsync(song);
+        });
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+
+        TestData.WriteResult(result.YouMightAlsoLike, "You might also like");
+        TestData.WriteResult(result.RecommendedPlaylists, "Recommended playlists");
+        TestData.WriteResult(result.OtherPerformances, "Other performances");
+        TestData.WriteResult(result.SimilarArtists, "Similar artists");
+        TestData.WriteResult(result.MoreFrom, "More from");
+        TestData.WriteResult(result.AboutTheArtist, "About the artist");
+    }
+
+    [Test]
     public async Task Should_get_lyrics()
     {
         // Arrange
@@ -97,5 +123,4 @@ public class SongServiceTests
 
         TestData.WriteResult(result);
     }
-
 }

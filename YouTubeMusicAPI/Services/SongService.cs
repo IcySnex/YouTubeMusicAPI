@@ -2,6 +2,7 @@
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models.Lyrics;
+using YouTubeMusicAPI.Models.Relations;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Models.Songs;
 using YouTubeMusicAPI.Pagination;
@@ -16,18 +17,22 @@ namespace YouTubeMusicAPI.Services;
 public sealed class SongService
 {
     readonly YouTubeMusicClient client;
+    readonly RelationsService relations;
     readonly LyricsService lyrics;
 
     /// <summary>
     /// Creates a new instance of the <see cref="SongService"/> class.
     /// </summary>
     /// <param name="client">The shared base client.</param>
+    /// <param name="relations">The shared relations service.</param>
     /// <param name="lyrics">The shared lyrics service.</param>
     internal SongService(
         YouTubeMusicClient client,
+        RelationsService relations,
         LyricsService lyrics)
     {
         this.client = client;
+        this.relations = relations;
         this.lyrics = lyrics;
     }
 
@@ -141,6 +146,17 @@ public sealed class SongService
         SongCredits credits = SongCredits.Parse(dialogRenderer);
         return credits;
     }
+
+    /// <summary>
+    /// Gets the related content for the song on YouTube Music.
+    /// </summary>
+    /// <param name="song">The song to get the related content for.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The <see cref="SongVideoRelations"/> containing the related content for the song.</returns>
+    public Task<SongVideoRelations> GetRelationsAsync(
+        SongInfo song,
+        CancellationToken cancellationToken = default) =>
+        relations.GetAsync(song.RelationsBrowseId, cancellationToken);
 
     /// <summary>
     /// Gets the lyrics for a song on YouTube Music.

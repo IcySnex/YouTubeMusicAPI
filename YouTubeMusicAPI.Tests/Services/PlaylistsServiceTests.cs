@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Models.Playlists;
+using YouTubeMusicAPI.Models.Relations;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Pagination;
 

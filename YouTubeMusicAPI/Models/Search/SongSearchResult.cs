@@ -61,11 +61,7 @@ public class SongSearchResult(
         string name = flexColumns
             .GetAt(0)
             .Get("musicResponsiveListItemFlexColumnRenderer")
-            .Get("text")
-            .Get("runs")
-            .GetAt(0)
-            .Get("text")
-            .AsString()
+            .SelectRunTextAt("text", 0)
             .OrThrow();
 
         string id = element
@@ -106,11 +102,7 @@ public class SongSearchResult(
         string playsInfo = flexColumns
             .GetAt(2)
             .Get("musicResponsiveListItemFlexColumnRenderer")
-            .Get("text")
-            .Get("runs")
-            .GetAt(0)
-            .Get("text")
-            .AsString()
+            .SelectRunTextAt("text", 0)
             .Or("N/A plays");
 
         bool isCreditsAvailable = menu
@@ -138,11 +130,7 @@ public class SongSearchResult(
 
 
         string name = element
-            .Get("title")
-            .Get("runs")
-            .GetAt(0)
-            .Get("text")
-            .AsString()
+            .SelectRunTextAt("title", 0)
             .OrThrow();
 
         string id = element
@@ -212,11 +200,7 @@ public class SongSearchResult(
         string name = flexColumns
             .GetAt(0)
             .Get("musicResponsiveListItemFlexColumnRenderer")
-            .Get("text")
-            .Get("runs")
-            .GetAt(0)
-            .Get("text")
-            .AsString()
+            .SelectRunTextAt("text", 0)
             .OrThrow();
 
         string id = element

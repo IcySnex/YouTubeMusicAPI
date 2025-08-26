@@ -7,7 +7,7 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicAPI.Services.Sub;
 
 /// <summary>
-/// Service which handles getting lyrics for media items from YouTube Music
+/// Service which handles getting lyrics for songs/videos from YouTube Music
 /// </summary>
 /// <remarks>
 /// Creates a new instance of the <see cref="LyricsService"/> class.
@@ -20,7 +20,7 @@ internal sealed class LyricsService(
 
 
     /// <summary>
-    /// Gets the lyrics for a media item from YouTube Music.
+    /// Gets the lyrics for a song/video on YouTube Music.
     /// </summary>
     /// <param name="browseId">The lyrics browse ID, obtained from <c>MediaItemService.GetAsync()</c>.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>

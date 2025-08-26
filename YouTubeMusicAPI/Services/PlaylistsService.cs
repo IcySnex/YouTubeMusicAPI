@@ -2,6 +2,7 @@
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Models.Playlists;
+using YouTubeMusicAPI.Models.Relations;
 using YouTubeMusicAPI.Models.Search;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Utils;

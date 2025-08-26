@@ -28,11 +28,12 @@ public class YouTubeMusicClient
         RequestHandler = new(Config.GeographicalLocation, Config.Authenticator, Config.HttpClient, Config.Logger);
         Logger = Config.Logger;
 
+        RelationsService relations = new(this);
         LyricsService lyrics = new(this);
 
         Search = new(this);
-        Songs = new(this, lyrics);
-        Videos = new(this, lyrics);
+        Songs = new(this, relations, lyrics);
+        Videos = new(this, relations, lyrics);
         Playlists = new(this);
     }
 

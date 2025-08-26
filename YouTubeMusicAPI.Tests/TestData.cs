@@ -125,9 +125,9 @@ internal static class TestData
     public const SearchScope SearchScope = Models.Search.SearchScope.Global;
     public const bool SearchIgnoreSpelling = true;
 
-    public const string SongId = "tzqtLQ1_bjU";
+    public const string SongId = "dhxjg3SKDUw";
 
-    public const string VideoId = "Yh4Sgkak1Yg";
+    public const string VideoId = "s70j3BHPt9w";
 
     public const string PlaylistId = "RDAMVM9EQD5x8KWUQ";
 }

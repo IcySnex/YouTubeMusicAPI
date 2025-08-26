@@ -46,11 +46,7 @@ public class ProfileSearchResult(
         string name = flexColumns
             .GetAt(0)
             .Get("musicResponsiveListItemFlexColumnRenderer")
-            .Get("text")
-            .Get("runs")
-            .GetAt(0)
-            .Get("text")
-            .AsString()
+            .SelectRunTextAt("text", 0)
             .OrThrow();
 
         string id = element

@@ -1,8 +1,7 @@
-﻿using YouTubeMusicAPI.Models.Lyrics;
-using YouTubeMusicAPI.Models.Relations;
-using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Models.Songs;
-using YouTubeMusicAPI.Pagination;
+﻿using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Lyrics;
+using YouTubeMusicAPI.Services.Relations;
+using YouTubeMusicAPI.Services.Songs;
 
 namespace YouTubeMusicAPI.Tests.Services;
 
@@ -111,7 +110,7 @@ public class SongServiceTests
             Assert.Inconclusive("The provided song does not have available lyrics.");
 
         // Act
-        Lyrics? result = null;
+        SongVideoLyrics? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {

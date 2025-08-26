@@ -1,9 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using YouTubeMusicAPI.Http;
+using YouTubeMusicAPI.Http.Authentication;
 using YouTubeMusicAPI.Json;
-using YouTubeMusicAPI.Models;
-using YouTubeMusicAPI.Services;
-using YouTubeMusicAPI.Services.Sub;
+using YouTubeMusicAPI.Services.Lyrics;
+using YouTubeMusicAPI.Services.Playlists;
+using YouTubeMusicAPI.Services.Relations;
+using YouTubeMusicAPI.Services.Search;
+using YouTubeMusicAPI.Services.Songs;
+using YouTubeMusicAPI.Services.Videos;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI;

@@ -1,5 +1,5 @@
-﻿using YouTubeMusicAPI.Models;
-using YouTubeMusicAPI.Models.Playlists;
+﻿using YouTubeMusicAPI.Common;
+using YouTubeMusicAPI.Services.Playlists;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Json;

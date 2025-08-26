@@ -1,7 +1,6 @@
-﻿using YouTubeMusicAPI.Models.Playlists;
-using YouTubeMusicAPI.Models.Relations;
-using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Pagination;
+﻿using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Playlists;
+using YouTubeMusicAPI.Services.Relations;
 
 namespace YouTubeMusicAPI.Tests.Services;
 
@@ -121,6 +120,9 @@ public class PlaylistsServiceTests
         // Arrange
         string browseId = client.Playlists.GetBrowseId(TestData.PlaylistId);
         PlaylistInfo playlist = await client.Playlists.GetAsync(browseId);
+
+        if (!playlist.IsRelationsAvailable)
+            Assert.Inconclusive("The provided playlist does not have available relations.");
 
         // Act
         PlaylistRelations? result = null;

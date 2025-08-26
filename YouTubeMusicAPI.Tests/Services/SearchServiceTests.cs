@@ -1,5 +1,5 @@
-﻿using YouTubeMusicAPI.Models.Search;
-using YouTubeMusicAPI.Pagination;
+﻿using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Search;
 
 namespace YouTubeMusicAPI.Tests.Services;
 

@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
 using YouTubeMusicAPI.Http;
-using YouTubeMusicAPI.Models;
-using YouTubeMusicAPI.Models.Playlists;
-using YouTubeMusicAPI.Models.Search;
+using YouTubeMusicAPI.Services.Albums;
+using YouTubeMusicAPI.Services.Playlists;
+using YouTubeMusicAPI.Services.Search;
 
 namespace YouTubeMusicAPI.Utils;
 

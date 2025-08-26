@@ -5,7 +5,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using YouTubeMusicAPI.Http.Authentication;
-using YouTubeMusicAPI.Models.Search;
+using YouTubeMusicAPI.Services.Search;
 using YouTubeSessionGenerator;
 using YouTubeSessionGenerator.Js.Environments;
 
@@ -122,7 +122,7 @@ internal static class TestData
     public const int FetchLimit = 20;
 
     public const string SearchQuery = "relax";
-    public const SearchScope SearchScope = Models.Search.SearchScope.Global;
+    public const SearchScope SearchScope = YouTubeMusicAPI.Services.Search.SearchScope.Global;
     public const bool SearchIgnoreSpelling = true;
 
     public const string SongId = "dhxjg3SKDUw";

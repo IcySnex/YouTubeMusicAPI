@@ -9,12 +9,12 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Compile Remove="Models\Library\**" />
-	  <Compile Remove="Models\Streaming\**" />
-	  <EmbeddedResource Remove="Models\Library\**" />
-	  <EmbeddedResource Remove="Models\Streaming\**" />
-	  <None Remove="Models\Library\**" />
-	  <None Remove="Models\Streaming\**" />
+	  <Compile Remove="Common\Library\**" />
+	  <Compile Remove="Common\Streaming\**" />
+	  <EmbeddedResource Remove="Common\Library\**" />
+	  <EmbeddedResource Remove="Common\Streaming\**" />
+	  <None Remove="Common\Library\**" />
+	  <None Remove="Common\Streaming\**" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -91,6 +91,8 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
             clientType != ClientType.WebMusic)
             return false;
 
+        request.Headers.Add("Origin", request.RequestUri.Scheme + Uri.SchemeDelimiter + request.RequestUri.Host);
+
         request.Headers.Add("Cookie", Container.GetCookieHeader(request.RequestUri));
         request.Headers.Add("Authorization", GenerateAuthHeaderValue(request.RequestUri));
         return true;

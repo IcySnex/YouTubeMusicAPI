@@ -43,6 +43,11 @@ public class AnonymousAuthenticator(
         HttpRequestMessage request,
         ClientType clientType)
     {
+        if (request.RequestUri is null)
+            return false;
+
+        request.Headers.Add("Origin", request.RequestUri.Scheme + Uri.SchemeDelimiter + request.RequestUri.Host);
+
         request.Headers.Add("Cookie", "SOCS=CAI");
         return true;
     }

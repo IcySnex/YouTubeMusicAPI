@@ -13,17 +13,17 @@ namespace YouTubeMusicAPI.Services.Playlists;
 /// <param name="name">The name of this playlist.</param>
 /// <param name="id">The ID of this playlist.</param>
 /// <param name="browseId">The browse ID of this playlist.</param>
-/// <param name="thumbnails">The thumbnails of this playlist</param>
-/// <param name="creator">The creator of this playlist, if available</param>
-/// <param name="description">The description of this playlist, if available</param>
+/// <param name="thumbnails">The thumbnails of this playlist.</param>
+/// <param name="creator">The creator of this playlist, if available.</param>
+/// <param name="description">The description of this playlist, if available.</param>
 /// <param name="isOwner">Whether this playlist is owned by the current user.</param>
-/// <param name="isMix">Whether this playlist is a mix</param>
+/// <param name="isMix">Whether this playlist is a mix.</param>
 /// <param name="creationYear">The year this playlist has been created in, if available.</param>
-/// <param name="privacy">The privacy settings of this playlist</param>
-/// <param name="viewsInfo">The information about the number of views this playlist has</param>
-/// <param name="itemsInfo">The information about the number of items this playlist has</param>
-/// <param name="lengthInfo">The information about the length this playlist has</param>
-/// <param name="radio">The radio associated with this playlist, if available</param>
+/// <param name="privacy">The privacy settings of this playlist.</param>
+/// <param name="viewsInfo">The information about the number of views this playlist has.</param>
+/// <param name="itemsInfo">The information about the number of items this playlist has.</param>
+/// <param name="lengthInfo">The information about the length this playlist has.</param>
+/// <param name="radio">The radio associated with this playlist, if available.</param>
 /// <param name="relationsContinuationToken">The continuation token to fetch relations for this playlist.</param>
 public class PlaylistInfo(
     string name,
@@ -336,7 +336,7 @@ public class PlaylistInfo(
     public string ItemsInfo { get; } = itemsInfo;
 
     /// <summary>
-    /// The information about the lengt this playlist has.
+    /// The information about the length this playlist has.
     /// </summary>
     public string LengthInfo { get; } = lengthInfo;
 

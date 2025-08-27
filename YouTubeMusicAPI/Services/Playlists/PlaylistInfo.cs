@@ -18,8 +18,8 @@ namespace YouTubeMusicAPI.Services.Playlists;
 /// <param name="description">The description of this playlist, if available</param>
 /// <param name="isOwner">Whether this playlist is owned by the current user.</param>
 /// <param name="isMix">Whether this playlist is a mix</param>
+/// <param name="creationYear">The year this playlist has been created in, if available.</param>
 /// <param name="privacy">The privacy settings of this playlist</param>
-/// <param name="creationYear">The year this playlist has been created in.</param>
 /// <param name="viewsInfo">The information about the number of views this playlist has</param>
 /// <param name="itemsInfo">The information about the number of items this playlist has</param>
 /// <param name="lengthInfo">The information about the length this playlist has</param>
@@ -34,8 +34,8 @@ public class PlaylistInfo(
     string? description,
     bool isOwner,
     bool isMix,
+    int? creationYear,
     PlaylistPrivacy privacy,
-    int creationYear,
     string viewsInfo,
     string itemsInfo,
     string lengthInfo,
@@ -141,6 +141,12 @@ public class PlaylistInfo(
             .AsString()
             .Is("Mix");
 
+        int? creationYear = subtitleRuns
+            .GetAt(isOwner ? 4 : 2)
+            .Get("text")
+            .AsString()
+            .ToInt32();
+
         PlaylistPrivacy privacy = isMix
             .If(true,
                 PlaylistPrivacy.Private,
@@ -153,13 +159,6 @@ public class PlaylistInfo(
                             .ToPlaylistPrivacy()
                             .Or(PlaylistPrivacy.Public),
                         PlaylistPrivacy.Public));
-
-        int creationYear = subtitleRuns
-            .GetAt(isOwner ? 4 : 2)
-            .Get("text")
-            .AsString()
-            .ToInt32()
-            .Or(DateTime.Now.Year);
 
         bool hasViewsInfo = secondSubtitleRuns
             .ArrayLength
@@ -201,7 +200,7 @@ public class PlaylistInfo(
             .Get("continuation")
             .AsString();
 
-        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, itemsInfo, lengthInfo, radio, relationsContinuationToken);
+        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, creationYear, privacy, viewsInfo, itemsInfo, lengthInfo, radio, relationsContinuationToken);
     }
 
     /// <summary>
@@ -255,7 +254,7 @@ public class PlaylistInfo(
 
         PlaylistPrivacy privacy = PlaylistPrivacy.Public;
 
-        int creationYear = DateTime.Now.Year;
+        int? creationYear = null;
 
         string viewsInfo = "N/A views";
 
@@ -267,7 +266,7 @@ public class PlaylistInfo(
 
         string? relationsContinuationToken = null;
 
-        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, itemsInfo, lengthInfo, radio, relationsContinuationToken);
+        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, creationYear, privacy, viewsInfo, itemsInfo, lengthInfo, radio, relationsContinuationToken);
     }
 
 
@@ -322,9 +321,9 @@ public class PlaylistInfo(
     public PlaylistPrivacy Privacy { get; } = privacy;
 
     /// <summary>
-    /// The year this playlist has been created in..
+    /// The year this playlist has been created in, if available.
     /// </summary>
-    public int CreationYear { get; } = creationYear;
+    public int? CreationYear { get; } = creationYear;
 
     /// <summary>
     /// The information about the number of views this playlist has.

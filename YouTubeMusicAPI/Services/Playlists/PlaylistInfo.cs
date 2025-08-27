@@ -21,7 +21,7 @@ namespace YouTubeMusicAPI.Services.Playlists;
 /// <param name="privacy">The privacy settings of this playlist</param>
 /// <param name="creationYear">The year this playlist has been created in.</param>
 /// <param name="viewsInfo">The information about the number of views this playlist has</param>
-/// <param name="songsInfo">The information about the number of songs this playlist has</param>
+/// <param name="itemsInfo">The information about the number of items this playlist has</param>
 /// <param name="lengthInfo">The information about the length this playlist has</param>
 /// <param name="radio">The radio associated with this playlist, if available</param>
 /// <param name="relationsContinuationToken">The continuation token to fetch relations for this playlist.</param>
@@ -37,7 +37,7 @@ public class PlaylistInfo(
     PlaylistPrivacy privacy,
     int creationYear,
     string viewsInfo,
-    string songsInfo,
+    string itemsInfo,
     string lengthInfo,
     Radio? radio,
     string? relationsContinuationToken) : YouTubeMusicEntity(name, id, browseId)
@@ -173,11 +173,11 @@ public class PlaylistInfo(
                 null)
             .Or("N/A views");
 
-        string songsInfo = secondSubtitleRuns
+        string itemsInfo = secondSubtitleRuns
             .GetAt(hasViewsInfo ? 2 : 0)
             .Get("text")
             .AsString()
-            .Or("N/A songs");
+            .Or("N/A tracks");
 
         string lengthInfo = secondSubtitleRuns
             .GetAt(hasViewsInfo ? 4 : 2)
@@ -201,7 +201,7 @@ public class PlaylistInfo(
             .Get("continuation")
             .AsString();
 
-        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, songsInfo, lengthInfo, radio, relationsContinuationToken);
+        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, itemsInfo, lengthInfo, radio, relationsContinuationToken);
     }
 
     /// <summary>
@@ -259,7 +259,7 @@ public class PlaylistInfo(
 
         string viewsInfo = "N/A views";
 
-        string songsInfo = "N/A songs";
+        string itemsInfo = "N/A tracks";
 
         string lengthInfo = "N/A minutes";
 
@@ -267,7 +267,7 @@ public class PlaylistInfo(
 
         string? relationsContinuationToken = null;
 
-        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, songsInfo, lengthInfo, radio, relationsContinuationToken);
+        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, privacy, creationYear, viewsInfo, itemsInfo, lengthInfo, radio, relationsContinuationToken);
     }
 
 
@@ -332,9 +332,9 @@ public class PlaylistInfo(
     public string ViewsInfo { get; } = viewsInfo;
 
     /// <summary>
-    /// The information about the number of songs this playlist has.
+    /// The information about the number of items this playlist has.
     /// </summary>
-    public string SongsInfo { get; } = songsInfo;
+    public string ItemsInfo { get; } = itemsInfo;
 
     /// <summary>
     /// The information about the lengt this playlist has.

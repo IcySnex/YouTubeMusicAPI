@@ -4,7 +4,7 @@ using YouTubeMusicAPI.Services.Relations;
 
 namespace YouTubeMusicAPI.Tests.Services;
 
-public class PlaylistsServiceTests
+public class PlaylistServiceTests
 {
     YouTubeMusicClient client;
 

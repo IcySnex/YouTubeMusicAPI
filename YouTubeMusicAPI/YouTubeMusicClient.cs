@@ -68,7 +68,7 @@ public class YouTubeMusicClient
     /// <summary>
     /// The service which handles getting information about playlists from YouTube Music.
     /// </summary>
-    public PlaylistsService Playlists { get; }
+    public PlaylistService Playlists { get; }
 
     /// <summary>
     /// The service which handles getting information about albums from YouTube Music.

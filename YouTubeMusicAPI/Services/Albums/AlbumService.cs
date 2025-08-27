@@ -11,8 +11,12 @@ namespace YouTubeMusicAPI.Services.Albums;
 /// <summary>
 /// Service which handles getting information about albums from YouTube Music.
 /// </summary>
-public sealed class AlbumService
+public sealed partial class AlbumService
 {
+    [GeneratedRegex("\"MPRE.+?\"")]
+    private static partial Regex BrowseIdRegex();
+
+
     readonly YouTubeMusicClient client;
 
     /// <summary>
@@ -70,7 +74,7 @@ public sealed class AlbumService
 
         // Parse response
         client.Logger?.LogInformation("[AlbumService-GetBrowseIdAsync] Parsing response...");
-        Match match = Regex.Match(Regex.Unescape(response), "\"MPRE.+?\"");
+        Match match = BrowseIdRegex().Match(Regex.Unescape(response));
 
         if (!match.Success)
         {
@@ -114,5 +118,4 @@ public sealed class AlbumService
         AlbumInfo album = AlbumInfo.Parse(root);
         return album;
     }
-
 }

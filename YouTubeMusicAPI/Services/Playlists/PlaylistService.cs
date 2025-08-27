@@ -2,6 +2,7 @@
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Albums;
 using YouTubeMusicAPI.Services.Relations;
 using YouTubeMusicAPI.Services.Search;
 using YouTubeMusicAPI.Utils;
@@ -60,23 +61,33 @@ public sealed class PlaylistService
         client.Search.ByCategoryAsync<FeaturedPlaylistSearchResult>(query, scope, ignoreSpelling);
 
 
+#pragma warning disable IDE0060 // Remove unused parameter
     /// <summary>
     /// Gets the browse ID for a playlist on YouTube Music.
     /// </summary>
+    /// <remarks>
+    /// This method does not perform any network operations. It is pseudo-async to preserve consistency with similar methods in the library, e.g. <see cref="AlbumService.GetBrowseIdAsync(string, CancellationToken)"/>.
+    /// </remarks>
     /// <param name="id">The id of the playlist.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The browse ID of the playlist.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty.</exception>
-    public string GetBrowseId(
-        string id)
+    public Task<string> GetBrowseIdAsync(
+        string id,
+        CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrEmpty(id, nameof(id));
 
-        client.Logger?.LogInformation("[PlaylistService-GetBrowseId] Getting browse ID for playlist...");
-
         if (id.StartsWith("VL"))
-            return id;
-        return $"VL{id}";
+            return Task.FromResult(id);
+
+        // Create browse ID
+        client.Logger?.LogInformation("[PlaylistService-GetBrowseIdAsync] Creating browse ID...");
+
+        string browseId = $"VL{id}";
+        return Task.FromResult(browseId);
     }
+#pragma warning restore IDE0060 // Remove unused parameter
 
 
     /// <summary>

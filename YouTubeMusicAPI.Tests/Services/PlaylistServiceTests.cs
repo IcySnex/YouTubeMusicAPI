@@ -58,9 +58,9 @@ public class PlaylistServiceTests
         // Act
         string? browseId = null;
 
-        Assert.DoesNotThrow(() =>
+        Assert.DoesNotThrowAsync(async () =>
         {
-            browseId = client.Playlists.GetBrowseId(TestData.PlaylistId);
+            browseId = await client.Playlists.GetBrowseIdAsync(TestData.PlaylistId);
         });
 
         // Assert
@@ -74,15 +74,12 @@ public class PlaylistServiceTests
     [Test]
     public void Should_get()
     {
-        // Arrange
-        string browseId = client.Playlists.GetBrowseId(TestData.PlaylistId);
-
         // Act
         PlaylistInfo? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            result = await client.Playlists.GetAsync(browseId);
+            result = await client.Playlists.GetAsync(TestData.PlaylistBrowseId);
         });
 
         // Assert
@@ -94,15 +91,12 @@ public class PlaylistServiceTests
     [Test]
     public void Should_get_items()
     {
-        // Arrange
-        string browseId = client.Playlists.GetBrowseId(TestData.PlaylistId);
-
         // Act
         IReadOnlyList<PlaylistItem>? results = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            PaginatedAsyncEnumerable<PlaylistItem> response = client.Playlists.GetItemsAsync(browseId);
+            PaginatedAsyncEnumerable<PlaylistItem> response = client.Playlists.GetItemsAsync(TestData.PlaylistBrowseId);
 
             results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
         });
@@ -118,8 +112,7 @@ public class PlaylistServiceTests
     public async Task Should_get_relations()
     {
         // Arrange
-        string browseId = client.Playlists.GetBrowseId(TestData.PlaylistId);
-        PlaylistInfo playlist = await client.Playlists.GetAsync(browseId);
+        PlaylistInfo playlist = await client.Playlists.GetAsync(TestData.PlaylistBrowseId);
 
         if (!playlist.IsRelationsAvailable)
             Assert.Inconclusive("The provided playlist does not have available relations.");

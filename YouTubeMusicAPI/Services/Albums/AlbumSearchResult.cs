@@ -16,7 +16,7 @@ namespace YouTubeMusicAPI.Services.Albums;
 /// <param name="thumbnails">The thumbnails of this album.</param>
 /// <param name="browseId">The browse ID of this album.</param>
 /// <param name="artists">The artists of this album.</param>
-/// <param name="releaseYear">The year this alvbum was released in.</param>
+/// <param name="releaseYear">The year this album was released in.</param>
 /// <param name="isExplicit">Whether this album is explicit or not.</param>
 /// <param name="type">The type of this album, e.g. Album, Single, EP.</param>
 /// <param name="radio">The radio associated with this album, if available.</param>
@@ -223,7 +223,7 @@ public class AlbumSearchResult(
     public YouTubeMusicEntity[] Artists { get; } = artists;
 
     /// <summary>
-    /// The year this alvbum was released in.
+    /// The year this album was released in.
     /// </summary>
     public int? ReleaseYear { get; } = releaseYear;
 

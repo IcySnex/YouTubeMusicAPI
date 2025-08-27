@@ -19,6 +19,9 @@ internal sealed class RequestHandler(
     HttpClient httpClient,
     ILogger? logger = null)
 {
+    const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.7151.6 Safari/537.36";
+
+
     readonly string geographicalLocation = geographicalLocation;
     readonly IAuthenticator authenticator = authenticator;
     readonly HttpClient httpClient = httpClient;
@@ -72,8 +75,11 @@ internal sealed class RequestHandler(
             if (authenticator.ProofOfOriginToken is string poToken)
                 body["serviceIntegrityDimensions"] = new { poToken };
 
-            request.Headers.Add("Origin", requestUri.Scheme + Uri.SchemeDelimiter + requestUri.Host);
             request.Headers.Add("User-Agent", client.UserAgent);
+        }
+        else
+        {
+            request.Headers.Add("User-Agent", DefaultUserAgent);
         }
 
         if (body.Count != 0)

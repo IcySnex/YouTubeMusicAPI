@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
@@ -23,6 +24,55 @@ public sealed class PlaylistService
         YouTubeMusicClient client)
     {
         this.client = client;
+    }
+
+
+    // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    async Task<Page<PlaylistItem>> FetchItemsPageAsync(
+        string browseId,
+        string? continuationToken,
+        CancellationToken cancellationToken = default)
+    {
+        // Send request
+        KeyValuePair<string, object?>[] payload =
+        [
+            new("browseId", browseId),
+            new("continuation", continuationToken),
+        ];
+
+        string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
+
+        // Parse response
+        client.Logger?.LogInformation("[PlaylistService-FetchPageAsync] Parsing response...");
+        using IDisposable _ = response.ParseJson(out JElement root);
+
+        Page<PlaylistItem> page = PlaylistInfo.ParseItemsPage(root);
+        return page;
+    }
+
+    // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    async Task<Page<PlaylistItem>> FetchItemsRadioPageAsync(
+        string id,
+        string? continuationToken,
+        CancellationToken cancellationToken = default)
+    {
+        // Send request
+        KeyValuePair<string, object?>[] payload =
+        [
+            new("playlistId", id),
+            new("continuation", continuationToken),
+        ];
+
+        string response = await client.RequestHandler.PostAsync(Endpoints.Next, payload, ClientType.WebMusic, cancellationToken);
+
+        // Parse response
+        client.Logger?.LogInformation("[PlaylistService-FetchRadioPageAsync] Parsing radio response...");
+        using IDisposable _ = response.ParseJson(out JElement root);
+
+        Page<PlaylistItem> page = PlaylistInfo.ParseItemsRadioPage(root);
+        return page;
     }
 
 
@@ -61,7 +111,6 @@ public sealed class PlaylistService
         client.Search.ByCategoryAsync<FeaturedPlaylistSearchResult>(query, scope, ignoreSpelling);
 
 
-#pragma warning disable IDE0060 // Remove unused parameter
     /// <summary>
     /// Gets the browse ID for a playlist on YouTube Music.
     /// </summary>
@@ -72,6 +121,7 @@ public sealed class PlaylistService
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The browse ID of the playlist.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty.</exception>
+    [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Preserve consistency with similar methods in the library")]
     public Task<string> GetBrowseIdAsync(
         string id,
         CancellationToken cancellationToken = default)
@@ -87,7 +137,6 @@ public sealed class PlaylistService
         string browseId = $"VL{id}";
         return Task.FromResult(browseId);
     }
-#pragma warning restore IDE0060 // Remove unused parameter
 
 
     /// <summary>
@@ -121,146 +170,24 @@ public sealed class PlaylistService
         client.Logger?.LogInformation("[PlaylistService-GetAsync] Parsing {radioInfo}response...", isRadio ? "radio " : "");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        PlaylistInfo playlist = isRadio ? PlaylistInfo.ParseRadio(root) : PlaylistInfo.Parse(root);
-        return playlist;
-    }
-
-    /// <summary>
-    /// Creates an async paginator that fetches items from a playlist on YouTube Music.
-    /// </summary>
-    /// <param name="browseId">The browse ID of the playlist.</param>
-    /// <returns>A <see cref="PaginatedAsyncEnumerable{T}"/> that provides asynchronous iteration over the <see cref="PlaylistItem"/>'s.</returns>
-    /// <exception cref="ArgumentException">Occurs when the <c>browseId</c> is <see langword="null"/> or empty or it is not a valid browse ID.</exception>
-    public PaginatedAsyncEnumerable<PlaylistItem> GetItemsAsync(
-        string browseId)
-    {
-        Ensure.NotNullOrEmpty(browseId, nameof(browseId));
-        Ensure.StartsWith(browseId, "VL", nameof(browseId));
-
-        bool isRadio = browseId.StartsWith("VLRDAM");
-
-        // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
-        // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
-        async Task<Page<PlaylistItem>> FetchPageAsync(
-            string browseId,
-            string? continuationToken,
-            CancellationToken cancellationToken = default)
+        if (isRadio)
         {
-            // Send request
-            KeyValuePair<string, object?>[] payload =
-            [
-                new("browseId", browseId),
-                new("continuation", continuationToken),
-            ];
+            PaginatedAsyncEnumerable<PlaylistItem> items = new(
+                (contiuationToken, cancellationToken) => FetchItemsRadioPageAsync(browseId[2..], contiuationToken, cancellationToken),
+                PlaylistInfo.ParseItemsRadioPage(root));
 
-            string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
-
-            // Parse response
-            client.Logger?.LogInformation("[PlaylistService-FetchPageAsync] Parsing response...");
-            using IDisposable _ = response.ParseJson(out JElement root);
-
-            JElement contents = root
-                .Coalesce(
-                    item => item
-                        .Get("contents")
-                        .Get("twoColumnBrowseResultsRenderer")
-                        .Get("secondaryContents")
-                        .Get("sectionListRenderer")
-                        .Get("contents")
-                        .GetAt(0)
-                        .Get("musicPlaylistShelfRenderer")
-                        .Get("contents"),
-                    item => item
-                        .Get("onResponseReceivedActions")
-                        .GetAt(0)
-                        .Get("appendContinuationItemsAction")
-                        .Get("continuationItems"));
-
-            string? nextContinuationToken = contents
-                .GetAt(contents.ArrayLength - 1)
-                .Get("continuationItemRenderer")
-                .Get("continuationEndpoint")
-                .Get("continuationCommand")
-                .Get("token")
-                .AsString();
-
-            List<PlaylistItem> result = contents
-                .AsArray()
-                .Or(JArray.Empty)
-                .Where(item => item
-                    .Contains("musicResponsiveListItemRenderer"))
-                .Select(item => item
-                    .Get("musicResponsiveListItemRenderer"))
-                .Select(PlaylistItem.Parse)
-                .ToList();
-
-            return new(result, nextContinuationToken);
+            PlaylistInfo playlist = PlaylistInfo.ParseRadio(root, items);
+            return playlist;
         }
-
-        // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
-        // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
-        async Task<Page<PlaylistItem>> FetchRadioPageAsync(
-            string id,
-            string? continuationToken,
-            CancellationToken cancellationToken = default)
+        else
         {
-            // Send request
-            KeyValuePair<string, object?>[] payload =
-            [
-                new("playlistId", id),
-                new("continuation", continuationToken),
-            ];
+            PaginatedAsyncEnumerable<PlaylistItem> items = new(
+                (contiuationToken, cancellationToken) => FetchItemsPageAsync(browseId, contiuationToken, cancellationToken),
+                PlaylistInfo.ParseItemsPage(root));
 
-            string response = await client.RequestHandler.PostAsync(Endpoints.Next, payload, ClientType.WebMusic, cancellationToken);
-
-            // Parse response
-            client.Logger?.LogInformation("[PlaylistService-FetchRadioPageAsync] Parsing radio response...");
-            using IDisposable _ = response.ParseJson(out JElement root);
-
-            JElement playlistPanel = root
-                .Coalesce(
-                    item => item
-                        .Get("contents")
-                        .Get("singleColumnMusicWatchNextResultsRenderer")
-                        .Get("tabbedRenderer")
-                        .Get("watchNextTabbedResultsRenderer")
-                        .Get("tabs")
-                        .GetAt(0)
-                        .Get("tabRenderer")
-                        .Get("content")
-                        .Get("musicQueueRenderer")
-                        .Get("content")
-                        .Get("playlistPanelRenderer"),
-                    item => item
-                        .Get("continuationContents")
-                        .Get("playlistPanelContinuation"));
-
-            string? nextContinuationToken = playlistPanel
-                .Get("continuations")
-                .GetAt(0)
-                .Get("nextRadioContinuationData")
-                .Get("continuation")
-                .AsString();
-
-            List<PlaylistItem> result = playlistPanel
-                .Get("contents")
-                .AsArray()
-                .Or(JArray.Empty)
-                .Where(item => item
-                    .Contains("playlistPanelVideoRenderer"))
-                .Select(item => item
-                    .Get("playlistPanelVideoRenderer"))
-                .Select(PlaylistItem.ParseRadio)
-                .ToList();
-
-            return new(result, nextContinuationToken);
+            PlaylistInfo playlist = PlaylistInfo.Parse(root, items);
+            return playlist;
         }
-
-        return isRadio
-            ? new((contiuationToken, cancellationToken) =>
-                FetchRadioPageAsync(browseId[2..], contiuationToken, cancellationToken))
-            : new((contiuationToken, cancellationToken) =>
-                FetchPageAsync(browseId, contiuationToken, cancellationToken));
     }
 
 

@@ -1,5 +1,7 @@
-﻿using YouTubeMusicAPI.Common;
+﻿using System.Text.Json.Serialization;
+using YouTubeMusicAPI.Common;
 using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Playlists;
@@ -18,12 +20,14 @@ namespace YouTubeMusicAPI.Services.Playlists;
 /// <param name="description">The description of this playlist, if available.</param>
 /// <param name="isOwner">Whether this playlist is owned by the current user.</param>
 /// <param name="isMix">Whether this playlist is a mix.</param>
+/// <param name="isRadio">Whether this playlist is a radio.</param>
 /// <param name="creationYear">The year this playlist has been created in, if available.</param>
 /// <param name="privacy">The privacy settings of this playlist.</param>
 /// <param name="viewsInfo">The information about the number of views this playlist has.</param>
 /// <param name="itemsInfo">The information about the number of items this playlist has.</param>
 /// <param name="lengthInfo">The information about the length this playlist has.</param>
 /// <param name="radio">The radio associated with this playlist, if available.</param>
+/// <param name="items">The async paginator that fetches items for this playlist.</param>
 /// <param name="relationsContinuationToken">The continuation token to fetch relations for this playlist.</param>
 public class PlaylistInfo(
     string name,
@@ -34,21 +38,25 @@ public class PlaylistInfo(
     string? description,
     bool isOwner,
     bool isMix,
+    bool isRadio,
     int? creationYear,
     PlaylistPrivacy privacy,
     string viewsInfo,
     string itemsInfo,
     string lengthInfo,
     Radio? radio,
+    PaginatedAsyncEnumerable<PlaylistItem> items,
     string? relationsContinuationToken) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="PlaylistInfo"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> '$' to parse.</param>
+    /// <param name="items">The async paginator that fetches items for this playlist.</param>
     /// <returns>A <see cref="PlaylistInfo"/> representing the <see cref="JElement"/>.</returns>
     internal static PlaylistInfo Parse(
-        JElement element)
+        JElement element,
+        PaginatedAsyncEnumerable<PlaylistItem> items)
     {
         JElement twoColumn = element
             .Get("contents")
@@ -141,6 +149,8 @@ public class PlaylistInfo(
             .AsString()
             .Is("Mix");
 
+        bool isRadio = false;
+
         int? creationYear = subtitleRuns
             .GetAt(isOwner ? 4 : 2)
             .Get("text")
@@ -200,16 +210,18 @@ public class PlaylistInfo(
             .Get("continuation")
             .AsString();
 
-        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, creationYear, privacy, viewsInfo, itemsInfo, lengthInfo, radio, relationsContinuationToken);
+        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, isRadio, creationYear, privacy, viewsInfo, itemsInfo, lengthInfo, radio, items, relationsContinuationToken);
     }
 
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="PlaylistInfo"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> '$' to parse.</param>
+    /// <param name="items">The async paginator that fetches items for this playlist.</param>
     /// <returns>A <see cref="PlaylistInfo"/> representing the <see cref="JElement"/>.</returns>
     internal static PlaylistInfo ParseRadio(
-        JElement element)
+        JElement element,
+        PaginatedAsyncEnumerable<PlaylistItem> items)
     {
         JElement queue = element
             .Get("contents")
@@ -250,7 +262,9 @@ public class PlaylistInfo(
 
         bool isOwner = false;
 
-        bool isMix = true; // is it really tho?? not really
+        bool isMix = false;
+
+        bool isRadio = true;
 
         PlaylistPrivacy privacy = PlaylistPrivacy.Public;
 
@@ -266,7 +280,102 @@ public class PlaylistInfo(
 
         string? relationsContinuationToken = null;
 
-        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, creationYear, privacy, viewsInfo, itemsInfo, lengthInfo, radio, relationsContinuationToken);
+        return new(name, id, browseId, thumbnails, creator, description, isOwner, isMix, isRadio, creationYear, privacy, viewsInfo, itemsInfo, lengthInfo, radio, items, relationsContinuationToken);
+    }
+
+    /// <summary>
+    /// Parses a <see cref="JElement"/> into a <see cref="Page{T}"/> of <see cref="PlaylistItem"/>'s.
+    /// </summary>
+    /// <param name="element">The <see cref="JElement"/> '$' to parse.</param>
+    /// <returns>A <see cref="Page{T}"/> representing the <see cref="JElement"/>.</returns>
+    internal static Page<PlaylistItem> ParseItemsPage(
+        JElement element)
+    {
+        JElement contents = element
+            .Coalesce(
+                item => item
+                    .Get("contents")
+                    .Get("twoColumnBrowseResultsRenderer")
+                    .Get("secondaryContents")
+                    .Get("sectionListRenderer")
+                    .Get("contents")
+                    .GetAt(0)
+                    .Get("musicPlaylistShelfRenderer")
+                    .Get("contents"),
+                item => item
+                    .Get("onResponseReceivedActions")
+                    .GetAt(0)
+                    .Get("appendContinuationItemsAction")
+                    .Get("continuationItems"));
+
+
+        List<PlaylistItem> result = contents
+            .AsArray()
+            .Or(JArray.Empty)
+            .Where(item => item
+                .Contains("musicResponsiveListItemRenderer"))
+            .Select(item => item
+                .Get("musicResponsiveListItemRenderer"))
+            .Select(PlaylistItem.Parse)
+            .ToList();
+
+        string? nextContinuationToken = contents
+            .GetAt(contents.ArrayLength - 1)
+            .Get("continuationItemRenderer")
+            .Get("continuationEndpoint")
+            .Get("continuationCommand")
+            .Get("token")
+            .AsString();
+
+        return new(result, nextContinuationToken);
+    }
+
+    /// <summary>
+    /// Parses a <see cref="JElement"/> into a <see cref="Page{T}"/> of <see cref="PlaylistItem"/>'s.
+    /// </summary>
+    /// <param name="element">The <see cref="JElement"/> '$' to parse.</param>
+    /// <returns>A <see cref="Page{T}"/> representing the <see cref="JElement"/>.</returns>
+    internal static Page<PlaylistItem> ParseItemsRadioPage(
+        JElement element)
+    {
+        JElement playlistPanel = element
+            .Coalesce(
+                item => item
+                    .Get("contents")
+                    .Get("singleColumnMusicWatchNextResultsRenderer")
+                    .Get("tabbedRenderer")
+                    .Get("watchNextTabbedResultsRenderer")
+                    .Get("tabs")
+                    .GetAt(0)
+                    .Get("tabRenderer")
+                    .Get("content")
+                    .Get("musicQueueRenderer")
+                    .Get("content")
+                    .Get("playlistPanelRenderer"),
+                item => item
+                    .Get("continuationContents")
+                    .Get("playlistPanelContinuation"));
+
+
+        List<PlaylistItem> result = playlistPanel
+            .Get("contents")
+            .AsArray()
+            .Or(JArray.Empty)
+            .Where(item => item
+                .Contains("playlistPanelVideoRenderer"))
+            .Select(item => item
+                .Get("playlistPanelVideoRenderer"))
+            .Select(PlaylistItem.ParseRadio)
+            .ToList();
+
+        string? nextContinuationToken = playlistPanel
+            .Get("continuations")
+            .GetAt(0)
+            .Get("nextRadioContinuationData")
+            .Get("continuation")
+            .AsString();
+
+        return new(result, nextContinuationToken);
     }
 
 
@@ -313,6 +422,14 @@ public class PlaylistInfo(
     public bool IsMix { get; } = isMix;
 
     /// <summary>
+    /// Whether this playlist is a radio.
+    /// </summary>
+    /// <remarks>
+    /// A Radio is a nonstop playlist tailored to a song, album, playlist or artist which will always update.
+    /// </remarks>
+    public bool IsRadio { get; } = isRadio;
+
+    /// <summary>
     /// The privacy settings of this playlist.
     /// </summary>
     /// <remarks>
@@ -349,6 +466,12 @@ public class PlaylistInfo(
     /// The radio associated with this playlist, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
+
+    /// <summary>
+    /// The async paginator that fetches items for this playlist.
+    /// </summary>
+    [JsonIgnore]
+    public PaginatedAsyncEnumerable<PlaylistItem> Items { get; } = items;
 
 
     /// <summary>

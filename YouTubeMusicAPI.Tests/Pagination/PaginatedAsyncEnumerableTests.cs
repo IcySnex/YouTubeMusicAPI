@@ -8,6 +8,8 @@ public class PaginatedAsyncEnumerableTests
 
     static readonly int[] Items = [.. Enumerable.Range(1, 100)];
 
+    static readonly Page<int> CashedFirstPage = new([.. Enumerable.Range(1, 10)], "10");
+
     static async Task<Page<int>> FetchPageAsync(
         string? continuationToken,
         CancellationToken cancellationToken = default)
@@ -45,6 +47,26 @@ public class PaginatedAsyncEnumerableTests
         TestData.WriteResult(result);
     }
 
+    [Test]
+    public void Should_enumerate_all_items_with_cashed_first_page()
+    {
+        // Arrange
+        PaginatedAsyncEnumerable<int> enumerable = new(FetchPageAsync, CashedFirstPage);
+
+        // Act
+        List<int> result = [];
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            await foreach (int item in enumerable)
+                result.Add(item);
+        });
+
+        // Assert
+        Assert.That(result, Is.EquivalentTo(Items));
+
+        TestData.WriteResult(result);
+    }
+
 
     [Test]
     [TestCase(0, null)]
@@ -57,6 +79,31 @@ public class PaginatedAsyncEnumerableTests
     {
         // Arrange
         PaginatedAsyncEnumerable<int> enumerable = new(FetchPageAsync);
+
+        // Act
+        IReadOnlyList<int>? result = null;
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            result = await enumerable.FetchItemsAsync(offset, limit);
+        });
+
+        // Assert
+        Assert.That(result, Is.EquivalentTo(Items[offset..(offset + limit ?? Items.Length)]));
+
+        TestData.WriteResult(result);
+    }
+
+    [Test]
+    [TestCase(0, null)]
+    [TestCase(0, 25)]
+    [TestCase(25, 25)]
+    [TestCase(50, null)]
+    public void Should_fetch_range_of_items_with_cashed_first_page(
+        int offset,
+        int? limit)
+    {
+        // Arrange
+        PaginatedAsyncEnumerable<int> enumerable = new(FetchPageAsync, CashedFirstPage);
 
         // Act
         IReadOnlyList<int>? result = null;

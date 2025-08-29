@@ -76,35 +76,24 @@ public class PlaylistServiceTests
     {
         // Act
         PlaylistInfo? result = null;
+        IReadOnlyList<PlaylistItem>? items = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
             result = await client.Playlists.GetAsync(TestData.PlaylistBrowseId);
+
+            items = await result.Items.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
         });
 
         // Assert
-        Assert.That(result, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(items, Is.Not.Null.Or.Empty);
+        });
 
         TestData.WriteResult(result);
-    }
-
-    [Test]
-    public void Should_get_items()
-    {
-        // Act
-        IReadOnlyList<PlaylistItem>? results = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            PaginatedAsyncEnumerable<PlaylistItem> response = client.Playlists.GetItemsAsync(TestData.PlaylistBrowseId);
-
-            results = await response.FetchItemsAsync(TestData.FetchOffset, TestData.FetchLimit);
-        });
-
-        // Assert
-        Assert.That(results, Is.Not.Null.Or.Empty);
-
-        TestData.WriteResult(results);
+        TestData.WriteResult(items, "Items");
     }
 
 

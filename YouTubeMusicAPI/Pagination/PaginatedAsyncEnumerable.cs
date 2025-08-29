@@ -4,14 +4,26 @@
 /// Provides an asynchronous way to iterate through paginated items.
 /// </summary>
 /// <typeparam name="T">The type of the items.</typeparam>
-/// <param name="fetchDelegate">Delegate to fetch a page of items.</param>
-public class PaginatedAsyncEnumerable<T>(
-    FetchPageDelegate<T> fetchDelegate) : IAsyncEnumerable<T>
+public class PaginatedAsyncEnumerable<T> : IAsyncEnumerable<T>
 {
-    readonly FetchPageDelegate<T> fetchDelegate = fetchDelegate;
+    readonly FetchPageDelegate<T> fetchDelegate;
     readonly Stack<string?> previousContinuationTokens = new();
 
+    Page<T>? firstPage;
     string? nextContinuationToken = null;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="PaginatedAsyncEnumerable{T}"/> class.
+    /// </summary>
+    /// <param name="fetchDelegate">Delegate to fetch a page of items.</param>
+    /// <param name="firstPage">The first page of items.</param>
+    internal PaginatedAsyncEnumerable(
+        FetchPageDelegate<T> fetchDelegate,
+        Page<T>? firstPage = null)
+    {
+        this.fetchDelegate = fetchDelegate;
+        this.firstPage = firstPage;
+    }
 
 
     /// <summary>
@@ -83,6 +95,21 @@ public class PaginatedAsyncEnumerable<T>(
         Reset();
 
         List<T> allItems = [];
+
+        if (firstPage is not null)
+        {
+            previousContinuationTokens.Push(null);
+
+            nextContinuationToken = firstPage.ContinuationToken;
+            HasMore = nextContinuationToken is not null;
+
+            allItems.AddRange(firstPage.Items);
+            firstPage = null;
+
+            if (limit.HasValue && allItems.Count >= limit.Value + offset)
+                return [.. allItems.Skip(offset).Take(limit.Value)];
+        }
+
         while (HasMore && !cancellationToken.IsCancellationRequested)
         {
             IReadOnlyList<T> items = await FetchNextPageAsync(cancellationToken);
@@ -101,6 +128,7 @@ public class PaginatedAsyncEnumerable<T>(
     /// </summary>
     public void Reset()
     {
+        previousContinuationTokens.Clear();
         nextContinuationToken = null;
         HasMore = true;
     }
@@ -115,6 +143,19 @@ public class PaginatedAsyncEnumerable<T>(
         CancellationToken cancellationToken = default)
     {
         Reset();
+
+        if (firstPage is not null)
+        {
+            previousContinuationTokens.Push(null);
+
+            nextContinuationToken = firstPage.ContinuationToken;
+            HasMore = nextContinuationToken is not null;
+
+            foreach (T item in firstPage.Items)
+                yield return item;
+
+            firstPage = null;
+        }
 
         while (HasMore && !cancellationToken.IsCancellationRequested)
         {

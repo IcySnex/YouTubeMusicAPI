@@ -9,44 +9,85 @@ public class PaginatedAsyncEnumerable<T> : IAsyncEnumerable<T>
     readonly FetchPageDelegate<T> fetchDelegate;
     readonly Stack<string?> previousContinuationTokens = new();
 
-    Page<T>? firstPage;
     string? nextContinuationToken = null;
 
     /// <summary>
     /// Creates a new instance of the <see cref="PaginatedAsyncEnumerable{T}"/> class.
     /// </summary>
     /// <param name="fetchDelegate">Delegate to fetch a page of items.</param>
-    /// <param name="firstPage">The first page of items.</param>
+    /// <param name="firstPage">The pre-fetched first page of items.</param>
     internal PaginatedAsyncEnumerable(
         FetchPageDelegate<T> fetchDelegate,
         Page<T>? firstPage = null)
     {
         this.fetchDelegate = fetchDelegate;
-        this.firstPage = firstPage;
+
+        if (firstPage is not null)
+        {
+            previousContinuationTokens.Push(null);
+
+            CurrentPage = firstPage.Items;
+            CurrentIndex = 0;
+
+            nextContinuationToken = firstPage.ContinuationToken;
+        }
     }
 
 
     /// <summary>
-    /// Whether there are previous pages to fetch.
+    /// The current page of items.
     /// </summary>
-    public bool HasPrevious => previousContinuationTokens.Count > 1;
+    public IReadOnlyList<T>? CurrentPage { get; private set; } = null;
+
+    /// <summary>
+    /// The current index of fetched pages.
+    /// </summary>
+    public int CurrentIndex { get; private set; } = -1;
+
 
     /// <summary>
     /// Whether there are more pages to fetch.
     /// </summary>
-    public bool HasMore { get; private set; } = true;
+    public bool HasMore => CurrentIndex == -1 || nextContinuationToken is not null;
 
+    /// <summary>
+    /// Whether there are previous pages to fetch.
+    /// </summary>
+    public bool HasPrevious => CurrentIndex > 0;
+
+
+    /// <summary>
+    /// Fetches the next page of items.
+    /// </summary>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>Whether the next page was fetched or skipped as <see cref="HasMore"/> is false.</returns>
+    public async Task<bool> FetchNextPageAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (!HasMore)
+            return false;
+
+        Page<T> page = await fetchDelegate(nextContinuationToken, cancellationToken);
+
+        previousContinuationTokens.Push(nextContinuationToken);
+        nextContinuationToken = page.ContinuationToken;
+
+        CurrentPage = page.Items;
+        CurrentIndex++;
+
+        return true;
+    }
 
     /// <summary>
     /// Fetches the previous page of items.
     /// </summary>
     /// <param name="cancellationToken">The token to cancel this task.</param>
-    /// <returns>A list containing the items.</returns>
-    public async Task<IReadOnlyList<T>> FetchPreviousPageAsync(
+    /// <returns>Whether the next page was fetched or skipped as <see cref="HasPrevious"/> is false.</returns>
+    public async Task<bool> FetchPreviousPageAsync(
         CancellationToken cancellationToken = default)
     {
         if (!HasPrevious)
-            return [];
+            return false;
 
         previousContinuationTokens.Pop();
         string? previousContinuationToken = previousContinuationTokens.Peek();
@@ -54,72 +95,11 @@ public class PaginatedAsyncEnumerable<T> : IAsyncEnumerable<T>
         Page<T> page = await fetchDelegate(previousContinuationToken, cancellationToken);
 
         nextContinuationToken = page.ContinuationToken;
-        HasMore = nextContinuationToken is not null;
 
-        return page.Items;
-    }
+        CurrentPage = page.Items;
+        CurrentIndex--;
 
-    /// <summary>
-    /// Fetches the next page of items.
-    /// </summary>
-    /// <param name="cancellationToken">The token to cancel this task.</param>
-    /// <returns>A list containing the items.</returns>
-    public async Task<IReadOnlyList<T>> FetchNextPageAsync(
-        CancellationToken cancellationToken = default)
-    {
-        if (!HasMore)
-            return [];
-
-        Page<T> page = await fetchDelegate(nextContinuationToken, cancellationToken);
-
-        previousContinuationTokens.Push(nextContinuationToken);
-
-        nextContinuationToken = page.ContinuationToken;
-        HasMore = nextContinuationToken is not null;
-
-        return page.Items;
-    }
-
-    /// <summary>
-    /// Fetches the items of all pages in the specified range.
-    /// </summary>
-    /// <param name="offset">The number of items to skip. Pages will still be fetched but not added to the result.</param>
-    /// <param name="limit">The maximum items to fetch. Leave this <see langword="null"/> to fetch all items. May run indefinitely!</param>
-    /// <param name="cancellationToken">The token to cancel this task.</param>
-    /// <returns>A list containing the items within the range.</returns>
-    public async Task<IReadOnlyList<T>> FetchItemsAsync(
-        int offset = 0,
-        int? limit = null,
-        CancellationToken cancellationToken = default)
-    {
-        Reset();
-
-        List<T> allItems = [];
-
-        if (firstPage is not null)
-        {
-            previousContinuationTokens.Push(null);
-
-            nextContinuationToken = firstPage.ContinuationToken;
-            HasMore = nextContinuationToken is not null;
-
-            allItems.AddRange(firstPage.Items);
-            firstPage = null;
-
-            if (limit.HasValue && allItems.Count >= limit.Value + offset)
-                return [.. allItems.Skip(offset).Take(limit.Value)];
-        }
-
-        while (HasMore && !cancellationToken.IsCancellationRequested)
-        {
-            IReadOnlyList<T> items = await FetchNextPageAsync(cancellationToken);
-            allItems.AddRange(items);
-
-            if (limit.HasValue && allItems.Count >= limit.Value + offset)
-                return [.. allItems.Skip(offset).Take(limit.Value)];
-        }
-
-        return [.. allItems.Skip(offset)];
+        return true;
     }
 
 
@@ -128,41 +108,80 @@ public class PaginatedAsyncEnumerable<T> : IAsyncEnumerable<T>
     /// </summary>
     public void Reset()
     {
-        previousContinuationTokens.Clear();
         nextContinuationToken = null;
-        HasMore = true;
+        previousContinuationTokens.Clear();
+
+        CurrentPage = null;
+        CurrentIndex = -1;
     }
 
+    /// <summary>
+    /// Fetches the items of all pages in the specified range.
+    /// </summary>
+    /// <remarks>
+    /// This may run indefinitely if <c>limit</c> is null.
+    /// </remarks>
+    /// <param name="offset">The number of items to skip. Pages will still be fetched but not added to the result.</param>
+    /// <param name="limit">The maximum items to fetch. Leave this <see langword="null"/> to fetch all items.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>A list containing the items within the range.</returns>
+    public async Task<IReadOnlyList<T>> FetchItemsAsync(
+        int offset = 0,
+        int? limit = null,
+        CancellationToken cancellationToken = default)
+    {
+        List<T> result = [];
+        int skipped = 0;
+        int taken = 0;
+
+        bool Consume(IReadOnlyList<T> page)
+        {
+            foreach (T item in page)
+            {
+                if (skipped < offset)
+                {
+                    skipped++;
+                    continue;
+                }
+
+                result.Add(item);
+                taken++;
+
+                if (limit is not null && taken >= limit.Value)
+                    return true;
+            }
+
+            return false;
+        }
+
+        if (CurrentIndex != 0 || CurrentPage is null)
+            Reset();
+        else if (Consume(CurrentPage))
+            return result;
+
+        while (await FetchNextPageAsync(cancellationToken) && CurrentPage is not null)
+            if (Consume(CurrentPage))
+                return result;
+
+        return result;
+    }
 
     /// <summary>
     /// Returns an enumerator that iterates asynchronously through all items.
     /// </summary>
     /// <param name="cancellationToken">The token to cancel the asynchronous iteration.</param>
-    /// <returns>An <see cref="IAsyncEnumerator&lt;T&gt;"/> to iterate asynchronously through all items.</returns>
+    /// <returns>An <see cref="IAsyncEnumerator{T}"/> to iterate asynchronously through all items.</returns>
     public async IAsyncEnumerator<T> GetAsyncEnumerator(
         CancellationToken cancellationToken = default)
     {
-        Reset();
-
-        if (firstPage is not null)
-        {
-            previousContinuationTokens.Push(null);
-
-            nextContinuationToken = firstPage.ContinuationToken;
-            HasMore = nextContinuationToken is not null;
-
-            foreach (T item in firstPage.Items)
+        if (CurrentIndex != 0 || CurrentPage is null)
+            Reset();
+        else
+            foreach (T item in CurrentPage)
                 yield return item;
 
-            firstPage = null;
-        }
-
-        while (HasMore && !cancellationToken.IsCancellationRequested)
-        {
-            IReadOnlyList<T> items = await FetchNextPageAsync(cancellationToken);
-
-            foreach (T item in items)
+        while (await FetchNextPageAsync(cancellationToken) && CurrentPage is not null)
+            foreach (T item in CurrentPage)
                 yield return item;
-        }
     }
 }

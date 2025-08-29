@@ -1,4 +1,5 @@
-﻿using YouTubeMusicAPI.Pagination;
+﻿using System.Threading.Tasks;
+using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Tests.Pagination;
 
@@ -126,16 +127,20 @@ public class PaginatedAsyncEnumerableTests
         PaginatedAsyncEnumerable<int> enumerable = new(FetchPageAsync);
 
         // Act
-        IReadOnlyList<int>? result = null;
+        bool result = false;
         Assert.DoesNotThrowAsync(async () =>
         {
             result = await enumerable.FetchNextPageAsync();
         });
 
         // Assert
-        Assert.That(result, Is.EquivalentTo(Items[..PageSize]));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+            Assert.That(enumerable.CurrentPage, Is.EquivalentTo(Items[..PageSize]));
+        });
 
-        TestData.WriteResult(result);
+        TestData.WriteResult(enumerable.CurrentPage);
     }
 
     [Test]
@@ -145,7 +150,7 @@ public class PaginatedAsyncEnumerableTests
         PaginatedAsyncEnumerable<int> enumerable = new(FetchPageAsync);
 
         // Act
-        IReadOnlyList<int>? result = null;
+        bool result = false;
         Assert.DoesNotThrowAsync(async () =>
         {
             await enumerable.FetchNextPageAsync();
@@ -154,9 +159,13 @@ public class PaginatedAsyncEnumerableTests
         });
 
         // Assert
-        Assert.That(result, Is.EquivalentTo(Items[PageSize..(2 * PageSize)]));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+            Assert.That(enumerable.CurrentPage, Is.EquivalentTo(Items[PageSize..(2 * PageSize)]));
+        });
 
-        TestData.WriteResult(result);
+        TestData.WriteResult(enumerable.CurrentPage);
     }
 
 
@@ -167,7 +176,7 @@ public class PaginatedAsyncEnumerableTests
         PaginatedAsyncEnumerable<int> enumerable = new(FetchPageAsync);
 
         // Act
-        IReadOnlyList<int>? result = null;
+        bool result = false;
         Assert.DoesNotThrowAsync(async () =>
         {
             await enumerable.FetchNextPageAsync();
@@ -177,9 +186,13 @@ public class PaginatedAsyncEnumerableTests
         });
 
         // Assert
-        Assert.That(result, Is.EquivalentTo(Items[..PageSize]));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+            Assert.That(enumerable.CurrentPage, Is.EquivalentTo(Items[..PageSize]));
+        });
 
-        TestData.WriteResult(result);
+        TestData.WriteResult(enumerable.CurrentPage);
     }
 
     [Test]
@@ -189,20 +202,25 @@ public class PaginatedAsyncEnumerableTests
         PaginatedAsyncEnumerable<int> enumerable = new(FetchPageAsync);
 
         // Act
-        IReadOnlyList<int>? result = null;
+        bool result = false;
         Assert.DoesNotThrowAsync(async () =>
         {
             await enumerable.FetchNextPageAsync();
             await enumerable.FetchNextPageAsync();
             await enumerable.FetchNextPageAsync();
 
-            result = await enumerable.FetchPreviousPageAsync();
+            await enumerable.FetchPreviousPageAsync();
             result = await enumerable.FetchPreviousPageAsync();
         });
 
         // Assert
-        Assert.That(result, Is.EquivalentTo(Items[..PageSize]));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+            Assert.That(enumerable.CurrentPage, Is.EquivalentTo(Items[..PageSize]));
+        });
 
-        TestData.WriteResult(result);
+
+        TestData.WriteResult(enumerable.CurrentPage);
     }
 }

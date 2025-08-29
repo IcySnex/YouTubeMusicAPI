@@ -33,7 +33,7 @@ internal static class TestData
         string name = "Results")
     {
         string json = JsonSerializer.Serialize<object?>(results?.Cast<object?>().ToList(), JsonOptions);
-        TestContext.Out.WriteLine("{0}: {1}", name, json);
+        TestContext.Out.WriteLine("{0} (Count: {1}): {2}", name, results?.Count, json);
     }
 
 

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Web;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Models.Streaming;
@@ -432,11 +433,14 @@ internal static class Selectors
             string codecs = mimeType.Split('"')[1];
 
             int itag = content.SelectObject<int>("itag");
-            string url = getUrl(content);
             DateTime lastModifiedAt = content["lastModifed"] is null ? DateTime.Now : DateTimeOffset.FromUnixTimeMilliseconds(content.SelectObjectOptional<long>("lastModified") / 1000).DateTime;
             TimeSpan duration = content["approxDurationMs"] is null ? TimeSpan.MaxValue : TimeSpan.FromMilliseconds(content.SelectObject<long>("approxDurationMs"));
             long contentLength = content["contentLength"] is null ? long.MaxValue : content.SelectObject<long>("contentLength");
             int bitrate = content.SelectObject<int>("bitrate");
+
+            string url = getUrl(content);
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                url = HttpUtility.UrlDecode(url);
 
             if (mimeType.StartsWith("video"))
             {

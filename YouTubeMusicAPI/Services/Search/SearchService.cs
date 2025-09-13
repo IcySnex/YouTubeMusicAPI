@@ -97,7 +97,7 @@ public sealed class SearchService
             .Select(item => item
                 .Get("musicResponsiveListItemRenderer"))
             .Where(item => // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check
-                categoryTitle == "Episodes" || !item.SelectIsPodcast()) // duh no fluent syntax :( "short-circuiting" performance blabla
+                item.Contains("menu") && (categoryTitle == "Episodes" || !item.SelectIsPodcast())) // duh no fluent syntax :( "short-circuiting" performance blabla
             .Select(item => parse(item))
             .ToList();
 
@@ -376,7 +376,7 @@ public sealed class SearchService
                     .Select(item => item
                         .Get("musicResponsiveListItemRenderer"))
                     .Where(item => // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check
-                        categoryTitle == "Episodes" || !item.SelectIsPodcast()) // duh no fluent syntax >:( "short-circuiting" performance blabla
+                        item.Contains("menu") && (categoryTitle == "Episodes" || !item.SelectIsPodcast())) // duh no fluent syntax >:( "short-circuiting" performance blabla
                     .Select(parse);
             })
             .Where(Syntax.IsNotNull)

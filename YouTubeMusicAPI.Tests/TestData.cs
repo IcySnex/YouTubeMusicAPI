@@ -132,6 +132,6 @@ internal static class TestData
     public const string PlaylistId = "PLUoI0V1lAvcLY47xdnLWGdf9zyUWKsulx";
     public const string PlaylistBrowseId = "VLPLUoI0V1lAvcLY47xdnLWGdf9zyUWKsulx";
 
-    public const string AlbumId = "OLAK5uy_nKlFGxtsMKYO-K6JN0ojaube_qHDtNgNY";
-    public const string AlbumBrowseId = "MPREb_mqDUcmu8Vw6";
+    public const string AlbumId = "OLAK5uy_kncRLJuxDsO1_nh_xSEkUCEYguyHljIgY";
+    public const string AlbumBrowseId = "MPREb_78cZiOmrPmB";
 }

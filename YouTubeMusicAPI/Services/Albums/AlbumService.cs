@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Playlists;
+using YouTubeMusicAPI.Services.Relations;
 using YouTubeMusicAPI.Services.Search;
 using YouTubeMusicAPI.Utils;
 
@@ -117,5 +120,29 @@ public sealed partial class AlbumService
 
         AlbumInfo album = AlbumInfo.Parse(root);
         return album;
+    }
+
+
+    /// <summary>
+    /// Gets the related content for the album on YouTube Music.
+    /// </summary>
+    /// <remarks>
+    /// This method does not perform any network operations. It is pseudo-async to preserve consistency with similar methods in the library, e.g. <see cref="PlaylistService.GetRelationsAsync(PlaylistInfo, CancellationToken)"/>.
+    /// </remarks>
+    /// <param name="album">The album to get the relations for.</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>The <see cref="AlbumRelations"/> containing the related content for the album.</returns>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Preserve consistency with similar methods in the library")]
+    public Task<AlbumRelations> GetRelationsAsync(
+        AlbumInfo album,
+        CancellationToken cancellationToken = default)
+    {
+        // Getting relations
+        client.Logger?.LogInformation("[AlbumService-GetRelationsAsync] Getting relations...");
+
+        AlbumRelations relations = album.Relations;
+        return Task.FromResult(relations);
     }
 }

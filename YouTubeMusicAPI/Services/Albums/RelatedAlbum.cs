@@ -13,6 +13,7 @@ namespace YouTubeMusicAPI.Services.Albums;
 /// <param name="name">The name of this related album.</param>
 /// <param name="id">The ID of this related album.</param>
 /// <param name="thumbnails">The thumbnails of this related album.</param>
+/// <param name="artists">The artists of this related album.</param>
 /// <param name="browseId">The browse ID of this related album.</param>
 /// <param name="releaseYear">The year this related album was released in.</param>
 /// <param name="isExplicit">Whether this related album is explicit or not.</param>
@@ -23,6 +24,7 @@ public class RelatedAlbum(
     string id,
     string browseId,
     Thumbnail[] thumbnails,
+    YouTubeMusicEntity[]? artists,
     int? releaseYear,
     bool isExplicit,
     AlbumType type,
@@ -39,6 +41,11 @@ public class RelatedAlbum(
         JElement subtitleRuns = element
             .Get("subtitle")
             .Get("runs");
+
+        bool hasArtists = subtitleRuns
+            .GetAt(2)
+            .SelectNavigationBrowseId()
+            .IsNotNull();
 
 
         string name = element
@@ -59,11 +66,18 @@ public class RelatedAlbum(
             .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        int? releaseYear = subtitleRuns
-            .GetAt(2)
-            .Get("text")
-            .AsString()
-            .ToInt32();
+        YouTubeMusicEntity[]? artists = hasArtists
+            ? subtitleRuns
+                .SelectArtists(2)
+            : null;
+
+        int? releaseYear = hasArtists
+            ? null
+            : subtitleRuns
+                .GetAt(2)
+                .Get("text")
+                .AsString()
+                .ToInt32();
 
         bool isExplicit = element
             .SelectIsExplicit("subtitleBadges");
@@ -79,7 +93,7 @@ public class RelatedAlbum(
             .SelectMenu()
             .SelectRadio();
 
-        return new(name, id, browseId, thumbnails, releaseYear, isExplicit, type, radio);
+        return new(name, id, browseId, thumbnails, artists, releaseYear, isExplicit, type, radio);
     }
 
 
@@ -98,6 +112,11 @@ public class RelatedAlbum(
     /// The thumbnails of this related album.
     /// </summary>
     public Thumbnail[] Thumbnails { get; } = thumbnails;
+
+    /// <summary>
+    /// The artists of this related album.
+    /// </summary>
+    public YouTubeMusicEntity[]? Artists { get; } = artists;
 
     /// <summary>
     /// The year this related album was released in.

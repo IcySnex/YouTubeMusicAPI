@@ -1,5 +1,6 @@
 ﻿using YouTubeMusicAPI.Common;
 using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Services.Relations;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Albums;
@@ -23,6 +24,7 @@ namespace YouTubeMusicAPI.Services.Albums;
 /// <param name="lengthInfo">The information about the length this album has.</param>
 /// <param name="radio">The radio associated with this album, if available.</param>
 /// <param name="items">The items of this album.</param>
+/// <param name="relations">The related content for this album.</param>
 public class AlbumInfo(
     string name,
     string id,
@@ -36,7 +38,8 @@ public class AlbumInfo(
     string itemsInfo,
     string lengthInfo,
     Radio? radio,
-    IReadOnlyList<AlbumItem> items) : YouTubeMusicEntity(name, id, browseId)
+    IReadOnlyList<AlbumItem> items,
+    AlbumRelations relations) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="AlbumInfo"/>.
@@ -172,8 +175,10 @@ public class AlbumInfo(
                 .Get("musicResponsiveListItemRenderer"))
             .Select(item => AlbumItem.Parse(item, artists))
             .ToList();
+
+        AlbumRelations relations = AlbumRelations.Parse(secondary);
         
-        return new(name, id, browseId, thumbnails, artists, description, creationYear, isExplicit, type, itemsInfo, lengthInfo, radio, items); 
+        return new(name, id, browseId, thumbnails, artists, description, creationYear, isExplicit, type, itemsInfo, lengthInfo, radio, items, relations); 
     }
 
 
@@ -237,4 +242,10 @@ public class AlbumInfo(
     /// The items of this album.
     /// </summary>
     public IReadOnlyList<AlbumItem> Items { get; } = items;
+
+
+    /// <summary>
+    /// The related content for this album.
+    /// </summary>
+    internal AlbumRelations Relations { get; } = relations;
 }

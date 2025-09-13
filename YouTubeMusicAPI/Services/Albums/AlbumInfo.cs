@@ -22,6 +22,7 @@ namespace YouTubeMusicAPI.Services.Albums;
 /// <param name="itemsInfo">The information about the number of items this album has.</param>
 /// <param name="lengthInfo">The information about the length this album has.</param>
 /// <param name="radio">The radio associated with this album, if available.</param>
+/// <param name="items">The items of this album.</param>
 public class AlbumInfo(
     string name,
     string id,
@@ -34,7 +35,8 @@ public class AlbumInfo(
     AlbumType type,
     string itemsInfo,
     string lengthInfo,
-    Radio? radio) : YouTubeMusicEntity(name, id, browseId)
+    Radio? radio,
+    IReadOnlyList<AlbumItem> items) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="AlbumInfo"/>.
@@ -44,9 +46,16 @@ public class AlbumInfo(
     internal static AlbumInfo Parse(
         JElement element)
     {
-        JElement item = element
+        JElement column = element
             .Get("contents")
-            .Get("twoColumnBrowseResultsRenderer")
+            .Get("twoColumnBrowseResultsRenderer");
+
+        JElement secondary = column
+            .Get("secondaryContents")
+            .Get("sectionListRenderer")
+            .Get("contents");
+
+        JElement item = column
             .Get("tabs")
             .GetAt(0)
             .Get("tabRenderer")
@@ -150,8 +159,21 @@ public class AlbumInfo(
             .Get("menuRenderer")
             .Get("items")
             .SelectRadio();
+
+        IReadOnlyList<AlbumItem> items = secondary
+            .GetAt(0)
+            .Get("musicShelfRenderer")
+            .Get("contents")
+            .AsArray()
+            .Or(JArray.Empty)
+            .Where(item => item
+                .Contains("musicResponsiveListItemRenderer"))
+            .Select(item => item
+                .Get("musicResponsiveListItemRenderer"))
+            .Select(item => AlbumItem.Parse(item, artists))
+            .ToList();
         
-        return new(name, id, browseId, thumbnails, artists, description, creationYear, isExplicit, type, itemsInfo, lengthInfo, radio); 
+        return new(name, id, browseId, thumbnails, artists, description, creationYear, isExplicit, type, itemsInfo, lengthInfo, radio, items); 
     }
 
 
@@ -210,4 +232,9 @@ public class AlbumInfo(
     /// The radio associated with this album, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
+
+    /// <summary>
+    /// The items of this album.
+    /// </summary>
+    public IReadOnlyList<AlbumItem> Items { get; } = items;
 }

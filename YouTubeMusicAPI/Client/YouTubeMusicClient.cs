@@ -693,7 +693,7 @@ public class YouTubeMusicClient
             }
 
             // Send request
-            Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, player.SigTimestamp,
+            Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, player.Algorithms.SigTimestamp,
                 [
                     ("videoId", id)
                 ]);

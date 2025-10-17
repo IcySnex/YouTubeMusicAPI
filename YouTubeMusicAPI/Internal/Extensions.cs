@@ -114,42 +114,36 @@ internal static class Extensions
 
 
     /// <summary>
-    /// Tries to get the fucntion name and code from a node
+    /// Gets the string between two strings
+    /// </summary>
+    /// <param name="value">The source string</param>
+    /// <param name="start">The string for the start index</param>
+    /// <param name="end">The string for the end index</param>
+    /// <returns>The string</returns>
+    public static string? GetStringBetween(
+        this string value,
+        string start,
+        string end)
+    {
+        int startIndex = value.IndexOf(start);
+        if (startIndex == -1)
+            return null;
+
+        int endIndex = value.IndexOf(end, startIndex + start.Length);
+        if (endIndex == -1)
+            return null;
+
+        return value.Substring(startIndex + start.Length, endIndex - startIndex - start.Length);
+    }
+
+    /// <summary>
+    /// Gets the fucntion code from a node
     /// </summary>
     /// <param name="value">The node to parse</param>
     /// <param name="fullJs">The full js containing the node</param>
-    /// <param name="name">The name of the function</param>
-    /// <param name="code">The code of the function</param>
     /// <returns>A boolean indicating weither the function was parsed correctly</returns>
-    public static bool TryGetFunctionInfo(
+    public static string GetFunctionCode(
         this Node value,
-        string fullJs,
-        out string? name,
-        out string? code)
-    {
-        switch (value)
-        {
-            case FunctionDeclaration funcDecl when funcDecl.Id is not null:
-                (name, code) = (funcDecl.Id.Name, fullJs.Substring(funcDecl.Start, funcDecl.End - funcDecl.Start));
-                return true;
-
-            case VariableDeclaration varDecl:
-                foreach (VariableDeclarator decl in varDecl.Declarations)
-                {
-                    if (decl.Id is not Identifier id || decl.Init is not FunctionExpression)
-                        continue;
-
-                    (name, code) = (id.Name, fullJs.Substring(decl.Start, decl.End - decl.Start));
-                    return true;
-                }
-                break;
-
-            case ExpressionStatement { Expression: AssignmentExpression { Left: Identifier id, Right: FunctionExpression } }:
-                (name, code) = (id.Name, fullJs.Substring(value.Start, value.End - value.Start));
-                return true;
-        }
-
-        (name, code) = (null, null);
-        return false;
-    }
+        string fullJs) =>
+        fullJs.Substring(value.Start, value.End - value.Start);
 }

@@ -1,10 +1,9 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Jint;
-using System;
 using System.Collections.Specialized;
-using System.Text.RegularExpressions;
 using System.Web;
+using System.Xml.Linq;
 using static YouTubeMusicAPI.Internal.Player;
 
 namespace YouTubeMusicAPI.Internal;
@@ -27,98 +26,151 @@ internal class Player(
 
 
 
-    static bool IsSigMatcher(
-        VariableDeclarator node)
+    static bool TryParseSignature(
+        Node node,
+        string playerJs,
+        out string? result)
     {
-        if (node.Id is not Identifier id ||
-            node.Init is not FunctionExpression fn ||
-            fn.Params.Count != 3 ||
-            fn.Body is not BlockStatement body)
-            return false;
-
-        foreach (Statement stmt in body.Body)
+        if (node is not AssignmentExpression expression ||
+            expression.Right is not FunctionExpression functionExpr ||
+            functionExpr.Body is not BlockStatement block)
         {
-            if (stmt is not ExpressionStatement exprStmt)
+            result = null;
+            return false;
+        }
+
+        foreach (Statement statement in block.Body)
+        {
+            if (statement is not ExpressionStatement exprStatement ||
+                exprStatement.Expression is not LogicalExpression logicalExpr ||
+                logicalExpr.Operator != Operator.LogicalAnd ||
+                logicalExpr.Left is not Identifier ||
+                logicalExpr.Right is not SequenceExpression sequenceExpr ||
+                sequenceExpr.Expressions.FirstOrDefault() is not AssignmentExpression assignmentExpr ||
+                assignmentExpr.Operator != Operator.Assignment ||
+                assignmentExpr.Left is not Identifier ||
+                assignmentExpr.Right is not CallExpression callExpr ||
+                callExpr.Callee is not Identifier ||
+                callExpr.Arguments.FirstOrDefault(exp => exp is CallExpression) is not CallExpression innerCallExpr ||
+                innerCallExpr.Callee is not Identifier identifier ||
+                identifier.Name != "decodeURIComponent" ||
+                innerCallExpr.Arguments.FirstOrDefault() is not Identifier)
                 continue;
 
-            if (exprStmt.Expression is not LogicalExpression logical ||
-                logical.Operator != Operator.LogicalAndAssignment ||
-                logical.Left is not Identifier ||
-                logical.Right is not SequenceExpression seq ||
-                seq.Expressions.Count <= 0)
-                continue;
-
-            if (seq.Expressions[0] is not AssignmentExpression assign ||
-                assign.Operator != Operator.Assignment ||
-                assign.Left is not Identifier ||
-                assign.Right is not CallExpression call ||
-                call.Callee is not Identifier ||
-                !call.Arguments.Any(arg =>
-                    arg is CallExpression callExp &&
-                    callExp.Callee is Identifier callee &&
-                    callee.Name == "decodeURIComponent"))
-                continue;
-
+            result = callExpr.GetFunctionCode(playerJs);
             return true;
         }
 
+        result = null;
         return false;
     }
 
-    static bool IsNSigMatcher(
-        VariableDeclarator node)
+    static bool TryParseNSignature(
+        Node node,
+        string playerJs,
+        out string? result)
     {
-        return node.Id is Identifier &&
-               node.Init is ArrayExpression arr &&
-               arr.Elements.FirstOrDefault() is Identifier;
+        if (node is not VariableDeclaration declaration)
+        {
+            result = null;
+            return false;
+        }
+
+        if (declaration.Declarations.Count != 1 ||
+            declaration.Declarations[0].Init is not ArrayExpression arrayExpr ||
+            arrayExpr.Elements.Count != 1 ||
+            arrayExpr.Elements[0] is not Identifier identifier)
+        {
+            result = null;
+            return false;
+        }
+
+        result = identifier.Name;
+        return true;
+
     }
 
-    static bool IsSigTimestampMatcher(
+    static bool TryParseSigTimestamp(
         Node node,
-        string playerJs)
+        string playerJs,
+        out int? result)
     {
-        if (node is not VariableDeclaration varDecl)
-            return false;
+        //if (node is not AssignmentExpression expression ||
+        //    expression.Right is not FunctionExpression functionExpr ||
+        //    functionExpr.Body is not BlockStatement block)
+        //{
+        //    result = null;
+        //    return false;
+        //}
 
-        string code = varDecl.GetFunctionCode(playerJs);
-        if (code.Contains("signatureTimestamp"))
+
+        //string code = block.GetFunctionCode(playerJs);
+        //if (code.Contains("signatureTimestamp:20374"))
+        //{
+
+        //}
+
+        if (node is not VariableDeclaration declaration)
         {
+            result = null;
+            return false;
+        }
+
+        foreach (VariableDeclarator variable in declaration.Declarations)
+        {
+            if (variable.Init is not ObjectExpression objExpr)
+                continue;
+
+            foreach (Node objProp in objExpr.Properties)
+            {
+                if (objProp is not Property prop ||
+                    prop.Key is not Identifier identifier ||
+                    identifier.Name != "signatureTimestamp" ||
+                    prop.Value is not Literal literal ||
+                    literal.Value is null)
+                    continue;
+
+                result = Convert.ToInt32(literal.Value);
+                return true;
+            }
 
         }
 
+        result = null;
         return false;
     }
+
 
     static JsAlgorithms ExtractJsAlgorithms(
         string playerJs)
     {
         Script ast = new Parser().ParseScript(playerJs);
 
-        string? sigDecipher = null;
-        string? nSigDecipher = null;
+        string? signature = null;
+        string? nSignature = null;
         int? sigTimestamp = null;
-
-        var shit = ast.DescendantNodesAndSelf();
-        foreach (Node node in shit)
+        foreach (Node node in ast.DescendantNodes())
         {
-            //if (IsSigMatcher(varDecl))
-            //    sigDecipher = varDecl.GetFunctionCode(playerJs);
-            //else if (IsNSigMatcher(varDecl))
-            //    nSigDecipher = varDecl.GetFunctionCode(playerJs);
-            if (IsSigTimestampMatcher(node, playerJs))
-            {
+            if (TryParseSignature(node, playerJs, out string? signatureResult))
+                signature = signatureResult;
 
-            }
+            else if (TryParseNSignature(node, playerJs, out string? nSignatureResult))
+                nSignature = nSignatureResult;
+
+            else if (TryParseSigTimestamp(node, playerJs, out int? sigTimestampResult))
+                sigTimestamp = sigTimestampResult;
         }
 
-        if (sigDecipher is null)
-            throw new Exception("Failed to extract signature decipher function");
-        if (nSigDecipher is null)
-            throw new Exception("Failed to extract n decipher function");
+        if (signature is null)
+            throw new Exception("Failed to extract signature");
+
+        if (nSignature is null)
+            throw new Exception("Failed to extract n signature");
+
         if (sigTimestamp is null)
             throw new("Failed to extract signature timestamp");
 
-        return new(sigDecipher, nSigDecipher, sigTimestamp.Value);
+        return new(signature, nSignature, sigTimestamp.Value);
     }
 
 
@@ -149,8 +201,10 @@ internal class Player(
         //string url = "https://www.youtube.com" + "/iframe_api";
         //string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
 
-        //string playerId = js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
+        //string playerId = "bcd893b3";//js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
         //string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
+
+        //File.WriteAllText("C:\\Users\\Kevin\\Desktop\\player.js", await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken));
 
         string playerJs = File.ReadAllText("C:\\Users\\Kevin\\Desktop\\player.js");//await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
         JsAlgorithms algorithms = ExtractJsAlgorithms(playerJs);

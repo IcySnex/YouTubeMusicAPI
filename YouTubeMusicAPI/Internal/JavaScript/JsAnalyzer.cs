@@ -29,24 +29,6 @@ internal class JsAnalyzer
         public bool IsReady { get; set; } = isReady;
     }
 
-    class VariableMetadata(
-        string name,
-        Node? node,
-        HashSet<string> dependencies,
-        HashSet<string> dependents,
-        bool isPredeclared)
-    {
-        public string Name { get; set; } = name;
-
-        public Node? Node { get; set; } = node;
-
-        public HashSet<string> Dependencies { get; set; } = dependencies;
-
-        public HashSet<string> Dependents { get; set; } = dependents;
-
-        public bool IsPredeclared { get; set; } = isPredeclared;
-    }
-
     class Scope(
         HashSet<string> names,
         string type)
@@ -57,7 +39,7 @@ internal class JsAnalyzer
     }
 
 
-    static readonly HashSet<string> JsBuiltIns =
+    public static readonly HashSet<string> BuiltIns =
     [
         "AbortController", "AbortSignal", "Array", "ArrayBuffer", "AsyncContext", "Atomics", "AudioContext", "BigInt", "BigInt64Array", "BigUint64Array",
         "Blob", "Boolean", "BroadcastChannel", "Buffer", "CanvasRenderingContext2D", "clearImmediate", "clearInterval", "clearTimeout", "confirm",
@@ -76,13 +58,8 @@ internal class JsAnalyzer
     ];
 
 
-    readonly string source;
     readonly ExtractionState[] extractionStates;
-
     readonly Script ast;
-
-    readonly Dictionary<string, VariableMetadata> declaredVariables = [];
-    readonly Dictionary<string, HashSet<string>> dependentsTracker = [];
 
     string? lifeParamName = null;
 
@@ -90,7 +67,7 @@ internal class JsAnalyzer
         string source,
         (string FucntionName, JsMatchers.Delegate TryMatch, bool CollectDependencies)[] extractors)
     {
-        this.source = source;
+        Source = source;
 
         extractionStates = [.. extractors
             .Select(extractor => new ExtractionState(
@@ -144,7 +121,7 @@ internal class JsAnalyzer
                         VariableMetadata metadata = new(
                             declerationId.Name,
                             declaration,
-                            dependentsTracker.TryGetValue(declerationId.Name, out HashSet<string> dependents) ? dependents : [],
+                            DependentsTracker.TryGetValue(declerationId.Name, out HashSet<string> dependents) ? dependents : [],
                             [],
                             false);
 
@@ -155,8 +132,8 @@ internal class JsAnalyzer
                         else if (init is not null && NeedsDependencyAnalysis(init))
                             metadata.Dependents = FindDependencies(init, metadata.Name);
 
-                        dependentsTracker.Remove(metadata.Name);
-                        declaredVariables.Add(metadata.Name, metadata);
+                        DependentsTracker.Remove(metadata.Name);
+                        DeclaredVariables.Add(metadata.Name, metadata);
 
                         if (TryMatch(declaration, metadata))
                             return;
@@ -169,7 +146,7 @@ internal class JsAnalyzer
 
                     if (assignmentExpr.Left is Identifier leftId)
                     {
-                        if (!declaredVariables.TryGetValue(leftId.Name, out VariableMetadata existingVariable))
+                        if (!DeclaredVariables.TryGetValue(leftId.Name, out VariableMetadata existingVariable))
                             continue;
 
                         if (existingVariable.Node is VariableDeclarator variableDecl)                               // holy shit, luan wtf did u do here?? this a hack frfr
@@ -183,24 +160,24 @@ internal class JsAnalyzer
                     }
                     else if (assignmentExpr.Left is MemberExpression memberExpr)
                     {
-                        string? memberName = memberExpr.MemberToString(source);
+                        string? memberName = memberExpr.MemberToString(Source);
 
-                        if (memberName is null || declaredVariables.ContainsKey(memberName))
+                        if (memberName is null || DeclaredVariables.ContainsKey(memberName))
                             continue;
 
                         VariableMetadata metadata = new(
                             memberName,
                             currentNode,
                             FindDependencies(assignmentExpr.Right, memberName),
-                            dependentsTracker.TryGetValue(memberName, out HashSet<string> dependents) ? dependents : [],
+                            DependentsTracker.TryGetValue(memberName, out HashSet<string> dependents) ? dependents : [],
                             false);
 
-                        string? baseName = memberExpr.MemberBaseName(source);
+                        string? baseName = memberExpr.MemberBaseName(Source);
                         if (baseName is not null && baseName != memberName && !baseName.StartsWith("this."))
                             metadata.Dependencies.Add(baseName.Replace(".prototype", ""));
 
-                        dependentsTracker.Remove(memberName);
-                        declaredVariables.Add(memberName, metadata);
+                        DependentsTracker.Remove(memberName);
+                        DeclaredVariables.Add(memberName, metadata);
 
                         if (TryMatch(currentNode, metadata))
                             return;
@@ -209,6 +186,12 @@ internal class JsAnalyzer
             }
         }
     }
+
+
+    public string Source { get; }
+
+    public Dictionary<string, VariableMetadata> DeclaredVariables { get; } = [];
+    public Dictionary<string, HashSet<string>> DependentsTracker { get; } = [];
 
 
     bool NeedsDependencyAnalysis(
@@ -365,11 +348,11 @@ internal class JsAnalyzer
                             if (memberExpr.Object is ThisExpression)
                                 return AstWalker.CONTINUE;
 
-                            string? full = memberExpr.MemberToString(source);
+                            string? full = memberExpr.MemberToString(Source);
                             if (full is null)
                                 return AstWalker.CONTINUE;
 
-                            if (declaredVariables.TryGetValue(full, out VariableMetadata declaredVariable))
+                            if (DeclaredVariables.TryGetValue(full, out VariableMetadata declaredVariable))
                             {
                                 declaredVariable.Dependents.Add(identifierName);
                                 dependencies.Add(full);
@@ -377,38 +360,38 @@ internal class JsAnalyzer
                             else if (memberExpr.Object is Identifier objectId)
                             {
                                 if ((
-                                        declaredVariables.TryGetValue(objectId.Name, out VariableMetadata? declaredBaseVariable) ||
+                                        DeclaredVariables.TryGetValue(objectId.Name, out VariableMetadata? declaredBaseVariable) ||
                                         objectId.Name == lifeParamName
                                     ) &&
                                     !IsInScope(objectId.Name) &&
-                                    !JsBuiltIns.Contains(objectId.Name)
+                                    !BuiltIns.Contains(objectId.Name)
                                     )
                                 {
                                     declaredBaseVariable?.Dependents.Add(identifierName);
                                     dependencies.Add(full);
 
-                                    if (dependentsTracker.TryGetValue(full, out HashSet<string> existingTracker))
+                                    if (DependentsTracker.TryGetValue(full, out HashSet<string> existingTracker))
                                         existingTracker.Add(identifierName);
                                     else
-                                        dependentsTracker.Add(full, [ identifierName ]);
+                                        DependentsTracker.Add(full, [ identifierName ]);
                                 }
                             }
                             return AstWalker.CONTINUE;
                         }
 
-                        if (IsInScope(identifier.Name) || JsBuiltIns.Contains(identifier.Name))
+                        if (IsInScope(identifier.Name) || BuiltIns.Contains(identifier.Name))
                             return AstWalker.CONTINUE;
 
                         dependencies.Add(identifier.Name);
 
-                        if (declaredVariables.TryGetValue(identifierName, out VariableMetadata declaredVariableShit))
-                            declaredVariableShit.Dependents.Add(identifierName);
+                        if (DeclaredVariables.TryGetValue(identifierName, out VariableMetadata DeclaredVariableshit))
+                            DeclaredVariableshit.Dependents.Add(identifierName);
                         else
                         {
-                            if (dependentsTracker.TryGetValue(identifier.Name, out HashSet<string> existingTracker))
+                            if (DependentsTracker.TryGetValue(identifier.Name, out HashSet<string> existingTracker))
                                 existingTracker.Add(identifierName);
                             else
-                                dependentsTracker.Add(identifier.Name, [ identifierName ]);
+                                DependentsTracker.Add(identifier.Name, [ identifierName ]);
                         }
 
                         break;
@@ -442,7 +425,7 @@ internal class JsAnalyzer
 
         foreach (string dependency in dependencies)
         {
-            if (JsBuiltIns.Contains(dependency))
+            if (BuiltIns.Contains(dependency))
                 continue;
 
             if (dependency == lifeParamName)
@@ -451,7 +434,7 @@ internal class JsAnalyzer
             if (seen.Contains(dependency))
                 continue;
 
-            if (!declaredVariables.TryGetValue(dependency, out VariableMetadata? depMeta))
+            if (!DeclaredVariables.TryGetValue(dependency, out VariableMetadata? depMeta))
                 return false;
 
             seen.Add(dependency);

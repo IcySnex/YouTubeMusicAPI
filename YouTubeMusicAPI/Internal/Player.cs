@@ -4,6 +4,7 @@ using Jint;
 using System.Collections.Specialized;
 using System.Web;
 using System.Xml.Linq;
+using YouTubeMusicAPI.Internal.JavaScript;
 using static YouTubeMusicAPI.Internal.Player;
 
 namespace YouTubeMusicAPI.Internal;
@@ -144,6 +145,13 @@ internal class Player(
     static JsAlgorithms ExtractJsAlgorithms(
         string playerJs)
     {
+        JsExtractor ex = new(playerJs, [
+            new("sigFunction", JsMatchers.TryParseSig, true),
+            new("nSigFunction", JsMatchers.TryParseNSig, true),
+            new("sigTimestampVar", JsMatchers.TryParseSigTimestamp, false)
+            ]);
+        return null;
+
         Script ast = new Parser().ParseScript(playerJs);
 
         string? signature = null;

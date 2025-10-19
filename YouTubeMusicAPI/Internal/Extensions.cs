@@ -146,4 +146,81 @@ internal static class Extensions
         this Node value,
         string fullJs) =>
         fullJs.Substring(value.Start, value.End - value.Start);
+
+    /// <summary>
+    /// holy gpt
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    public static string? MemberToString(
+        this MemberExpression value,
+        string source)
+    {
+        List<string> segments = [];
+        Node currentNode = value;
+
+        while (currentNode is MemberExpression curMember)
+        {
+            Node prop = curMember.Property;
+            if (prop is null)
+                return null;
+
+            if (curMember.Computed)
+            {
+                string? propSource = prop.GetFunctionCode(source);
+                if (string.IsNullOrEmpty(propSource))
+                    return null;
+
+                segments.Insert(0, $"[{propSource.Trim()}]");
+            }
+            else
+            {
+                if (prop is not Identifier id)
+                    return null;
+
+                segments.Insert(0, $".{id.Name}");
+            }
+
+            currentNode = curMember.Object;
+        }
+
+        string? baseName = currentNode switch
+        {
+            Identifier id => id.Name,
+            ThisExpression _ => "this",
+            _ => null
+        };
+
+        return baseName != null ? baseName + string.Concat(segments) : null;
+    }
+
+    /// <summary>
+    /// holy gpt rrrr
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    public static string? MemberBaseName(
+        this MemberExpression value,
+        string source)
+    {
+        Node? target = value.Object;
+
+        while (target is MemberExpression nested)
+        {
+            string? parentName = MemberToString(nested, source);
+            if (parentName is not null)
+                return parentName;
+
+            target = nested.Object;
+        }
+
+        return target switch
+        {
+            Identifier id => id.Name,
+            ThisExpression _ => "this",
+            _ => null
+        };
+    }
 }

@@ -5,30 +5,6 @@ namespace YouTubeMusicAPI.Internal.JavaScript;
 
 internal class JsAnalyzer
 {
-    class ExtractionState(
-        (string Name, JsMatchers.Delegate TryMatch, bool CollectDependencies) extractor,
-        Node? node,
-        VariableMetadata? metadata,
-        HashSet<string> dependencies,
-        HashSet<string> dependents,
-        Node? matchContext,
-        bool isReady)
-    {
-        public (string Name, JsMatchers.Delegate TryMatch, bool CollectDependencies) Extractor { get; set; } = extractor;
-
-        public Node? Node { get; set; } = node;
-
-        public VariableMetadata? Metadata { get; set; } = metadata;
-
-        public HashSet<string> Dependencies { get; set; } = dependencies;
-
-        public HashSet<string> Dependents { get; set; } = dependents;
-
-        public Node? MatchContext { get; set; } = matchContext;
-
-        public bool IsReady { get; set; } = isReady;
-    }
-
     class Scope(
         HashSet<string> names,
         string type)
@@ -60,8 +36,6 @@ internal class JsAnalyzer
 
     readonly ExtractionState[] extractionStates;
     readonly Script ast;
-
-    string? lifeParamName = null;
 
     public JsAnalyzer(
         string source,
@@ -95,8 +69,8 @@ internal class JsAnalyzer
 
             Node? firstParam = functionExpr.Params.FirstOrDefault();
 
-            if (lifeParamName is null && firstParam is Identifier identifier)
-                lifeParamName = identifier.Name;
+            if (LifeParamName is null && firstParam is Identifier identifier)
+                LifeParamName = identifier.Name;
 
             if (functionExpr.Body is BlockStatement blockStmt)
             {
@@ -189,9 +163,12 @@ internal class JsAnalyzer
 
 
     public string Source { get; }
+    public string? LifeParamName { get; private set; } = null;
 
     public Dictionary<string, VariableMetadata> DeclaredVariables { get; } = [];
     public Dictionary<string, HashSet<string>> DependentsTracker { get; } = [];
+
+    public IEnumerable<ExtractionState> ExtractionStates => extractionStates.Where(state => state.Node is not null);
 
 
     bool NeedsDependencyAnalysis(
@@ -361,7 +338,7 @@ internal class JsAnalyzer
                             {
                                 if ((
                                         DeclaredVariables.TryGetValue(objectId.Name, out VariableMetadata? declaredBaseVariable) ||
-                                        objectId.Name == lifeParamName
+                                        objectId.Name == LifeParamName
                                     ) &&
                                     !IsInScope(objectId.Name) &&
                                     !BuiltIns.Contains(objectId.Name)
@@ -428,7 +405,7 @@ internal class JsAnalyzer
             if (BuiltIns.Contains(dependency))
                 continue;
 
-            if (dependency == lifeParamName)
+            if (dependency == LifeParamName)
                 continue;
 
             if (seen.Contains(dependency))
@@ -468,7 +445,7 @@ internal class JsAnalyzer
                 if (result is null)
                     continue;
 
-                state.Node = result;
+                state.Node = node;
             }
             else if (state.Node != node)
             {
@@ -488,7 +465,7 @@ internal class JsAnalyzer
                 state.Dependencies = metadata.Dependencies;
                 state.Dependents = metadata.Dependents;
                 if (result is not null)
-                    state.MatchContext = node;
+                    state.MatchContext = result;
             }
 
             RefreshExtractionState(state);

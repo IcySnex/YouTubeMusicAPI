@@ -26,129 +26,13 @@ internal class Player(
     }
 
 
-
-    static bool TryParseSignature(
-        Node node,
-        string playerJs,
-        out string? result)
-    {
-        if (node is not AssignmentExpression expression ||
-            expression.Right is not FunctionExpression functionExpr ||
-            functionExpr.Body is not BlockStatement block)
-        {
-            result = null;
-            return false;
-        }
-
-        foreach (Statement statement in block.Body)
-        {
-            if (statement is not ExpressionStatement exprStatement ||
-                exprStatement.Expression is not LogicalExpression logicalExpr ||
-                logicalExpr.Operator != Operator.LogicalAnd ||
-                logicalExpr.Left is not Identifier ||
-                logicalExpr.Right is not SequenceExpression sequenceExpr ||
-                sequenceExpr.Expressions.FirstOrDefault() is not AssignmentExpression assignmentExpr ||
-                assignmentExpr.Operator != Operator.Assignment ||
-                assignmentExpr.Left is not Identifier ||
-                assignmentExpr.Right is not CallExpression callExpr ||
-                callExpr.Callee is not Identifier ||
-                callExpr.Arguments.FirstOrDefault(exp => exp is CallExpression) is not CallExpression innerCallExpr ||
-                innerCallExpr.Callee is not Identifier identifier ||
-                identifier.Name != "decodeURIComponent" ||
-                innerCallExpr.Arguments.FirstOrDefault() is not Identifier)
-                continue;
-
-            result = callExpr.GetFunctionCode(playerJs);
-            return true;
-        }
-
-        result = null;
-        return false;
-    }
-
-    static bool TryParseNSignature(
-        Node node,
-        string playerJs,
-        out string? result)
-    {
-        if (node is not VariableDeclaration declaration)
-        {
-            result = null;
-            return false;
-        }
-
-        if (declaration.Declarations.Count != 1 ||
-            declaration.Declarations[0].Init is not ArrayExpression arrayExpr ||
-            arrayExpr.Elements.Count != 1 ||
-            arrayExpr.Elements[0] is not Identifier identifier)
-        {
-            result = null;
-            return false;
-        }
-
-        result = identifier.Name;
-        return true;
-
-    }
-
-    static bool TryParseSigTimestamp(
-        Node node,
-        string playerJs,
-        out int? result)
-    {
-        //if (node is not AssignmentExpression expression ||
-        //    expression.Right is not FunctionExpression functionExpr ||
-        //    functionExpr.Body is not BlockStatement block)
-        //{
-        //    result = null;
-        //    return false;
-        //}
-
-
-        //string code = block.GetFunctionCode(playerJs);
-        //if (code.Contains("signatureTimestamp:20374"))
-        //{
-
-        //}
-
-        if (node is not VariableDeclaration declaration)
-        {
-            result = null;
-            return false;
-        }
-
-        foreach (VariableDeclarator variable in declaration.Declarations)
-        {
-            if (variable.Init is not ObjectExpression objExpr)
-                continue;
-
-            foreach (Node objProp in objExpr.Properties)
-            {
-                if (objProp is not Property prop ||
-                    prop.Key is not Identifier identifier ||
-                    identifier.Name != "signatureTimestamp" ||
-                    prop.Value is not Literal literal ||
-                    literal.Value is null)
-                    continue;
-
-                result = Convert.ToInt32(literal.Value);
-                return true;
-            }
-
-        }
-
-        result = null;
-        return false;
-    }
-
-
     static JsAlgorithms ExtractJsAlgorithms(
         string playerJs)
     {
-        JsExtractor ex = new(playerJs, [
-            new("sigFunction", JsMatchers.TryParseSig, true),
-            new("nSigFunction", JsMatchers.TryParseNSig, true),
-            new("sigTimestampVar", JsMatchers.TryParseSigTimestamp, false)
+        JsAnalyzer ex = new(playerJs, [
+            new("sigFunction", JsMatchers.Sig, true),
+            new("nSigFunction", JsMatchers.NSig, true),
+            new("sigTimestampVar", JsMatchers.SigTimestamp, false)
             ]);
         return null;
 
@@ -159,14 +43,14 @@ internal class Player(
         int? sigTimestamp = null;
         foreach (Node node in ast.DescendantNodes())
         {
-            if (TryParseSignature(node, playerJs, out string? signatureResult))
-                signature = signatureResult;
+            //if (TryParseSignature(node, playerJs, out string? signatureResult))
+            //    signature = signatureResult;
 
-            else if (TryParseNSignature(node, playerJs, out string? nSignatureResult))
-                nSignature = nSignatureResult;
+            //else if (TryParseNSignature(node, playerJs, out string? nSignatureResult))
+            //    nSignature = nSignatureResult;
 
-            else if (TryParseSigTimestamp(node, playerJs, out int? sigTimestampResult))
-                sigTimestamp = sigTimestampResult;
+            //else if (TryParseSigTimestamp(node, playerJs, out int? sigTimestampResult))
+            //    sigTimestamp = sigTimestampResult;
         }
 
         if (signature is null)

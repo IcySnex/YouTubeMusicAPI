@@ -3,7 +3,7 @@ using Acornima.Ast;
 
 namespace YouTubeMusicAPI.Internal.JavaScript;
 
-internal class JsExtractor
+internal class JsAnalyzer
 {
     class ExtractionState(
         (string Name, JsMatchers.Delegate TryMatch, bool CollectDependencies) extractor,
@@ -81,11 +81,12 @@ internal class JsExtractor
 
     readonly Script ast;
 
-    string? lifeParamName = null;
-    Dictionary<string, VariableMetadata> declaredVariables = [];
-    Dictionary<string, HashSet<string>> dependentsTracker = [];
+    readonly Dictionary<string, VariableMetadata> declaredVariables = [];
+    readonly Dictionary<string, HashSet<string>> dependentsTracker = [];
 
-    public JsExtractor(
+    string? lifeParamName = null;
+
+    public JsAnalyzer(
         string source,
         (string FucntionName, JsMatchers.Delegate TryMatch, bool CollectDependencies)[] extractors)
     {

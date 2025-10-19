@@ -10,66 +10,19 @@ using static YouTubeMusicAPI.Internal.Player;
 namespace YouTubeMusicAPI.Internal;
 
 internal class Player(
-    JsAlgorithms jsAlgorithms,
+    JsExtractor.Result javasScript,
+    int signatureTimestamp,
     string? poToken)
 {
-    public class JsAlgorithms(
-        string sigDecipher,
-        string nSigDecipher,
-        int sigTimestamp)
-    {
-        public string SigDecipher { get; } = sigDecipher;
-
-        public string NSigDecipher { get; } = nSigDecipher;
-
-        public int SigTimestamp { get; } = sigTimestamp;
-    }
-
-
-    static JsAlgorithms ExtractJsAlgorithms(
-        string playerJs)
-    {
-        JsAnalyzer ex = new(playerJs, [
-            new("sigFunction", JsMatchers.Sig, true),
-            new("nSigFunction", JsMatchers.NSig, true),
-            new("sigTimestampVar", JsMatchers.SigTimestamp, false)
-            ]);
-        return null;
-
-        Script ast = new Parser().ParseScript(playerJs);
-
-        string? signature = null;
-        string? nSignature = null;
-        int? sigTimestamp = null;
-        foreach (Node node in ast.DescendantNodes())
-        {
-            //if (TryParseSignature(node, playerJs, out string? signatureResult))
-            //    signature = signatureResult;
-
-            //else if (TryParseNSignature(node, playerJs, out string? nSignatureResult))
-            //    nSignature = nSignatureResult;
-
-            //else if (TryParseSigTimestamp(node, playerJs, out int? sigTimestampResult))
-            //    sigTimestamp = sigTimestampResult;
-        }
-
-        if (signature is null)
-            throw new Exception("Failed to extract signature");
-
-        if (nSignature is null)
-            throw new Exception("Failed to extract n signature");
-
-        if (sigTimestamp is null)
-            throw new("Failed to extract signature timestamp");
-
-        return new(signature, nSignature, sigTimestamp.Value);
-    }
-
+    /// <summary>
+    /// The JavaScript extraction result.
+    /// </summary>
+    public JsExtractor.Result JavaScript { get; } = javasScript;
 
     /// <summary>
-    /// The JavaScript deciphering algorithms for this player
+    /// The timestamp of the JavaScript signature.
     /// </summary>
-    public JsAlgorithms Algorithms { get; } = jsAlgorithms;
+    public int SignatureTimestamp { get; } = signatureTimestamp;
 
     /// <summary>
     /// The Proof of Origin Token (required for SABR Requests)
@@ -99,9 +52,28 @@ internal class Player(
         //File.WriteAllText("C:\\Users\\Kevin\\Desktop\\player.js", await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken));
 
         string playerJs = File.ReadAllText("C:\\Users\\Kevin\\Desktop\\player.js");//await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
-        JsAlgorithms algorithms = ExtractJsAlgorithms(playerJs);
 
-        return new(algorithms, poToken);
+        JsAnalyzer analyzer = new(playerJs,
+            [
+                new("sigFunction", JsMatchers.Sig, true),
+                new("nSigFunction", JsMatchers.NSig, true),
+                new("sigTimestampVar", JsMatchers.SigTimestamp, false)
+            ]);
+
+        JsExtractor extractor = new(analyzer, skipEmitFor: ["sigTimestampVar"]);
+        JsExtractor.Result result = extractor.BuildScript();
+
+        if (!result.Exported.Contains("sigFunction"))
+            throw new Exception("Failed to extract signature function");
+
+        if (!result.Exported.Contains("nSigFunction"))
+            throw new Exception("Failed to extract n signature function");
+
+        int sigTimestamp = result.ExportedRawValues.TryGetValue("sigTimestampVar", out object? sigTimestampVar)
+            ? Convert.ToInt32(sigTimestampVar)
+            : throw new Exception("Failed to extract signature timestamp");
+
+        return new(result, sigTimestamp, poToken);
     }
 
 
@@ -140,12 +112,12 @@ internal class Player(
 
         if (sig is not null)
         {
-            string decipheredSig = jsEngine.Evaluate(Algorithms.SigDecipher).AsString();
+            string decipheredSig = jsEngine.Evaluate("").AsString();
             urlQuery[sp] = decipheredSig;
         }
         if (nsig is not null)
         {
-            string decipheredNSig = jsEngine.Evaluate(Algorithms.NSigDecipher).AsString();
+            string decipheredNSig = jsEngine.Evaluate("").AsString();
             urlQuery["n"] = decipheredNSig;
         }
 

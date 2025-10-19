@@ -1,5 +1,8 @@
 ﻿using Acornima.Ast;
+using Newtonsoft.Json;
+using System.Linq;
 using System.Text.RegularExpressions;
+using YouTubeMusicAPI.Internal.JavaScript;
 using YouTubeMusicAPI.Models.Search;
 
 namespace YouTubeMusicAPI.Internal;
@@ -147,12 +150,7 @@ internal static class Extensions
         string fullJs) =>
         fullJs.Substring(value.Start, value.End - value.Start);
 
-    /// <summary>
-    /// holy gpt
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="source"></param>
-    /// <returns></returns>
+
     public static string? MemberToString(
         this MemberExpression value,
         string source)
@@ -195,12 +193,6 @@ internal static class Extensions
         return baseName != null ? baseName + string.Concat(segments) : null;
     }
 
-    /// <summary>
-    /// holy gpt rrrr
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="source"></param>
-    /// <returns></returns>
     public static string? MemberBaseName(
         this MemberExpression value,
         string source)
@@ -222,5 +214,63 @@ internal static class Extensions
             ThisExpression _ => "this",
             _ => null
         };
+    }
+
+    public static string ExtractNodeSource(
+        this Node value,
+        string source) =>
+        source.Substring(value.Start, value.End - value.Start);
+
+    public static string? CreateWrapperFunction(
+        this Node node,
+        string name,
+        JsAnalyzer analyzer)
+    {
+        string GenerateWrapper(
+            string functionName,
+            string targetFunction,
+            string args) =>
+            $"    function {functionName}(input) {{\n        return {targetFunction}({args});\n    }}";
+
+        string ParseFunctionArguments(
+            JsAnalyzer analyzer,
+            IEnumerable<Node> args)
+        {
+            List<string> parameters = [];
+            foreach (Node arg in args)
+            {
+                switch (arg)
+                {
+                    case Identifier id when analyzer.DeclaredVariables.ContainsKey(id.Name):
+                        parameters.Add(id.Name);
+                        break;
+
+                    case Literal literal when literal.Value is string || literal.Value is double || literal.Value is int:
+                        parameters.Add(JsonConvert.SerializeObject(literal.Value));
+                        break;
+
+                    default:
+                        if (!parameters.Contains("input"))
+                            parameters.Add("input");
+                        break;
+                }
+            }
+
+            return string.Join(", ", parameters);
+        }
+
+        switch (node)
+        {
+            case CallExpression callExpr when callExpr.Callee is Identifier callExprCalleeId && analyzer.DeclaredVariables.ContainsKey(callExprCalleeId.Name):
+                string callExprArgs = ParseFunctionArguments(analyzer, callExpr.Arguments);
+                return GenerateWrapper(name, callExprCalleeId.Name, callExprArgs);
+
+            case VariableDeclarator variableDecl when variableDecl.Init is FunctionExpression functionExpr && variableDecl.Id is Identifier variableDeclId:
+                string variableDeclArgs = ParseFunctionArguments(analyzer, functionExpr.Params);
+                return GenerateWrapper(name, variableDeclId.Name, variableDeclArgs);
+
+            default:
+                return null;
+        }
     }
 }

@@ -1,11 +1,7 @@
-﻿using Acornima;
-using Acornima.Ast;
-using Jint;
+﻿using Jint;
 using System.Collections.Specialized;
 using System.Web;
-using System.Xml.Linq;
 using YouTubeMusicAPI.Internal.JavaScript;
-using static YouTubeMusicAPI.Internal.Player;
 
 namespace YouTubeMusicAPI.Internal;
 
@@ -14,6 +10,10 @@ internal class Player(
     int signatureTimestamp,
     string? poToken)
 {
+    readonly Engine jsEngine = new Engine().Execute(javasScript.Output);
+
+
+
     /// <summary>
     /// The JavaScript extraction result.
     /// </summary>
@@ -46,7 +46,7 @@ internal class Player(
         //string url = "https://www.youtube.com" + "/iframe_api";
         //string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
 
-        //string playerId = "bcd893b3";//js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
+        //string playerId = "6e4dbefe";//js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
         //string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
 
         //File.WriteAllText("C:\\Users\\Kevin\\Desktop\\player.js", await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken));
@@ -106,18 +106,14 @@ internal class Player(
             throw new Exception("Signature cipher does not contain s parameter.");
 
         // Signatures
-        Engine jsEngine = new Engine()
-            .SetValue("sig", sig)
-            .SetValue("nsig", nsig);
-
         if (sig is not null)
         {
-            string decipheredSig = jsEngine.Evaluate("").AsString();
+            string decipheredSig = jsEngine.Evaluate($"exportedVars.sigFunction('{sig}')").AsString();
             urlQuery[sp] = decipheredSig;
         }
         if (nsig is not null)
         {
-            string decipheredNSig = jsEngine.Evaluate("").AsString();
+            string decipheredNSig = jsEngine.Evaluate($"exportedVars.nSigFunction('{nsig}')").AsString();
             urlQuery["n"] = decipheredNSig;
         }
 

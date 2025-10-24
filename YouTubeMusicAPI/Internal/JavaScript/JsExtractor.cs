@@ -167,7 +167,7 @@ internal class JsExtractor(
                 return false;
 
             case AssignmentExpression assignmentExpr:
-                if (assignmentExpr.Left is MemberExpression assigmentExprLeftMemberExpr && assigmentExprLeftMemberExpr.Computed)
+                if (assignmentExpr.Left is MemberExpression assigmentExprLeftMemberExpr && !assigmentExprLeftMemberExpr.Computed)
                 {
                     if (assigmentExprLeftMemberExpr.Object is Identifier identifier &&
                         analyzer.DeclaredVariables.TryGetValue(identifier.Name, out VariableMetadata metadata) &&
@@ -241,7 +241,7 @@ internal class JsExtractor(
             }
         }
 
-        if (!forceRemove && init is SequenceExpression && initSource.StartsWith("("))
+        if (!forceRemove && init is SequenceExpression && !initSource.StartsWith("("))
             initSource = $"({initSource})";
 
         string idName = node is VariableDeclarator variableDecl && variableDecl.Id is Identifier id
@@ -346,7 +346,7 @@ internal class JsExtractor(
                 }
 
                 if (!shouldSkip)
-                    snippsets.Add($"    //#endregion --- start [{name}] ---\n");
+                    snippsets.Add($"    //#endregion --- end [{name}] ---\n");
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
+using System.Reflection;
 
 namespace YouTubeMusicAPI.Internal.JavaScript;
 
@@ -39,7 +40,7 @@ internal class JsAnalyzer
 
     public JsAnalyzer(
         string source,
-        (string FucntionName, JsMatchers.Delegate TryMatch, bool CollectDependencies)[] extractors)
+        (string FunctionName, JsMatchers.Delegate TryMatch, bool CollectDependencies)[] extractors)
     {
         Source = source;
 
@@ -104,7 +105,7 @@ internal class JsAnalyzer
                         if (init is null && variableDecl.Kind == VariableDeclarationKind.Var)
                             metadata.IsPredeclared = true;
                         else if (init is not null && NeedsDependencyAnalysis(init))
-                            metadata.Dependents = FindDependencies(init, metadata.Name);
+                            metadata.Dependencies = FindDependencies(init, metadata.Name);
 
                         DependentsTracker.Remove(metadata.Name);
                         DeclaredVariables.Add(metadata.Name, metadata);
@@ -123,8 +124,22 @@ internal class JsAnalyzer
                         if (!DeclaredVariables.TryGetValue(leftId.Name, out VariableMetadata existingVariable))
                             continue;
 
-                        if (existingVariable.Node is VariableDeclarator variableDecl)                               // holy shit, luan wtf did u do here?? this a hack frfr
-                            existingVariable.Node = new VariableDeclarator(variableDecl.Id, assignmentExpr.Right);  // why u manually overwriting the init; breaks the entire node code lookup
+                        // holy shit, luan wtf did u do here?? this a hack frfr
+                        // why u manually overwriting the init; breaks the entire node code lookup
+                        if (existingVariable.Node is VariableDeclarator variableDecl)
+                        {
+                            // now im requried to this even hackier reflection shit smh
+                            FieldInfo? initField = typeof(VariableDeclarator).GetField("<Init>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+                            initField?.SetValue(variableDecl, assignmentExpr.Right);
+
+                            // this would be better but i dont know the side effects
+                            //existingVariable.Node = new VariableDeclarator(variableDecl.Id, assignmentExpr.Right)
+                            //{
+                            //    Location = variableDecl.Location,
+                            //    Range = variableDecl.Range,
+                            //    UserData = variableDecl.UserData,
+                            //};
+                        }
 
                         if (NeedsDependencyAnalysis(assignmentExpr.Right))
                             existingVariable.Dependencies = FindDependencies(assignmentExpr.Right, leftId.Name);
@@ -195,15 +210,15 @@ internal class JsAnalyzer
         Node node,
         string identifierName)
     {
-        Stack<Scope> scopeStack = [];
-        scopeStack.Push(new([], "block"));
+        List<Scope> scopeStack = [];
+        scopeStack.Add(new([], "block"));
 
         bool IsInScope(
             string name)
         {
-            foreach (Scope scope in scopeStack)
+            for (int i = scopeStack.Count - 1; i >= 0; i--)
             {
-                if (scope.Names.Contains(name))
+                if (scopeStack[i].Names.Contains(name))
                     return true;
             }
             return false;
@@ -276,58 +291,58 @@ internal class JsAnalyzer
                         string? functionName = function.Id?.Name;
 
                         if (function is FunctionDeclaration && functionName is not null)
-                            scopeStack.Peek().Names.Add(functionName);
+                            scopeStack[scopeStack.Count - 1].Names.Add(functionName);
 
                         Scope functionScope = new([], "function");
                         if (function is FunctionExpression &&  functionName is not null)
                             functionScope.Names.Add(functionName);
 
                         CollectParams(function, functionScope.Names);
-                        scopeStack.Push(functionScope);
+                        scopeStack.Add(functionScope);
                         break;
 
                     case BlockStatement blockStmt:
-                        scopeStack.Push(new([], "block"));
+                        scopeStack.Add(new([], "block"));
                         break;
 
                     case CatchClause catchClse:
                         HashSet<string> set = [];
 
                         CollectBindingIdentifiers(catchClse.Param, set);
-                        scopeStack.Push(new(set, "block"));
+                        scopeStack.Add(new(set, "block"));
                         break;
 
                     case VariableDeclaration variableDecl:
-                        Scope currentScope = scopeStack.Peek();
+                        Scope currentScope = scopeStack[scopeStack.Count - 1];
 
-                        foreach (var declaration in variableDecl.Declarations)
+                        foreach (VariableDeclarator declaration in variableDecl.Declarations)
                             CollectBindingIdentifiers(declaration.Id, currentScope.Names);
                         break;
 
                     case ClassDeclaration classDecl:
                         if (classDecl.Id is Identifier classId)
-                            scopeStack.Peek().Names.Add(classId.Name);
+                            scopeStack[scopeStack.Count - 1].Names.Add(classId.Name);
                         break;
 
                     case LabeledStatement labeledStmt:
-                        scopeStack.Peek().Names.Add(labeledStmt.Label.Name);
+                        scopeStack[scopeStack.Count - 1].Names.Add(labeledStmt.Label.Name);
                         break;
 
                     case Identifier identifier:
                         if (identifier.Name == rootIdentifierName)
-                            return AstWalker.CONTINUE;
+                            return AstWalker.NORMAL;
 
                         if (parent is Property prop && prop.Key == identifier && !prop.Computed)
-                            return AstWalker.CONTINUE;
+                            return AstWalker.NORMAL;
 
                         if (parent is MemberExpression memberExpr && memberExpr.Property == identifier && !memberExpr.Computed)
                         {
                             if (memberExpr.Object is ThisExpression)
-                                return AstWalker.CONTINUE;
+                                return AstWalker.NORMAL;
 
                             string? full = memberExpr.MemberToString(Source);
                             if (full is null)
-                                return AstWalker.CONTINUE;
+                                return AstWalker.NORMAL;
 
                             if (DeclaredVariables.TryGetValue(full, out VariableMetadata declaredVariable))
                             {
@@ -350,30 +365,32 @@ internal class JsAnalyzer
                                     if (DependentsTracker.TryGetValue(full, out HashSet<string> existingTracker))
                                         existingTracker.Add(identifierName);
                                     else
-                                        DependentsTracker.Add(full, [ identifierName ]);
+                                        DependentsTracker[full] = [ identifierName ];
                                 }
                             }
-                            return AstWalker.CONTINUE;
+                            return AstWalker.NORMAL;
                         }
 
                         if (IsInScope(identifier.Name) || BuiltIns.Contains(identifier.Name))
-                            return AstWalker.CONTINUE;
+                            return AstWalker.NORMAL;
 
                         dependencies.Add(identifier.Name);
 
-                        if (DeclaredVariables.TryGetValue(identifierName, out VariableMetadata DeclaredVariableshit))
+                        if (DeclaredVariables.TryGetValue(identifier.Name, out VariableMetadata DeclaredVariableshit))
                             DeclaredVariableshit.Dependents.Add(identifierName);
                         else
                         {
                             if (DependentsTracker.TryGetValue(identifier.Name, out HashSet<string> existingTracker))
                                 existingTracker.Add(identifierName);
                             else
-                                DependentsTracker.Add(identifier.Name, [ identifierName ]);
+                            {
+                                DependentsTracker[identifier.Name] = [identifierName];
+                            }
                         }
 
                         break;
                 }
-                return AstWalker.CONTINUE;
+                return AstWalker.NORMAL;
             },
 
             (currentNode, parent, ancestors) =>
@@ -384,10 +401,10 @@ internal class JsAnalyzer
                     case BlockStatement:
                     case CatchClause:
                         if (scopeStack.Count > 1)
-                            scopeStack.Pop();
+                            scopeStack.RemoveAt(scopeStack.Count - 1);
                         break;
                 }
-                return AstWalker.CONTINUE;
+                return AstWalker.NORMAL;
             });
 
         return dependencies;
@@ -416,7 +433,7 @@ internal class JsAnalyzer
 
             seen.Add(dependency);
 
-            if (!AreDependenciesResolved(depMeta.Dependents, seen))
+            if (!AreDependenciesResolved(depMeta.Dependencies, seen))
                 return false;
         }
 

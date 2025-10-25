@@ -35,7 +35,7 @@ public class AlbumSearchResult(
     /// Weither this album is a single or not
     /// </summary>
     public bool IsSingle { get; } = isSingle;
-    
+
     /// <summary>
     /// Weither this album is an EP or not
     /// </summary>

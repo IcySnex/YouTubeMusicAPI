@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Collections.Specialized;
-using System.Net;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Web;
 using YouTubeMusicAPI.Internal;
 

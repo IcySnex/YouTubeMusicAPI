@@ -9,7 +9,7 @@ internal static class AstWalker
     public const int STOP = 1;
     public const int SKIP = 2;
 
-    static readonly Dictionary<Type, List<MemberInfo>> AstMembersCache = [];
+    static readonly Dictionary<Type, Func<object, object?>[]> AstMembersCache = [];
 
 
     public delegate int AstVisitor(
@@ -67,25 +67,26 @@ internal static class AstWalker
             //for (int i = children.Count - 1; i >= 0; i--)     // now i gotta do this expensive ahh reflection >:(
             //{
             //    Node? child = children[i];
-
+            //
             //    if (child is not null)
             //        stack.Push((child, node, false));
             //}
 
-            foreach (MemberInfo member in GetAstMembers(node.GetType())) // todo: optimize this shi
+            foreach (Func<object, object?> accessor in GetAstMembers(node.GetType()))
             {
-                object? value = member switch
-                {
-                    PropertyInfo pi => pi.GetValue(node),
-                    FieldInfo fi => fi.GetValue(node),
-                    _ => null
-                };
+                object? value = accessor(node);
+                if (value is null)
+                    continue;
 
-                if (value is IEnumerable<Node> nodeEnumerable)
+                if (value is IReadOnlyList<Node?> nodesList)
                 {
-                    foreach (Node childNode in nodeEnumerable.Reverse())
+                    for (int i = nodesList.Count - 1; i >= 0; i--)
+                    {
+                        Node? childNode = nodesList[i];
+
                         if (childNode is not null)
                             stack.Push((childNode, node, false));
+                    }
                 }
                 else if (value is Node childNode)
                     stack.Push((childNode, node, false));
@@ -95,27 +96,47 @@ internal static class AstWalker
     }
 
 
-    static List<MemberInfo> GetAstMembers(
+    static Func<object, object?>[] GetAstMembers(
         Type type)
     {
-        if (AstMembersCache.TryGetValue(type, out List<MemberInfo>? cached))
+        if (AstMembersCache.TryGetValue(type, out Func<object, object?>[]? cached))
             return cached;
 
-        List<MemberInfo> members = [.. type
-            .GetMembers(BindingFlags.Instance | BindingFlags.Public)
-            .Where(m => m.MemberType == MemberTypes.Property || m.MemberType == MemberTypes.Field)
-            .Where(p => p.Name != "Start" &&
-                        p.Name != "End" &&
-                        p.Name != "Location" &&
-                        p.Name != "LocationRef" &&
-                        p.Name != "Range" &&
-                        p.Name != "RangeRef" &&
-                        p.Name != "Type" &&
-                        p.Name != "TypeText" &&
-                        p.Name != "UserData" &&
-                        p.Name != "ChildNodes")];
+        MemberInfo[] members = type.GetMembers(BindingFlags.Instance | BindingFlags.Public);
+        List<Func<object, object?>> accessors = new(members.Length);
 
-        AstMembersCache[type] = members;
-        return members;
+        foreach (MemberInfo member in members)
+        {
+            if (member.MemberType == MemberTypes.Property)
+            {
+                PropertyInfo property = (PropertyInfo)member;
+                if (!property.CanRead || ShouldIgnoreMember(property.Name))
+                    continue;
+
+                accessors.Add(property.GetValue);
+            }
+            else if (member.MemberType == MemberTypes.Field)
+            {
+                FieldInfo field = (FieldInfo)member;
+
+                if (ShouldIgnoreMember(field.Name))
+                    continue;
+
+                accessors.Add(field.GetValue);
+            }
+        }
+
+        Func<object, object?>[] result = [.. accessors];
+        AstMembersCache[type] = result;
+        return result;
     }
+
+    static bool ShouldIgnoreMember(
+        string name) => name switch
+        {
+            "Start" or "End" or "Location" or "LocationRef" or
+            "Range" or "RangeRef" or "Type" or "TypeText" or
+            "UserData" or "ChildNodes" => true,
+            _ => false
+        };
 }

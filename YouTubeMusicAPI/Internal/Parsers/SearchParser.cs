@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
-using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Models;
 using YouTubeMusicAPI.Models.Search;
+using YouTubeMusicAPI.Pagination;
 
 namespace YouTubeMusicAPI.Internal.Parsers;
 

@@ -121,10 +121,7 @@ internal class JsExtractor(
 
             case NewExpression newExpr:
                 if (newExpr.Callee is Identifier newExprCalleeId &&
-                    (
-                        JsAnalyzer.BuiltIns.Contains(newExprCalleeId.Name) ||
-                        !isStrictMode
-                    ))
+                    (JsAnalyzer.BuiltIns.Contains(newExprCalleeId.Name) || !isStrictMode))
                     return AreSafeArgs(newExpr.Arguments);
 
                 return false;
@@ -198,6 +195,7 @@ internal class JsExtractor(
             LogicalExpression => "{}",
 
             ArrayExpression => "[]",
+
             _ => "undefined",
         };
 
@@ -388,7 +386,7 @@ internal class JsExtractor(
             }
         }
 
-        // export raw values: ALWAYS TRUE WUHWUHWUHWUHW
+        // export raw values: ALWAYS TRUE WUHWUHWUHWUHW (? im going crazy)
         string rawJson = JsonConvert.SerializeObject(exportedRawValues, Formatting.Indented);
         string[] rawJsonLines = rawJson.Split('\n');
 

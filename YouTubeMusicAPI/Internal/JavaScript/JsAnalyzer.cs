@@ -251,7 +251,7 @@ internal class JsAnalyzer
                     {
                         if (prop is RestElement rest)
                             CollectBindingIdentifiers(rest.Argument, target);
-                        else if(prop is Property property)
+                        else if (prop is Property property)
                             CollectBindingIdentifiers(property.Value, target);
                     }
                     break;
@@ -294,7 +294,7 @@ internal class JsAnalyzer
                             scopeStack[scopeStack.Count - 1].Names.Add(functionName);
 
                         Scope functionScope = new([], "function");
-                        if (function is FunctionExpression &&  functionName is not null)
+                        if (function is FunctionExpression && functionName is not null)
                             functionScope.Names.Add(functionName);
 
                         CollectParams(function, functionScope.Names);
@@ -351,10 +351,7 @@ internal class JsAnalyzer
                             }
                             else if (memberExpr.Object is Identifier objectId)
                             {
-                                if ((
-                                        DeclaredVariables.TryGetValue(objectId.Name, out VariableMetadata? declaredBaseVariable) ||
-                                        objectId.Name == LifeParamName
-                                    ) &&
+                                if ((DeclaredVariables.TryGetValue(objectId.Name, out VariableMetadata? declaredBaseVariable) || objectId.Name == LifeParamName) &&
                                     !IsInScope(objectId.Name) &&
                                     !BuiltIns.Contains(objectId.Name)
                                     )
@@ -365,7 +362,7 @@ internal class JsAnalyzer
                                     if (DependentsTracker.TryGetValue(full, out HashSet<string> existingTracker))
                                         existingTracker.Add(identifierName);
                                     else
-                                        DependentsTracker[full] = [ identifierName ];
+                                        DependentsTracker[full] = [identifierName];
                                 }
                             }
                             return AstWalker.NORMAL;
@@ -383,11 +380,8 @@ internal class JsAnalyzer
                             if (DependentsTracker.TryGetValue(identifier.Name, out HashSet<string> existingTracker))
                                 existingTracker.Add(identifierName);
                             else
-                            {
                                 DependentsTracker[identifier.Name] = [identifierName];
-                            }
                         }
-
                         break;
                 }
                 return AstWalker.NORMAL;

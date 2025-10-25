@@ -1,6 +1,5 @@
 ﻿using Acornima.Ast;
 using Newtonsoft.Json;
-using System.Linq;
 using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Internal.JavaScript;
 using YouTubeMusicAPI.Models.Search;

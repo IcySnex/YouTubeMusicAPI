@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using System.Globalization;
 using YouTubeMusicAPI.Models.Info;
 using YouTubeMusicAPI.Pagination;
 
@@ -133,7 +133,7 @@ internal static class InfoParser
 
         List<CommunityPlaylistSong> result = [];
         string? nextContinuationToken = null;
-        
+
         foreach (JToken content in contentsToken)
         {
             if (content.SelectObjectOptional<string>("continuationItemRenderer.continuationEndpoint.continuationCommand.token") is string continuationToken)

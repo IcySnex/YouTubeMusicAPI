@@ -7,7 +7,7 @@ public class PlaybackTracking
 {
     const string CpnCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
 
-    readonly static Random CpnRandom = new();
+    static readonly Random CpnRandom = new();
 
 
     /// <summary>

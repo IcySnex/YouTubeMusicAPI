@@ -28,7 +28,7 @@ public static class Payload
                 client = new
                 {
                     clientName = "WEB_REMIX",
-                    clientVersion = "1.20211213.00.00",
+                    clientVersion = "1.20251022.00.01",
                     browserName = "Chrome",
                     browserVersion = "130.0.0.0",
                     osName = "Windows",
@@ -59,7 +59,7 @@ public static class Payload
 
         return payload;
     }
-    
+
     /// <summary>
     /// Creates a new payload which mimics a YouTube mobile client
     /// </summary>
@@ -81,13 +81,13 @@ public static class Payload
                 client = new
                 {
                     clientName = "iOS",
-                    clientVersion = "19.45.4",
+                    clientVersion = "20.11.6",
                     deviceMake = "Apple",
                     deviceModel = "iPhone16,2",
                     osName = "IOS",
                     platform = "MOBILE",
                     osVersion = "18.1.0.22B83",
-                    userAgent = "com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; US)",
+                    userAgent = "com.google.ios.youtube/20.11.6 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; US)",
                     timeZone = "UTC",
                     utcOffsetMinutes = 0,
                     hl = "en",
@@ -106,6 +106,4 @@ public static class Payload
 
         return payload;
     }
-
-    
 }

@@ -129,7 +129,7 @@ internal static class Selectors
         new(
             value.SelectObject<string>(playlistIdPath),
             videoIdPath is null ? null : value.SelectObjectOptional<string>(videoIdPath));
-    
+
     /// <summary>
     /// Selects and casts an optional radio from a json token
     /// </summary>

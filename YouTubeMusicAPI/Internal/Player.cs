@@ -42,38 +42,35 @@ internal class Player(
         string? poToken,
         CancellationToken cancellationToken = default)
     {
-        // Player
-        //string url = "https://www.youtube.com" + "/iframe_api";
-        //string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
+        string url = "https://www.youtube.com" + "/iframe_api";
+        string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
 
-        //string playerId = "6e4dbefe";//js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
-        //string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
+        string playerId = js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
+        string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
 
-        //File.WriteAllText("C:\\Users\\Kevin\\Desktop\\player.js", await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken));
-
-        string playerJs = File.ReadAllText("C:\\Users\\Kevin\\Desktop\\player.js");//await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
+        string playerJs = await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
 
         JsAnalyzer analyzer = new(playerJs,
             [
-                new("sigFunction", JsMatchers.Sig, true),
-                new("nSigFunction", JsMatchers.NSig, true),
-                new("sigTimestampVar", JsMatchers.SigTimestamp, false)
+                new("decipherSignature", JsMatchers.Signature, true),
+                new("decipherNSignature", JsMatchers.NSignature, true),
+                new("signatureTimestamp", JsMatchers.SignatureTimestamp, false)
             ]);
 
-        JsExtractor extractor = new(analyzer, skipEmitFor: ["sigTimestampVar"]);
+        JsExtractor extractor = new(analyzer, skipEmitFor: ["signatureTimestamp"]);
         JsExtractor.Result result = extractor.BuildScript();
 
-        if (!result.Exported.Contains("sigFunction"))
-            throw new Exception("Failed to extract signature function");
+        if (!result.Exported.Contains("decipherSignature"))
+            throw new Exception("Failed to extract signature deciphering function");
 
-        if (!result.Exported.Contains("nSigFunction"))
-            throw new Exception("Failed to extract n signature function");
+        if (!result.Exported.Contains("decipherNSignature"))
+            throw new Exception("Failed to extract n-signature deciphering function");
 
-        int sigTimestamp = result.ExportedRawValues.TryGetValue("sigTimestampVar", out object? sigTimestampVar)
-            ? Convert.ToInt32(sigTimestampVar)
+        int signatureTimestamp = result.ExportedRawValues.TryGetValue("signatureTimestamp", out object? rawSignatureTimestamp)
+            ? Convert.ToInt32(rawSignatureTimestamp)
             : throw new Exception("Failed to extract signature timestamp");
 
-        return new(result, sigTimestamp, poToken);
+        return new(result, signatureTimestamp, poToken);
     }
 
 
@@ -108,12 +105,12 @@ internal class Player(
         // Signatures
         if (sig is not null)
         {
-            string decipheredSig = jsEngine.Evaluate($"exportedVars.sigFunction('{sig}')").AsString();
+            string decipheredSig = jsEngine.Evaluate($"exportedVars.decipherSignature('{sig}');").AsString();
             urlQuery[sp] = decipheredSig;
         }
         if (nsig is not null)
         {
-            string decipheredNSig = jsEngine.Evaluate($"exportedVars.nSigFunction('{nsig}')").AsString();
+            string decipheredNSig = jsEngine.Evaluate($"exportedVars.decipherNSignature('{nsig}');").AsString();
             urlQuery["n"] = decipheredNSig;
         }
 
@@ -128,7 +125,7 @@ internal class Player(
         // Client Version
         urlQuery["cver"] = client switch
         {
-            "WEB_REMIX" => "1.20250331.01.00",
+            "WEB_REMIX" => "1.20251022.00.01",
             _ => throw new Exception("This client is not supported"),
         };
 

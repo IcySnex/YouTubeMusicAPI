@@ -25,7 +25,7 @@ public class StreamingData(
     /// Whether the song or video is live content or not
     /// </summary>
     public bool IsLiveContent { get; } = isLiveContent;
-    
+
     /// <summary>
     /// The amount of time the streams expire in
     /// </summary>

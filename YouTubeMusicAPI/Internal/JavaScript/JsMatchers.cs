@@ -9,7 +9,7 @@ internal static class JsMatchers
         Node node);
 
 
-    public static Node? Sig(
+    public static Node? Signature(
         Node node)
     {
         if (node is not VariableDeclarator variableDecl ||
@@ -41,7 +41,7 @@ internal static class JsMatchers
         return null;
     }
 
-    public static Node? NSig(
+    public static Node? NSignature(
         Node node)
     {
         if (node is not VariableDeclarator variableDecr ||
@@ -52,7 +52,7 @@ internal static class JsMatchers
         return identifier;
     }
 
-    public static Node? SigTimestamp(
+    public static Node? SignatureTimestamp(
         Node node)
     {
         if (node is not ExpressionStatement expressionStmt ||

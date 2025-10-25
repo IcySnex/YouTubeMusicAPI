@@ -19,6 +19,22 @@ internal static class SearchParser
     public static Page<SearchResult> GetPage(
         JObject jsonToken)
     {
+        Func<JToken, SearchResult>? GetShelfItem(
+            string? category) =>
+            category.ToSearchCategory() switch
+            {
+                SearchCategory.Songs => GetSong,
+                SearchCategory.Videos => GetVideo,
+                SearchCategory.Albums => GetAlbums,
+                SearchCategory.CommunityPlaylists => GetCommunityPlaylist,
+                SearchCategory.Artists => GetArtist,
+                SearchCategory.Podcasts => GetPodcast,
+                SearchCategory.Episodes => GetEpisode,
+                SearchCategory.Profiles => GetProfile,
+                _ => null
+            };
+
+
         // Get shelves
         bool isContinued = jsonToken.ContainsKey("continuationContents");
 
@@ -56,30 +72,22 @@ internal static class SearchParser
             JToken[] shelfItems = shelfToken.SelectObjectOptional<JToken[]>("contents") ?? [];
 
             // Shelf item parse function
-            Func<JToken, SearchResult>? getShelfItem = category.ToSearchCategory() switch
-            {
-                SearchCategory.Songs => GetSong,
-                SearchCategory.Videos => GetVideo,
-                SearchCategory.Albums => GetAlbums,
-                SearchCategory.CommunityPlaylists => GetCommunityPlaylist,
-                SearchCategory.Artists => GetArtist,
-                SearchCategory.Podcasts => GetPodcast,
-                SearchCategory.Episodes => GetEpisode,
-                SearchCategory.Profiles => GetProfile,
-                _ => null
-            };
-            if (getShelfItem is null)
-                continue;
+            Func<JToken, SearchResult>? getShelfItem = GetShelfItem(category);
 
             foreach (JToken shelfItem in shelfItems)
             {
                 // Parse shelf item
                 JToken? itemObject = shelfItem.First?.First;
-
                 if (itemObject is null)
                     continue;
 
-                items.Add(getShelfItem(itemObject));
+                string itemCategory = itemObject.SelectObject<string>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text");
+
+                Func<JToken, SearchResult>? getShelfItemItemItemItemItem = getShelfItem ?? GetShelfItem(itemCategory + 's'); // nice name huh? :3
+                if (getShelfItemItemItemItemItem is null)
+                    continue;
+
+                items.Add(getShelfItemItemItemItemItem(itemObject));
             }
         }
 
@@ -98,15 +106,17 @@ internal static class SearchParser
     {
         JToken[] runs = jsonToken.SelectObject<JToken[]>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs");
 
-        NamedEntity[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 0, jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[1].text") != " & " && runs.Length == 3 ? 1 : 3);
+        int artistIndex = runs[0].SelectObjectOptional<string>("navigationEndpoint.browseEndpoint.browseId") is not null ? 0 : 1;
+
+        NamedEntity[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", artistIndex, jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[1].text") != " & " && runs.Length == 3 ? 1 - artistIndex : 3 - artistIndex);
         int albumIndex = artists[0].Id is null ? 2 : artists.Length * 2;
 
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId"),
             artists: artists,
-            album: albumIndex == runs.Length - 1 ? new(jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"), null) : jsonToken.SelectNamedEntity($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId"),
-            duration: jsonToken.SelectObject<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runs.Length - 1}].text").ToTimeSpan(),
+            album: artistIndex == 0 ? (albumIndex == runs.Length - 1 ? new(jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"), null) : jsonToken.SelectNamedEntity($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].text", $"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId")) : null,
+            duration: artistIndex == 0 ? jsonToken.SelectObject<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{runs.Length - 1}].text").ToTimeSpan() : TimeSpan.Zero,
             isExplicit: jsonToken.SelectIsExplicit("badges"),
             playsInfo: jsonToken.SelectObject<string>("flexColumns[2].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             radio: jsonToken.SelectRadioOptional("menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.playlistId", "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.videoId"),

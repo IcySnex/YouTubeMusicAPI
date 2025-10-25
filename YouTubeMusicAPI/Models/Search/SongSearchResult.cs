@@ -16,7 +16,7 @@ public class SongSearchResult(
     string name,
     string id,
     NamedEntity[] artists,
-    NamedEntity album,
+    NamedEntity? album,
     TimeSpan duration,
     bool isExplicit,
     string playsInfo,
@@ -31,7 +31,7 @@ public class SongSearchResult(
     /// <summary>
     /// The album of this song
     /// </summary>
-    public NamedEntity Album { get; } = album;
+    public NamedEntity? Album { get; } = album;
 
     /// <summary>
     /// The duration of this song

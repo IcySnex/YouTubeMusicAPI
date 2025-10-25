@@ -73,7 +73,7 @@ internal class RequestHelper
         authentication.Prepare(request);
 
         // Send HTTP request
-        logger?.LogInformation($"[RequestHelper-GetAsync] Sending HTTP reuqest. GET: {url}.");
+        logger?.LogDebug($"[RequestHelper-GetAsync] Sending HTTP reuqest. GET: {url}.");
         return client.SendAsync(request, cancellationToken);
     }
 
@@ -96,7 +96,7 @@ internal class RequestHelper
         HttpResponseMessage httpResponse = await GetAsync(uri, parameters, cancellationToken).ConfigureAwait(false);
 
         // Parse HTTP response data
-        logger?.LogInformation($"[RequestHelper-GetAndValidateAsync] Parsing HTTP response.");
+        logger?.LogDebug($"[RequestHelper-GetAndValidateAsync] Parsing HTTP response.");
         string httpResponseData = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         // Check for exception
@@ -140,7 +140,7 @@ internal class RequestHelper
         authentication.Prepare(request);
 
         // Send HTTP request
-        logger?.LogInformation($"[RequestHelper-PostBodyAsync] Sending HTTP reuqest. POST: {url}.");
+        logger?.LogDebug($"[RequestHelper-PostBodyAsync] Sending HTTP reuqest. POST: {url}.");
         return client.SendAsync(request, cancellationToken);
     }
 
@@ -166,7 +166,7 @@ internal class RequestHelper
         HttpResponseMessage httpResponse = await PostAsync(uri, body, parameters, cancellationToken).ConfigureAwait(false);
 
         // Parse HTTP response data
-        logger?.LogInformation($"[RequestHelper-PostBodyAndValidateAsync] Parsing HTTP response.");
+        logger?.LogDebug($"[RequestHelper-PostBodyAndValidateAsync] Parsing HTTP response.");
         string httpResponseData = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         // Check for exception

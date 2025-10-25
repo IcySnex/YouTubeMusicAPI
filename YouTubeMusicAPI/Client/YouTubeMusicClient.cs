@@ -78,7 +78,7 @@ public class YouTubeMusicClient
         isCookieAuthenticated = cookies is not null;
 
         this.logger = logger;
-        this.requestHelper = new(httpClient ?? new(), cookies);
+        this.requestHelper = new(logger, httpClient ?? new(), cookies);
         this.baseClient = new(logger, requestHelper);
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient with extendended logging functions has been initialized.");

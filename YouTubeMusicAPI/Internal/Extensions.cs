@@ -43,7 +43,7 @@ internal static class Extensions
             "Songs" => SearchCategory.Songs,
             "Videos" => SearchCategory.Videos,
             "Albums" => SearchCategory.Albums,
-            "Community playlists" => SearchCategory.CommunityPlaylists,
+            "Community playlists" or "Playlists" => SearchCategory.CommunityPlaylists,
             "Artists" => SearchCategory.Artists,
             "Podcasts" => SearchCategory.Podcasts,
             "Episodes" => SearchCategory.Episodes,

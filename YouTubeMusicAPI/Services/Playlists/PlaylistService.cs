@@ -195,7 +195,7 @@ public sealed class PlaylistService
     /// Gets the related content for the playlist on YouTube Music.
     /// </summary>
     /// <remarks>
-    /// Only available when <see cref="PlaylistInfo.IsMix"/> is <see langword="false"/>."/>
+    /// Only available when <see cref="PlaylistInfo.IsMix"/> is <see langword="false"/>.
     /// </remarks>
     /// <param name="playlist">The playlist to get the relations for.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>

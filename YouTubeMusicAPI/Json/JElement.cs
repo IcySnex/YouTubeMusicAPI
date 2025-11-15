@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 
 namespace YouTubeMusicAPI.Json;
@@ -126,7 +127,11 @@ internal readonly struct JElement
     {
         if (IsUndefined)
         {
+#if DEBUG
             value = new(default, $"{path}.{key}<MISSING>");
+#else
+            value = new(default);
+#endif
             return false;
         }
 
@@ -148,7 +153,13 @@ internal readonly struct JElement
     public JArray? AsArray()
     {
         if (IsArray)
+        {
+#if DEBUG
             return new(element, path);
+#else
+            return new(element);
+#endif
+        }
 
         return null;
     }

@@ -342,44 +342,44 @@ public sealed class SearchService
         List<SearchResult> results = contents
             .Where(item => item
                 .Contains("musicShelfRenderer"))
-            .SelectMany(item =>
-            {
-                JElement shelf = item
-                    .Get("musicShelfRenderer");
-
-                string? categoryTitle = shelf
-                    .SelectRunTextAt("title", 0);
-                Func<JElement, SearchResult>? parse = categoryTitle switch
+            .SelectMany(item => item
+                .Get("musicShelfRenderer")
+                .Get("contents")
+                .AsArray()
+                .Or(JArray.Empty)
+                .Select(item =>
                 {
-                    "Songs" => SongSearchResult.Parse,
-                    "Videos" => VideoSearchResult.Parse,
-                    "Featured playlists" => FeaturedPlaylistSearchResult.Parse,
-                    "Community playlists" => CommunityPlaylistSearchResult.Parse,
-                    "Albums" => AlbumSearchResult.Parse,
-                    "Artists" => ArtistSearchResult.Parse,
-                    "Profiles" => ProfileSearchResult.Parse,
-                    "Podcasts" => PodcastSearchResult.Parse,
-                    "Episodes" => EpisodeSearchResult.Parse,
-                    _ => null
-                };
-                if (parse is null)
-                {
-                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse search result. Unsupported caegory: {category}.", categoryTitle);
-                    return Enumerable.Empty<SearchResult>();
-                }
+                    if (!item.Contains("musicResponsiveListItemRenderer", out JElement content))
+                        return null;
 
-                client.Logger?.LogInformation("[SearchService-AllAsync] Parsing '{category}' shelf...", categoryTitle);
-                return shelf
-                    .Get("contents")
-                    .AsArray()
-                    .Or(JArray.Empty)
-                    .Select(item => item
-                        .Get("musicResponsiveListItemRenderer"))
-                    .Where(item => // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check
-                        item.Contains("menu") && (categoryTitle == "Episodes" || !item.SelectIsPodcast())) // duh no fluent syntax >:( "short-circuiting" performance blabla
-                    .Select(parse);
-            })
+                    string? categoryTitle = content
+                        .Get("flexColumns")
+                        .GetAt(1)
+                        .Get("musicResponsiveListItemFlexColumnRenderer")
+                        .SelectRunTextAt("text", 0);
+                    Func<JElement, SearchResult>? parseItem = categoryTitle switch
+                    {
+                        "Song" => SongSearchResult.Parse,
+                        "Video" => VideoSearchResult.Parse,
+                        "Playlist" when content.SelectIsFeaturedPlaylist() => FeaturedPlaylistSearchResult.Parse,
+                        "Playlist" => CommunityPlaylistSearchResult.Parse,
+                        "Album" => AlbumSearchResult.Parse,
+                        "Artist" => ArtistSearchResult.Parse,
+                        "Profile" => ProfileSearchResult.Parse,
+                        "Podcast" => PodcastSearchResult.Parse,
+                        "Episode" => EpisodeSearchResult.Parse,
+                        _ => null
+                    };
+                    if (parseItem is null)
+                    {
+                        client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse result. Unsupported caegory: {category}.", categoryTitle);
+                        return null;
+                    }
+
+                    return parseItem(content);
+                }))
             .Where(Syntax.IsNotNull)
+            .Cast<SearchResult>()
             .ToList();
 
         return new(results, topResult, relatedTopResults);

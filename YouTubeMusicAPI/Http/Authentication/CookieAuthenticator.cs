@@ -25,10 +25,10 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
         string? prooOfOriginToken = null) : base(visitorData, rolloutToken, prooOfOriginToken)
     {
         // Add cookies
+        Container.Add(new Cookie("SOCS", "CAI") { Domain = ".youtube.com" });
+
         foreach (Cookie cookie in cookies)
             Container.Add(cookie);
-
-        Container.Add(new Cookie("SOCS", "CAI") { Domain = ".youtube.com" });
 
         // Get session id
         Cookie? sessionCookie = cookies.FirstOrDefault(c => string.Equals(c.Name, "__Secure-3PAPISID", StringComparison.Ordinal));
@@ -88,7 +88,7 @@ public class CookieAuthenticator : AnonymousAuthenticator, IAuthenticator
         ClientType clientType)
     {
         if (request.RequestUri is null ||
-            clientType != ClientType.WebMusic)
+            clientType == ClientType.IOSMusic)
             return false;
 
         request.Headers.Add("Origin", request.RequestUri.Scheme + Uri.SchemeDelimiter + request.RequestUri.Host);

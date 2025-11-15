@@ -84,12 +84,11 @@ public class SongSearchResult(
             .Get("navigationEndpoint")
             .IsUndefined;
         YouTubeMusicEntity album = isAlbumUnknown
-            .If(true,
-                menu
-                    .SelectAlbumUnknown(),
-                descriptionRuns
-                    .GetAt(descriptionStartIndex + artists.Length * 2)
-                    .SelectAlbum());
+            ? menu
+                .SelectAlbumUnknown()
+            : descriptionRuns
+                .GetAt(descriptionStartIndex + artists.Length * 2)
+                .SelectAlbum();
 
         TimeSpan duration = descriptionRuns
             .GetAt(descriptionStartIndex + artists.Length * 2 + (isAlbumUnknown ? 0 : 2))

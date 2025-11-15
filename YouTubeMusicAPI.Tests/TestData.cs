@@ -121,7 +121,7 @@ internal static class TestData
     public const int FetchOffset = 0;
     public const int FetchLimit = 20;
 
-    public const string SearchQuery = "Cutty Vibez";
+    public const string SearchQuery = "relax";
     public const SearchScope SearchScope = YouTubeMusicAPI.Services.Search.SearchScope.Global;
     public const bool SearchIgnoreSpelling = false;
 

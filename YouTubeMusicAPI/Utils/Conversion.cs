@@ -219,7 +219,7 @@ internal static class Conversion
             case SearchScope.Global:
                 if (!category.HasValue)
                 {
-                    queryParams = "EhGKAQ4IARABGAEgASgAOAFAAUICCAE%3D";
+                    queryParams = "QgIIAQ%3D%3D";
                     break;
                 }
 

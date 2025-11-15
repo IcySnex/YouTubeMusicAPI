@@ -45,17 +45,17 @@ internal sealed class Client(
             gl: "US",
             platform: "DESKTOP",
             clientName: "WEB_REMIX",
-            clientVersion: "1.20250428.03.00",
+            clientVersion: "1.20251111.09.00",
             deviceMake: "",
             deviceModel: "",
             osName: "Windows",
             osVersion: "10.0",
-            userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.7151.6 Safari/537.36",
+            userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
             timeZone: "UTC",
             utcOffsetMinutes: 0)
         {
             BrowserName = "Chrome",
-            BrowserVersion = "137.0.7151.6",
+            BrowserVersion = "142.0.0.0",
             OriginalUrl = "https://music.youtube.com/"
         };
 

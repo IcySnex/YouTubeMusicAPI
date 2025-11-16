@@ -9,10 +9,12 @@
 /// <param name="results">The list containing the search results.</param>
 /// <param name="topResult">The most relevant search result.</param>
 /// <param name="telatedTopResults">The list containing the related top results.</param>
+/// <param name="availableCategories">The available categories for this search.</param>
 public class SearchPage(
     IReadOnlyList<SearchResult> results,
     SearchResult? topResult,
-    IReadOnlyList<SearchResult> telatedTopResults)
+    IReadOnlyList<SearchResult> telatedTopResults,
+    IReadOnlyList<SearchCategory> availableCategories)
 {
     /// <summary>
     /// The list containing the items.
@@ -28,4 +30,9 @@ public class SearchPage(
     /// The list containing the related top results.
     /// </summary>
     public IReadOnlyList<SearchResult> RelatedTopResults { get; } = telatedTopResults;
+
+    /// <summary>
+    /// The available categories for this search.
+    /// </summary>
+    public IReadOnlyList<SearchCategory> AvailableCategories { get; } = availableCategories;
 }

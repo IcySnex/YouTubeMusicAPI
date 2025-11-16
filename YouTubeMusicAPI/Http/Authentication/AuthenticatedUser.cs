@@ -61,7 +61,7 @@ public class AuthenticatedUser(
             .GetAt(1)
             .Get("compactLinkRenderer")
             .SelectRunTextAt("title", 0)
-            .If("Paid memberships", true, false);
+            .Is("Paid memberships");
 
         return new(name, id, thumbnails, handle, isPremium);
     }

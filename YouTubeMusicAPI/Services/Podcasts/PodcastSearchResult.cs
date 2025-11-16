@@ -44,7 +44,9 @@ public class PodcastSearchResult(
             .Get("text")
             .AsString()
             .OrThrow()
-            .If("Podcast", 2, 0);
+            .Is("Podcast")
+                ? 2
+                : 0;
 
 
         string name = flexColumns

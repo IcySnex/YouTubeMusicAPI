@@ -57,7 +57,9 @@ public class SongSearchResult(
             .Get("text")
             .AsString()
             .OrThrow()
-            .If("Song", 2, 0);
+            .Is("Song")
+                ? 2
+                : 0;
 
 
         string name = flexColumns
@@ -221,11 +223,10 @@ public class SongSearchResult(
             .Get("navigationEndpoint")
             .IsUndefined;
         YouTubeMusicEntity album = isAlbumUnknown
-            .If(true,
-                menu
-                    .SelectAlbumUnknown(),
-                albumRun
-                    .SelectAlbum());
+            ? menu
+                .SelectAlbumUnknown()
+            : albumRun
+                .SelectAlbum();
 
         TimeSpan duration = TimeSpan.Zero;
 

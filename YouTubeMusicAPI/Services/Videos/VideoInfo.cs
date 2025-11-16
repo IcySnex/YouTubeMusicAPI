@@ -92,13 +92,12 @@ public class VideoInfo(
             .Get("unselectable")
             .AsBool()
             .Or(false)
-            .If(true,
-                null,
-                lyricsTab
+                ? null
+                : lyricsTab
                     .Get("endpoint")
                     .Get("browseEndpoint")
                     .Get("browseId")
-                    .AsString());
+                    .AsString();
 
         return Parse(item, counterpartItem, relationsBrowseId, lyricsBrowseId);
     }

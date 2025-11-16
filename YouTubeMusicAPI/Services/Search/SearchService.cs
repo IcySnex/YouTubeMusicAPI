@@ -60,24 +60,23 @@ public sealed class SearchService
             .Contains("continuationContents", out JElement continuationContents);
 
         JElement shelf = isContinued
-            .If(true,
-                continuationContents
-                    .Get("musicShelfContinuation"),
-                root
-                    .Get("contents")
-                    .Get("tabbedSearchResultsRenderer")
-                    .Get("tabs")
-                    .GetAt(0)
-                    .Get("tabRenderer")
-                    .Get("content")
-                    .Get("sectionListRenderer")
-                    .Get("contents")
-                    .AsArray()
-                    .Or(JArray.Empty)
-                    .FirstOrDefault(item => item
-                        .Get("musicShelfRenderer")
-                        .SelectRunTextAt("title", 0)
-                        .Is(categoryTitle)));
+            ? continuationContents
+                .Get("musicShelfContinuation")
+            : root
+                .Get("contents")
+                .Get("tabbedSearchResultsRenderer")
+                .Get("tabs")
+                .GetAt(0)
+                .Get("tabRenderer")
+                .Get("content")
+                .Get("sectionListRenderer")
+                .Get("contents")
+                .AsArray()
+                .Or(JArray.Empty)
+                .FirstOrDefault(item => item
+                    .Get("musicShelfRenderer")
+                    .SelectRunTextAt("title", 0)
+                    .Is(categoryTitle));
         if (shelf.IsUndefined)
             return new([], null);
         if (!isContinued)

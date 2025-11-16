@@ -42,7 +42,9 @@ public class ProfileSearchResult(
             .Get("text")
             .AsString()
             .OrThrow()
-            .If("Profile", 2, 0);
+            .Is("Profile")
+                ? 2
+                : 0;
 
 
         string name = flexColumns

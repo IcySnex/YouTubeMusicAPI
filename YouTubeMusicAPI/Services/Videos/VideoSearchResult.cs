@@ -48,7 +48,9 @@ public class VideoSearchResult(
             .Get("text")
             .AsString()
             .OrThrow()
-            .If("Video", 2, 0);
+            .Is("Video")
+                ? 2
+                : 0;
 
 
         string name = flexColumns
@@ -174,13 +176,11 @@ public class VideoSearchResult(
 
         bool hasKnownArtist = descriptionRuns
             .ArrayLength
-            .If(3, false, true);
-
-        YouTubeMusicEntity[] artists = hasKnownArtist
-            .If(true, // fr im gonna crash out bruh, why WHY DO YOU SOMETIMES NOT RETURN AN ARTIST??
-                descriptionRuns
-                    .SelectArtists(2),
-                [new("N/A", null, null)]);
+            .IsNot(3);
+        YouTubeMusicEntity[] artists = hasKnownArtist // fr im gonna crash out bruh, why WHY DO YOU SOMETIMES NOT RETURN AN ARTIST??
+            ? descriptionRuns
+                .SelectArtists(2)
+            : [new("N/A", null, null)];
 
         TimeSpan duration = TimeSpan.Zero;
 

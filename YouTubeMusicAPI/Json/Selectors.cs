@@ -385,7 +385,9 @@ internal static class Selectors
             return true;
 
         int descriptionStartIndex = type
-            .If("Playlist", 2, 0);
+            .Is("Playlist")
+                ? 2
+                : 0;
 
 
         JElement creatorRun = descriptionRuns

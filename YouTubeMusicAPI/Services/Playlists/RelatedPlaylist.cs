@@ -69,9 +69,8 @@ public class RelatedPlaylist(
         YouTubeMusicEntity? creator = creatorName
             .Is("YouTube Music")
             .And(creatorId.IsNull())
-            .If(true,
-                null,
-                new YouTubeMusicEntity(creatorName, creatorId, creatorId));
+                ? null
+                : new(creatorName, creatorId, creatorId);
 
         bool isMix = subtitleRuns
             .GetAt(0)
@@ -79,17 +78,15 @@ public class RelatedPlaylist(
             .AsString()
             .Is("Mix");
 
-        bool hasViewsInfo = subtitleRuns
+        string viewsInfo = subtitleRuns
             .ArrayLength
-            .Is(5);
-        string viewsInfo = hasViewsInfo
-            .If(true,
-                subtitleRuns
+            .Is(5)
+                ? subtitleRuns
                     .GetAt(4)
                     .Get("text")
-                    .AsString(),
-                null)
-            .Or("N/A views");
+                    .AsString()
+                    .Or("N/A views")
+                : "N/A views";
 
         return new(name, id, browseId, thumbnails, creator, isMix, viewsInfo);
     }

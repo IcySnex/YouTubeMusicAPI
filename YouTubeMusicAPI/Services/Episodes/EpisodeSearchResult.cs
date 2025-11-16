@@ -53,7 +53,9 @@ public class EpisodeSearchResult(
             .Get("text")
             .AsString()
             .OrThrow()
-            .If("Episode", 2, 0);
+            .Is("Episode")
+                ? 2
+                : 0;
 
         bool containsDuration = descriptionRuns
             .GetAt(0)
@@ -86,16 +88,15 @@ public class EpisodeSearchResult(
             .Get("musicThumbnailRenderer")
             .SelectThumbnails();
 
-        DateTime releasedAt = containsDuration
-            .If(true,
-                flexColumns
-                    .GetAt(2)
-                    .Get("musicResponsiveListItemFlexColumnRenderer")
-                    .SelectRunTextAt("text", 0),
-                descriptionRuns
-                    .GetAt(descriptionStartIndex + (containsDuration ? 4 : 0))
-                    .Get("text")
-                    .AsString())
+        DateTime releasedAt = (containsDuration
+            ? flexColumns
+                .GetAt(2)
+                .Get("musicResponsiveListItemFlexColumnRenderer")
+                .SelectRunTextAt("text", 0)
+            : descriptionRuns
+                .GetAt(descriptionStartIndex + (containsDuration ? 4 : 0))
+                .Get("text")
+                .AsString())
             .ToDateTime()
             .Or(new(1970, 1, 1));
 

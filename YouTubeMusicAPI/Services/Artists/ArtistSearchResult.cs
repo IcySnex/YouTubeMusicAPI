@@ -44,7 +44,9 @@ public class ArtistSearchResult(
             .Get("text")
             .AsString()
             .OrThrow()
-            .If("Artist", 2, 0);
+            .Is("Artist")
+                ? 2
+                : 0;
 
 
         string name = flexColumns

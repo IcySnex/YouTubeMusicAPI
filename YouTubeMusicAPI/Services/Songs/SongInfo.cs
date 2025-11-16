@@ -96,13 +96,12 @@ public class SongInfo(
             .Get("unselectable")
             .AsBool()
             .Or(false)
-            .If(true,
-                null,
-                lyricsTab
+                ? null
+                : lyricsTab
                     .Get("endpoint")
                     .Get("browseEndpoint")
                     .Get("browseId")
-                    .AsString());
+                    .AsString();
 
         return Parse(item, counterpartItem, relationsBrowseId, lyricsBrowseId);
     }
@@ -149,12 +148,11 @@ public class SongInfo(
             .Get("navigationEndpoint")
             .IsUndefined;
         YouTubeMusicEntity album = isAlbumUnknown
-            .If(true,
-                menu
-                    .SelectAlbumUnknown(),
-                descriptionRuns
-                    .GetAt(artists.Length * 2)
-                    .SelectAlbum());
+            ? menu
+                .SelectAlbumUnknown()
+            : descriptionRuns
+                .GetAt(artists.Length * 2)
+                .SelectAlbum();
 
         TimeSpan duration = item
             .SelectRunTextAt("lengthText", 0)

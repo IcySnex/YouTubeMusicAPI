@@ -48,7 +48,9 @@ public class CommunityPlaylistSearchResult(
             .Get("text")
             .AsString()
             .OrThrow()
-            .If("Playlist", 2, 0);
+            .Is("Playlist")
+                ? 2
+                : 0;
 
 
         string name = flexColumns
@@ -152,7 +154,9 @@ public class CommunityPlaylistSearchResult(
             .Get("text")
             .AsString()
             .OrThrow()
-            .If("Playlist", 2, 0);
+            .Is("Playlist")
+                ? 2
+                : 0;
 
 
         string name = flexColumns

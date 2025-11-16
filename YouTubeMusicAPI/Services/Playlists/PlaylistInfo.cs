@@ -130,9 +130,8 @@ public class PlaylistInfo(
         YouTubeMusicEntity? creator = creatorName
             .Is("YouTube Music")
             .And(creatorId.IsNull())
-            .If(true,
-                null,
-                new YouTubeMusicEntity(creatorName, creatorId, creatorId));
+                ? null
+                : new(creatorName, creatorId, creatorId);
 
         string? description = item
             .Get("description")
@@ -158,29 +157,26 @@ public class PlaylistInfo(
             .ToInt32();
 
         PlaylistPrivacy privacy = isMix
-            .If(true,
-                PlaylistPrivacy.Private,
-                isOwner
-                    .If(true,
-                        subtitleRuns
-                            .GetAt(2)
-                            .Get("text")
-                            .AsString()
-                            .ToPlaylistPrivacy()
-                            .Or(PlaylistPrivacy.Public),
-                        PlaylistPrivacy.Public));
+            ? PlaylistPrivacy.Private
+            : isOwner
+                ? subtitleRuns
+                    .GetAt(2)
+                    .Get("text")
+                    .AsString()
+                    .ToPlaylistPrivacy()
+                    .Or(PlaylistPrivacy.Public)
+                : PlaylistPrivacy.Public;
 
         bool hasViewsInfo = secondSubtitleRuns
             .ArrayLength
             .Is(5);
         string viewsInfo = hasViewsInfo
-            .If(true,
-                secondSubtitleRuns
-                    .GetAt(0)
-                    .Get("text")
-                    .AsString(),
-                null)
-            .Or("N/A views");
+            ? secondSubtitleRuns
+                .GetAt(0)
+                .Get("text")
+                .AsString()
+                .Or("N/A views")
+            : "N/A views";
 
         string itemsInfo = secondSubtitleRuns
             .GetAt(hasViewsInfo ? 2 : 0)

@@ -63,24 +63,6 @@ internal static class Syntax
 
 
     /// <summary>
-    /// Returns one of two results depending on whether the specified <c>value</c> equals the provided <c>condition</c>.
-    /// </summary>
-    /// <typeparam name="TValue">The type of the value being compared.</typeparam>
-    /// <typeparam name="TResult">The type of the result to return.</typeparam>
-    /// <param name="value">The value to compare.</param>
-    /// <param name="condition">The value to compare against.</param>
-    /// <param name="trueResult">The result to return if <c>value</c> equals <c>condition</c>>.</param>
-    /// <param name="falseResult">The result to return if <c>value</c> does not equal <c>condition</c>.</param>
-    /// <returns>The <c>trueResult</c> if the values are equal, otherwise the <c>falseResult</c>.</returns>
-    public static TResult If<TValue, TResult>(
-        this TValue value,
-        TValue condition,
-        TResult trueResult,
-        TResult falseResult) =>
-        EqualityComparer<TValue>.Default.Equals(value, condition) ? trueResult : falseResult;
-
-
-    /// <summary>
     /// Returns whether the <c>value</c> equals any of the specified <c>conditions</c>.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
@@ -93,7 +75,20 @@ internal static class Syntax
         conditions.Any(c => EqualityComparer<T>.Default.Equals(value, c));
 
     /// <summary>
-    /// Returns whether the <c>value</c> doesn't equals any of the specified <c>conditions</c>.
+    /// Returns whether the <c>value</c> equals to the specified <c>condition</c>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to compare.</param>
+    /// <param name="condition">The value to compare against.</param>
+    /// <returns><see langword="true"/> if <c>value</c> is equal to the <c>condition</c>, otherwise <see langword="false"/>.</returns>
+    public static bool Is<T>(
+        this T value,
+        T condition) =>
+        EqualityComparer<T>.Default.Equals(value, condition);
+
+
+    /// <summary>
+    /// Returns whether the <c>value</c> doesn't equal to any of the specified <c>conditions</c>.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="value">The value to compare.</param>
@@ -103,6 +98,18 @@ internal static class Syntax
         this T value,
         params T[] conditions) =>
         !conditions.Any(c => EqualityComparer<T>.Default.Equals(value, c));
+
+    /// <summary>
+    /// Returns whether the <c>value</c> doesn't equal to the specified <c>condition</c>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to compare.</param>
+    /// <param name="condition">The value to compare against.</param>
+    /// <returns><see langword="true"/> if <c>value</c> doesn't equal the <c>condition</c>, otherwise <see langword="false"/>.</returns>
+    public static bool IsNot<T>(
+        this T value,
+        T condition) =>
+        !EqualityComparer<T>.Default.Equals(value, condition);
 
 
     /// <summary>

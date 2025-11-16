@@ -56,6 +56,7 @@ public class SearchServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Results, Is.Not.Null.Or.Empty);
 
+        TestData.WriteResult(result.AvailableCategories, "Available Categories");
         TestData.WriteResult(result.TopResult, "Top Result");
         TestData.WriteResult(result.RelatedTopResults, "Related Top Results");
         TestData.WriteResult(result.Results);

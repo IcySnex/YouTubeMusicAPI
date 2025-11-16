@@ -219,7 +219,7 @@ public sealed class SearchService
         client.Logger?.LogInformation("[SearchService-AllAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        JArray contents = root
+        JElement sectionList = root
             .Get("contents")
             .Get("tabbedSearchResultsRenderer")
             .Get("tabs")
@@ -228,16 +228,55 @@ public sealed class SearchService
                     .GetAt(0)
                     .Get("tabRenderer")
                     .Get("content")
-                    .Get("sectionListRenderer")
-                    .Get("contents"),
+                    .Get("sectionListRenderer"),
                 item => item
                     .GetAt(1)
                     .Get("tabRenderer")
                     .Get("content")
-                    .Get("sectionListRenderer")
-                    .Get("contents"))
+                    .Get("sectionListRenderer"));
+        JArray contents = sectionList
+            .Get("contents")
             .AsArray()
             .OrThrow();
+
+        // Available Categories
+        List<SearchCategory> availableCategories = sectionList
+            .Get("header")
+            .Get("chipCloudRenderer")
+            .Get("chips")
+            .AsArray()
+            .Or(JArray.Empty)
+            .Select(item =>
+            {
+                if (!item.Contains("chipCloudChipRenderer", out JElement chip))
+                    return null;
+
+                string? categoryTitle = chip
+                    .SelectRunTextAt("text", 0);
+                SearchCategory? category = categoryTitle switch
+                {
+                    "Songs" => SearchCategory.Songs,
+                    "Videos" => SearchCategory.Videos,
+                    "Featured playlists" => SearchCategory.FeaturedPlaylists,
+                    "Community playlists" => SearchCategory.CommunityPlaylists,
+                    "Albums" => SearchCategory.Albums,
+                    "Artists" => SearchCategory.Artists,
+                    "Profiles" => SearchCategory.Profiles,
+                    "Podcasts" => SearchCategory.Podcasts,
+                    "Episodes" => SearchCategory.Episodes,
+                    _ => null
+                };
+                if (category is null)
+                {
+                    client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse available category. Unsupported caegory: {category}.", categoryTitle);
+                    return null;
+                }
+
+                return category;
+            })
+            .Where(Syntax.IsNotNull)
+            .Cast<SearchCategory>()
+            .ToList();
 
         // Top Result
         JElement cardShelf = contents
@@ -251,7 +290,6 @@ public sealed class SearchService
 
         string? categoryTitle = cardShelf
             .SelectRunTextAt("subtitle", 0);
-
         Func<JElement, SearchResult>? parseTopResult = categoryTitle switch
         {
             "Song" => SongSearchResult.ParseTopResult,
@@ -381,7 +419,7 @@ public sealed class SearchService
             .Cast<SearchResult>()
             .ToList();
 
-        return new(results, topResult, relatedTopResults);
+        return new(results, topResult, relatedTopResults, availableCategories);
     }
 
 

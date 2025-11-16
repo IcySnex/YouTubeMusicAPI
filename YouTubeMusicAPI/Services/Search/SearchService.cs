@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
@@ -219,29 +220,43 @@ public sealed class SearchService
         client.Logger?.LogInformation("[SearchService-AllAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        JElement sectionList = root
+        JElement tabs = root
             .Get("contents")
             .Get("tabbedSearchResultsRenderer")
-            .Get("tabs")
+            .Get("tabs");
+
+        JArray contents = tabs
             .Coalesce(
                 item => item
                     .GetAt(0)
                     .Get("tabRenderer")
                     .Get("content")
-                    .Get("sectionListRenderer"),
+                    .Get("sectionListRenderer")
+                    .Get("contents"),
                 item => item
                     .GetAt(1)
                     .Get("tabRenderer")
                     .Get("content")
-                    .Get("sectionListRenderer"));
-        JArray contents = sectionList
-            .Get("contents")
+                    .Get("sectionListRenderer")
+                    .Get("contents"))
             .AsArray()
             .OrThrow();
 
         // Available Categories
-        List<SearchCategory> availableCategories = sectionList
-            .Get("header")
+        List<SearchCategory> availableCategories = tabs
+            .Coalesce(
+                item => item
+                    .GetAt(0)
+                    .Get("tabRenderer")
+                    .Get("content")
+                    .Get("sectionListRenderer")
+                    .Get("header"),
+                item => item
+                    .GetAt(1)
+                    .Get("tabRenderer")
+                    .Get("content")
+                    .Get("sectionListRenderer")
+                    .Get("header"))
             .Get("chipCloudRenderer")
             .Get("chips")
             .AsArray()
@@ -377,46 +392,76 @@ public sealed class SearchService
 
         // Results
         List<SearchResult> results = contents
-            .Where(item => item
-                .Contains("musicShelfRenderer"))
-            .SelectMany(item => item
-                .Get("musicShelfRenderer")
-                .Get("contents")
-                .AsArray()
-                .Or(JArray.Empty)
-                .Select(item =>
+            .SelectMany(item =>
+            {
+                if (!item.Contains("musicShelfRenderer", out JElement content))
+                    return [];
+
+                string? categoryTitle = content
+                    .SelectRunTextAt("title", 0);
+                Func<JElement, SearchResult>? parseItem = categoryTitle switch
                 {
-                    if (!item.Contains("musicResponsiveListItemRenderer", out JElement content))
-                        return null;
+                    "Songs" => SongSearchResult.Parse,
+                    "Videos" => VideoSearchResult.Parse,
+                    "Featured playlists" => FeaturedPlaylistSearchResult.Parse,
+                    "Community playlists" => CommunityPlaylistSearchResult.Parse,
+                    "Albums" => AlbumSearchResult.Parse,
+                    "Artists" => ArtistSearchResult.Parse,
+                    "Profiles" => ProfileSearchResult.Parse,
+                    "Podcasts" => PodcastSearchResult.Parse,
+                    "Episodes" => EpisodeSearchResult.Parse,
+                    _ => null
+                };
 
-                    string? categoryTitle = content
-                        .Get("flexColumns")
-                        .GetAt(1)
-                        .Get("musicResponsiveListItemFlexColumnRenderer")
-                        .SelectRunTextAt("text", 0);
-                    Func<JElement, SearchResult>? parseItem = categoryTitle switch
-                    {
-                        "Song" => SongSearchResult.Parse,
-                        "Video" => VideoSearchResult.Parse,
-                        "Playlist" when content.SelectIsFeaturedPlaylist() => FeaturedPlaylistSearchResult.Parse,
-                        "Playlist" => CommunityPlaylistSearchResult.Parse,
-                        "Album" => AlbumSearchResult.Parse,
-                        "Artist" => ArtistSearchResult.Parse,
-                        "Profile" => ProfileSearchResult.Parse,
-                        "Podcast" => PodcastSearchResult.Parse,
-                        "Episode" => EpisodeSearchResult.Parse,
-                        _ => null
-                    };
-                    if (parseItem is null)
-                    {
-                        client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse result. Unsupported caegory: {category}.", categoryTitle);
-                        return null;
-                    }
+                return parseItem is null
+                    ? content // new layout - category inside each items description: global search
+                        .Get("contents")
+                        .AsArray()
+                        .Or(JArray.Empty)
+                        .Select(item =>
+                        {
+                            if (!item.Contains("musicResponsiveListItemRenderer", out JElement content))
+                                return null;
 
-                    return parseItem(content);
-                }))
-            .Where(Syntax.IsNotNull)
-            .Cast<SearchResult>()
+                            string? categoryTitle = content
+                                .Get("flexColumns")
+                                .GetAt(1)
+                                .Get("musicResponsiveListItemFlexColumnRenderer")
+                                .SelectRunTextAt("text", 0);
+                            Func<JElement, SearchResult>? parseItem = categoryTitle switch
+                            {
+                                "Song" => SongSearchResult.Parse,
+                                "Video" => VideoSearchResult.Parse,
+                                "Mix" => FeaturedPlaylistSearchResult.ParseTopResult,
+                                "Playlist" when content.SelectIsFeaturedPlaylist() => FeaturedPlaylistSearchResult.Parse,
+                                "Playlist" => CommunityPlaylistSearchResult.Parse,
+                                "Album" or "Single" or "EP" => AlbumSearchResult.Parse,
+                                "Artist" => ArtistSearchResult.Parse,
+                                "Profile" => ProfileSearchResult.Parse,
+                                "Podcast" => PodcastSearchResult.Parse,
+                                "Episode" => EpisodeSearchResult.Parse,
+                                _ => null
+                            };
+                            if (parseItem is null)
+                            {
+                                client.Logger?.LogWarning("[SearchService-AllAsync] Could not parse result. Unsupported caegory: {category}.", categoryTitle);
+                                return null;
+                            }
+
+                            return parseItem(content);
+                        })
+                        .Where(Syntax.IsNotNull)
+                        .Cast<SearchResult>()
+                    : content // old layout - category inside shelf title: library search
+                        .Get("contents")
+                        .AsArray()
+                        .Or(JArray.Empty)
+                        .Select(item => item
+                            .Get("musicResponsiveListItemRenderer"))
+                        .Where(item => // istg youtube. why tf do u return PODCAST EPISODES in video searches???? now i gotta do that unnecessary extra saftey check
+                            item.Contains("menu") && (categoryTitle == "Episodes" || !item.SelectIsPodcast()))
+                        .Select(parseItem);
+            })
             .ToList();
 
         return new(results, topResult, relatedTopResults, availableCategories);

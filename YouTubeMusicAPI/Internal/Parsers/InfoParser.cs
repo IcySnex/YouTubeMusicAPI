@@ -38,7 +38,7 @@ internal static class InfoParser
             id: playerJsonToken.SelectObject<string>("videoDetails.videoId"),
             browseId: nextTabContainer.SelectObject<string>("[2].tabRenderer.endpoint.browseEndpoint.browseId"),
             description: playerJsonToken.SelectObject<string>("microformat.microformatDataRenderer.description"),
-            artists: nextItem.SelectArtists("longBylineText.runs", 0, albumIndex),
+            artists: nextItem.SelectArtists("longBylineText.runs", 0, runs.Length - albumIndex),
             album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId) : null,
             duration: TimeSpan.FromSeconds(playerJsonToken.SelectObject<int>("videoDetails.lengthSeconds")),
             radio: isLive ? null : nextItem.SelectRadioOptional(),

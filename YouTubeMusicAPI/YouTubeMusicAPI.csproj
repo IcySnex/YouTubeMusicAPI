@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>3.0.2</Version>
-		<AssemblyVersion>3.0.2</AssemblyVersion>
-		<FileVersion>3.0.2</FileVersion>
+		<Version>3.0.3</Version>
+		<AssemblyVersion>3.0.3</AssemblyVersion>
+		<FileVersion>3.0.3</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -25,10 +25,8 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageReleaseNotes>
-			- Fixed getting streaming data when authenticated (sig deciphering extraction)
-			- Fixed general search (without SearchCategory) always being empty
-			- Fixed missing log events in RequestHelper
-			- Updated NuGet packages
+			- Fixed album getting added to artists list when getting song/video info
+			- Updated packages
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	
@@ -48,9 +46,9 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <PackageReference Include="Jint" Version="4.4.1" />
-	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.10" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
+	  <PackageReference Include="Jint" Version="4.4.2" />
+	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 	

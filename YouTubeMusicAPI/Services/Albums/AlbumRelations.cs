@@ -1,8 +1,7 @@
 ﻿using YouTubeMusicAPI.Json;
-using YouTubeMusicAPI.Services.Albums;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Relations;
+namespace YouTubeMusicAPI.Services.Albums;
 
 /// <summary>
 /// Represents related content for an album on YouTube Music.

@@ -1,8 +1,7 @@
 ﻿using YouTubeMusicAPI.Json;
-using YouTubeMusicAPI.Services.Playlists;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Relations;
+namespace YouTubeMusicAPI.Services.Playlists;
 
 /// <summary>
 /// Represents related content for a playlist on YouTube Music.

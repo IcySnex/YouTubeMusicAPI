@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using YouTubeMusicAPI.Common;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Utils;

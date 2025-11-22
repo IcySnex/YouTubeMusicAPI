@@ -1,8 +1,7 @@
-﻿using YouTubeMusicAPI.Common;
-using YouTubeMusicAPI.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Songs;
+namespace YouTubeMusicAPI.Services.Musical.Songs;
 
 /// <summary>
 /// Represents a related song on YouTube Music.

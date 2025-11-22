@@ -3,12 +3,11 @@ using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Http.Authentication;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Services.Albums;
-using YouTubeMusicAPI.Services.Lyrics;
+using YouTubeMusicAPI.Services.Musical;
+using YouTubeMusicAPI.Services.Musical.Songs;
+using YouTubeMusicAPI.Services.Musical.Videos;
 using YouTubeMusicAPI.Services.Playlists;
-using YouTubeMusicAPI.Services.Relations;
 using YouTubeMusicAPI.Services.Search;
-using YouTubeMusicAPI.Services.Songs;
-using YouTubeMusicAPI.Services.Videos;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI;
@@ -33,12 +32,11 @@ public class YouTubeMusicClient
         RequestHandler = new(Config.GeographicalLocation, Config.Authenticator, Config.HttpClient, Config.Logger);
         Logger = Config.Logger;
 
-        RelationsService relations = new(this);
-        LyricsService lyrics = new(this);
+        MusicalService musical = new(this);
 
         Search = new(this);
-        Songs = new(this, relations, lyrics);
-        Videos = new(this, relations, lyrics);
+        Songs = new(this, musical);
+        Videos = new(this, musical);
         Playlists = new(this);
         Albums = new(this);
     }

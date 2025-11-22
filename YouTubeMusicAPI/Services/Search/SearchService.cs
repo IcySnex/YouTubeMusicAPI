@@ -1,16 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Services.Albums;
 using YouTubeMusicAPI.Services.Artists;
 using YouTubeMusicAPI.Services.Episodes;
+using YouTubeMusicAPI.Services.Musical.Songs;
+using YouTubeMusicAPI.Services.Musical.Videos;
 using YouTubeMusicAPI.Services.Playlists;
 using YouTubeMusicAPI.Services.Podcasts;
 using YouTubeMusicAPI.Services.Profiles;
-using YouTubeMusicAPI.Services.Songs;
-using YouTubeMusicAPI.Services.Videos;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Search;

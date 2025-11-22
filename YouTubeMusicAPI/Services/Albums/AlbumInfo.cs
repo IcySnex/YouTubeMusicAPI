@@ -1,5 +1,4 @@
-﻿using YouTubeMusicAPI.Common;
-using YouTubeMusicAPI.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Albums;
@@ -150,7 +149,7 @@ public class AlbumInfo(
             .Or("N/A songs");
 
         string lengthInfo = secondSubtitleRuns
-            .GetAt( 2)
+            .GetAt(2)
             .Get("text")
             .AsString()
             .Or("N/A minutes");
@@ -176,8 +175,8 @@ public class AlbumInfo(
             .ToList();
 
         AlbumRelations relations = AlbumRelations.Parse(secondary);
-        
-        return new(name, id, browseId, thumbnails, artists, description, creationYear, isExplicit, type, itemsInfo, lengthInfo, radio, items, relations); 
+
+        return new(name, id, browseId, thumbnails, artists, description, creationYear, isExplicit, type, itemsInfo, lengthInfo, radio, items, relations);
     }
 
 

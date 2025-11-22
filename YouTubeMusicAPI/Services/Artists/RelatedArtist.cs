@@ -1,5 +1,4 @@
-﻿using YouTubeMusicAPI.Common;
-using YouTubeMusicAPI.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Artists;

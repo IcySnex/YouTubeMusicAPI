@@ -1,9 +1,8 @@
-﻿using YouTubeMusicAPI.Common;
-using YouTubeMusicAPI.Json;
+﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Services.Search;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Songs;
+namespace YouTubeMusicAPI.Services.Musical.Songs;
 
 /// <summary>
 /// Represents a song search result on YouTube Music.

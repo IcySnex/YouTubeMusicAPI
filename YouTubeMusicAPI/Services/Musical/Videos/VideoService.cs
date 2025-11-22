@@ -2,12 +2,10 @@
 using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
-using YouTubeMusicAPI.Services.Lyrics;
-using YouTubeMusicAPI.Services.Relations;
 using YouTubeMusicAPI.Services.Search;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Videos;
+namespace YouTubeMusicAPI.Services.Musical.Videos;
 
 /// <summary>
 /// Service which handles getting information about videos from YouTube Music.
@@ -15,23 +13,19 @@ namespace YouTubeMusicAPI.Services.Videos;
 public sealed class VideoService
 {
     readonly YouTubeMusicClient client;
-    readonly RelationsService relations;
-    readonly LyricsService lyrics;
+    readonly MusicalService musical;
 
     /// <summary>
     /// Creates a new instance of the <see cref="VideoService"/> class.
     /// </summary>
     /// <param name="client">The shared base client.</param>
-    /// <param name="relations">The shared relations service.</param>
-    /// <param name="lyrics">The shared lyrics service.</param>
+    /// <param name="musical">The shared musical service.</param>
     internal VideoService(
         YouTubeMusicClient client,
-        RelationsService relations,
-        LyricsService lyrics)
+        MusicalService musical)
     {
         this.client = client;
-        this.relations = relations;
-        this.lyrics = lyrics;
+        this.musical = musical;
     }
 
 
@@ -103,11 +97,11 @@ public sealed class VideoService
     /// </summary>
     /// <param name="video">The video to get the related content for.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
-    /// <returns>The <see cref="SongVideoRelations"/> containing the related content for the video.</returns>
-    public Task<SongVideoRelations> GetRelationsAsync(
+    /// <returns>The <see cref="MusicalRelations"/> containing the related content for the video.</returns>
+    public Task<MusicalRelations> GetRelationsAsync(
         VideoInfo video,
         CancellationToken cancellationToken = default) =>
-        relations.GetAsync(video.RelationsBrowseId, cancellationToken);
+        musical.GetRelationsAsync(video.RelationsBrowseId, cancellationToken);
 
     /// <summary>
     /// Gets the lyrics for a video on YouTube Music.
@@ -117,11 +111,11 @@ public sealed class VideoService
     /// </remarks>
     /// <param name="video">The video to get the lyrics for.</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
-    /// <returns>The <see cref="Lyrics"/> containing the either synced or plain lyrics text.</returns>
+    /// <returns>The <see cref="MusicalLyrics"/> containing the either synced or plain lyrics text.</returns>
     /// <exception cref="InvalidOperationException">Occurs when the provided video does not have available lyrics.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
-    public Task<SongVideoLyrics> GetLyricsAsync(
+    public Task<MusicalLyrics> GetLyricsAsync(
         VideoInfo video,
         CancellationToken cancellationToken = default)
     {
@@ -131,6 +125,6 @@ public sealed class VideoService
             throw new InvalidOperationException("The provided video does not have available lyrics.");
         }
 
-        return lyrics.GetAsync(video.LyricsBrowseId, cancellationToken);
+        return musical.GetLyricsAsync(video.LyricsBrowseId, cancellationToken);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Common;
+﻿namespace YouTubeMusicAPI.Services;
 
 /// <summary>
 /// Represents a radio channel on YouTube Music.

@@ -1,6 +1,4 @@
-﻿using YouTubeMusicAPI.Common;
-
-namespace YouTubeMusicAPI.Services.Search;
+﻿namespace YouTubeMusicAPI.Services.Search;
 
 /// <summary>
 /// Represents a search result on YouTube Music.

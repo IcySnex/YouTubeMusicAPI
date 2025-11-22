@@ -1,7 +1,6 @@
 ﻿using YouTubeMusicAPI.Pagination;
-using YouTubeMusicAPI.Services.Lyrics;
-using YouTubeMusicAPI.Services.Relations;
-using YouTubeMusicAPI.Services.Videos;
+using YouTubeMusicAPI.Services.Musical;
+using YouTubeMusicAPI.Services.Musical.Videos;
 
 namespace YouTubeMusicAPI.Tests.Services;
 
@@ -59,7 +58,7 @@ public class VideoServiceTests
         VideoInfo video = await client.Videos.GetAsync(TestData.VideoId);
 
         // Act
-        SongVideoRelations? result = null;
+        MusicalRelations? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
@@ -87,7 +86,7 @@ public class VideoServiceTests
             Assert.Inconclusive("The provided video does not have available lyrics.");
 
         // Act
-        SongVideoLyrics? result = null;
+        MusicalLyrics? result = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {

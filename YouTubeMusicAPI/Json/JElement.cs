@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.IO;
 using System.Text.Json;
 
 namespace YouTubeMusicAPI.Json;
@@ -72,7 +71,7 @@ internal readonly struct JElement
 #if DEBUG
         return new(default, $"{path}.{key}<MISSING>");
 #else
-            return new(default);
+        return new(default);
 #endif
     }
 
@@ -96,7 +95,7 @@ internal readonly struct JElement
 #if DEBUG
         return new(default, $"{path}[{index}]");
 #else
-            return new(default);
+        return new(default);
 #endif
     }
 

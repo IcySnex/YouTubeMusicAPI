@@ -1,7 +1,7 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Common;
+namespace YouTubeMusicAPI.Services;
 
 /// <summary>
 /// Represents a thumbnail on YouTube Music.

@@ -1,20 +1,20 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Services.Albums;
 using YouTubeMusicAPI.Services.Artists;
+using YouTubeMusicAPI.Services.Musical.Songs;
+using YouTubeMusicAPI.Services.Musical.Videos;
 using YouTubeMusicAPI.Services.Playlists;
-using YouTubeMusicAPI.Services.Songs;
-using YouTubeMusicAPI.Services.Videos;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Relations;
+namespace YouTubeMusicAPI.Services.Musical;
 
 /// <summary>
 /// Represents related content for a song/video on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="SongVideoRelations"/> class.
+/// Creates a new instance of the <see cref="MusicalRelations"/> class.
 /// </remarks>
-public class SongVideoRelations(
+public class MusicalRelations(
     IReadOnlyList<RelatedSong> youMightAlsoLike,
     IReadOnlyList<RelatedPlaylist> recommendedPlaylists,
     IReadOnlyList<RelatedVideo> otherPerformances,
@@ -23,10 +23,10 @@ public class SongVideoRelations(
     string? aboutTheArtist)
 {
     /// <summary>
-    /// Parses a <see cref="JElement"/> into <see cref="SongVideoRelations"/>.
+    /// Parses a <see cref="JElement"/> into <see cref="MusicalRelations"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "$".</param>
-    internal static SongVideoRelations Parse(
+    internal static MusicalRelations Parse(
         JElement element)
     {
         List<T> Parse<T>(

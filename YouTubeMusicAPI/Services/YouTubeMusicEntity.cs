@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Common;
+﻿namespace YouTubeMusicAPI.Services;
 
 /// <summary>
 /// Represents an identifiable named entity on YouTube Music.

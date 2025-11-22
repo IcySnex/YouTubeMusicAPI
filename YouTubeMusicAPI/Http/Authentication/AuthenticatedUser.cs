@@ -1,5 +1,5 @@
-﻿using YouTubeMusicAPI.Common;
-using YouTubeMusicAPI.Json;
+﻿using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Services;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Http.Authentication;

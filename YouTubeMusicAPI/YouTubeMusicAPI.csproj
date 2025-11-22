@@ -8,14 +8,6 @@
 
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
-	<ItemGroup>
-	  <Compile Remove="Common\Library\**" />
-	  <Compile Remove="Common\Streaming\**" />
-	  <EmbeddedResource Remove="Common\Library\**" />
-	  <EmbeddedResource Remove="Common\Streaming\**" />
-	  <None Remove="Common\Library\**" />
-	  <None Remove="Common\Streaming\**" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="YouTubeMusicAPI.Tests" />

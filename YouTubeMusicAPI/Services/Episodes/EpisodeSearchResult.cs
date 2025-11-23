@@ -14,7 +14,7 @@ namespace YouTubeMusicAPI.Services.Episodes;
 /// <param name="id">The ID of this podcast episode.</param>
 /// <param name="thumbnails">The thumbnails of this podcast episode.</param>
 /// <param name="browseId">The browse ID of this podcast episode.</param>
-/// <param name="releasedAt">The release data of this podcast episode.</param>
+/// <param name="releasedAt">The release date of this podcast episode.</param>
 /// <param name="podcast">The podcast to which this episode belongs.</param>
 public class EpisodeSearchResult(
     string name,
@@ -162,7 +162,7 @@ public class EpisodeSearchResult(
 
 
     /// <summary>
-    /// The release data of this podcast episode.
+    /// The release date of this podcast episode.
     /// </summary>
     public DateTime ReleasedAt { get; } = releasedAt;
 

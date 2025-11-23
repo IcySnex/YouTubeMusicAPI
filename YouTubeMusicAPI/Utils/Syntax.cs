@@ -249,6 +249,20 @@ internal static class Syntax
 
 
     /// <summary>
+    /// Applies a specified mapping function to the source value if not null and returns the result.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the input value to be mapped.</typeparam>
+    /// <typeparam name="TResult">The type of the result produced by the mapping function.</typeparam>
+    /// <param name="source">The value to be transformed by the mapping function.</param>
+    /// <param name="mapper">A function that defines how to map the source value to a result. Cannot be null.</param>
+    /// <returns>The result of applying the mapping function to the source value.</returns>
+    public static TResult? Map<TSource, TResult>(
+        this TSource? source,
+        Func<TSource, TResult> mapper) =>
+        source is null ? default : mapper(source);
+
+
+    /// <summary>
     /// Concatenates the elements of a string sequence using the specified <c>separator</c>.
     /// </summary>
     /// <param name="source">The sequence of strings to join.</param>
@@ -277,6 +291,26 @@ internal static class Syntax
             result = second(source);
 
         return result;
+    }
+
+    /// <summary>
+    /// Evaluates the expressions on the same <see cref="JElement"/> and returns the first non-undefined result.
+    /// </summary>
+    /// <param name="source">The source element.</param>
+    /// <param name="expressions">The expressions to evaluate.</param>
+    /// <returns>The first non-undefined result of <c>expressions</c>.</returns>
+    public static JElement Coalesce(
+        this JElement source,
+        params Func<JElement, JElement>[] expressions)
+    {
+        foreach (Func<JElement, JElement> expression in expressions)
+        {
+            JElement result = expression(source);
+            if (!result.IsUndefined)
+                return result;
+        }
+
+        return default;
     }
 
     /// <summary>

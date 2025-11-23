@@ -122,7 +122,7 @@ internal static class Selectors
             .FirstOrDefault(item => item
                 .Get("menuNavigationItemRenderer")
                 .SelectRunTextAt("text", 0)
-                .Is("Start radio"))
+                .Is("Start radio", "Start mix"))
             .Get("menuNavigationItemRenderer")
             .Get("navigationEndpoint")
             .SelectWatchEndpoint();
@@ -218,6 +218,22 @@ internal static class Selectors
             .SelectNavigationBrowseId();
 
         return new(name, browseId?.Substring(4), browseId);
+    }
+
+    public static YouTubeMusicEntity SelectPodcastUnknown(
+        this JElement element)
+    {
+        string? browseId = element
+            .AsArray()
+            .Or(JArray.Empty)
+            .FirstOrDefault(item => item
+                .Get("menuNavigationItemRenderer")
+                .SelectRunTextAt("text", 0)
+                .Is("Go to podcast"))
+            .Get("menuNavigationItemRenderer")
+            .SelectNavigationBrowseId();
+
+        return new("N/A", browseId?.Substring(4), browseId);
     }
 
 

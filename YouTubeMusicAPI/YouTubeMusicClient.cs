@@ -3,6 +3,7 @@ using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Http.Authentication;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Services.Albums;
+using YouTubeMusicAPI.Services.Artists;
 using YouTubeMusicAPI.Services.Musical;
 using YouTubeMusicAPI.Services.Musical.Songs;
 using YouTubeMusicAPI.Services.Musical.Videos;
@@ -39,6 +40,7 @@ public class YouTubeMusicClient
         Videos = new(this, musical);
         Playlists = new(this);
         Albums = new(this);
+        Artists = new(this);
     }
 
 
@@ -72,6 +74,11 @@ public class YouTubeMusicClient
     /// The service which handles getting information about albums from YouTube Music.
     /// </summary>
     public AlbumService Albums { get; }
+
+    /// <summary>
+    /// The service which handles getting information about artists from YouTube Music.
+    /// </summary>
+    public ArtistService Artists { get; }
 
 
     /// <summary>

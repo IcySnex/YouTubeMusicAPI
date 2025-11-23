@@ -4,6 +4,7 @@ using YouTubeMusicAPI.Http;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Services.Albums;
+using YouTubeMusicAPI.Services.Musical;
 using YouTubeMusicAPI.Services.Search;
 using YouTubeMusicAPI.Utils;
 
@@ -28,7 +29,7 @@ public sealed class PlaylistService
 
     // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
-    async Task<Page<PlaylistItem>> FetchItemsPageAsync(
+    async Task<Page<PlaylistMusicalItem>> FetchItemsPageAsync(
         string browseId,
         string? continuationToken,
         CancellationToken cancellationToken = default)
@@ -46,13 +47,13 @@ public sealed class PlaylistService
         client.Logger?.LogInformation("[PlaylistService-FetchPageAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        Page<PlaylistItem> page = PlaylistInfo.ParseItemsPage(root);
+        Page<PlaylistMusicalItem> page = PlaylistInfo.ParseItemsPage(root);
         return page;
     }
 
     // <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     // <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
-    async Task<Page<PlaylistItem>> FetchItemsRadioPageAsync(
+    async Task<Page<PlaylistMusicalItem>> FetchItemsRadioPageAsync(
         string id,
         string? continuationToken,
         CancellationToken cancellationToken = default)
@@ -70,7 +71,7 @@ public sealed class PlaylistService
         client.Logger?.LogInformation("[PlaylistService-FetchRadioPageAsync] Parsing radio response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        Page<PlaylistItem> page = PlaylistInfo.ParseItemsRadioPage(root);
+        Page<PlaylistMusicalItem> page = PlaylistInfo.ParseItemsRadioPage(root);
         return page;
     }
 
@@ -171,7 +172,7 @@ public sealed class PlaylistService
 
         if (isRadio)
         {
-            PaginatedAsyncEnumerable<PlaylistItem> items = new(
+            PaginatedAsyncEnumerable<PlaylistMusicalItem> items = new(
                 (contiuationToken, cancellationToken) => FetchItemsRadioPageAsync(browseId[2..], contiuationToken, cancellationToken),
                 PlaylistInfo.ParseItemsRadioPage(root));
 
@@ -180,7 +181,7 @@ public sealed class PlaylistService
         }
         else
         {
-            PaginatedAsyncEnumerable<PlaylistItem> items = new(
+            PaginatedAsyncEnumerable<PlaylistMusicalItem> items = new(
                 (contiuationToken, cancellationToken) => FetchItemsPageAsync(browseId, contiuationToken, cancellationToken),
                 PlaylistInfo.ParseItemsPage(root));
 

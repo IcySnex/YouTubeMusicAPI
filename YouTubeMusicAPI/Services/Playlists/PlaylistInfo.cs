@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Musical;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Playlists;
@@ -44,7 +45,7 @@ public class PlaylistInfo(
     string itemsInfo,
     string lengthInfo,
     Radio? radio,
-    PaginatedAsyncEnumerable<PlaylistItem> items,
+    PaginatedAsyncEnumerable<PlaylistMusicalItem> items,
     string? relationsContinuationToken) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
@@ -55,7 +56,7 @@ public class PlaylistInfo(
     /// <returns>A <see cref="PlaylistInfo"/> representing the <see cref="JElement"/>.</returns>
     internal static PlaylistInfo Parse(
         JElement element,
-        PaginatedAsyncEnumerable<PlaylistItem> items)
+        PaginatedAsyncEnumerable<PlaylistMusicalItem> items)
     {
         JElement twoColumn = element
             .Get("contents")
@@ -216,7 +217,7 @@ public class PlaylistInfo(
     /// <returns>A <see cref="PlaylistInfo"/> representing the <see cref="JElement"/>.</returns>
     internal static PlaylistInfo ParseRadio(
         JElement element,
-        PaginatedAsyncEnumerable<PlaylistItem> items)
+        PaginatedAsyncEnumerable<PlaylistMusicalItem> items)
     {
         JElement queue = element
             .Get("contents")
@@ -279,11 +280,11 @@ public class PlaylistInfo(
     }
 
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="Page{T}"/> of <see cref="PlaylistItem"/>'s.
+    /// Parses a <see cref="JElement"/> into a <see cref="Page{T}"/> of <see cref="PlaylistMusicalItem"/>'s.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> '$' to parse.</param>
     /// <returns>A <see cref="Page{T}"/> representing the <see cref="JElement"/>.</returns>
-    internal static Page<PlaylistItem> ParseItemsPage(
+    internal static Page<PlaylistMusicalItem> ParseItemsPage(
         JElement element)
     {
         JElement contents = element
@@ -304,14 +305,14 @@ public class PlaylistInfo(
                     .Get("continuationItems"));
 
 
-        List<PlaylistItem> result = contents
+        List<PlaylistMusicalItem> result = contents
             .AsArray()
             .Or(JArray.Empty)
             .Where(item => item
                 .Contains("musicResponsiveListItemRenderer"))
             .Select(item => item
                 .Get("musicResponsiveListItemRenderer"))
-            .Select(PlaylistItem.Parse)
+            .Select(PlaylistMusicalItem.Parse)
             .ToList();
 
         string? nextContinuationToken = contents
@@ -326,11 +327,11 @@ public class PlaylistInfo(
     }
 
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="Page{T}"/> of <see cref="PlaylistItem"/>'s.
+    /// Parses a <see cref="JElement"/> into a <see cref="Page{T}"/> of <see cref="PlaylistMusicalItem"/>'s.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> '$' to parse.</param>
     /// <returns>A <see cref="Page{T}"/> representing the <see cref="JElement"/>.</returns>
-    internal static Page<PlaylistItem> ParseItemsRadioPage(
+    internal static Page<PlaylistMusicalItem> ParseItemsRadioPage(
         JElement element)
     {
         JElement playlistPanel = element
@@ -352,7 +353,7 @@ public class PlaylistInfo(
                     .Get("playlistPanelContinuation"));
 
 
-        List<PlaylistItem> result = playlistPanel
+        List<PlaylistMusicalItem> result = playlistPanel
             .Get("contents")
             .AsArray()
             .Or(JArray.Empty)
@@ -360,7 +361,7 @@ public class PlaylistInfo(
                 .Contains("playlistPanelVideoRenderer"))
             .Select(item => item
                 .Get("playlistPanelVideoRenderer"))
-            .Select(PlaylistItem.ParseRadio)
+            .Select(PlaylistMusicalItem.ParseRadio)
             .ToList();
 
         string? nextContinuationToken = playlistPanel
@@ -466,7 +467,7 @@ public class PlaylistInfo(
     /// The async paginator that fetches items for this playlist.
     /// </summary>
     [JsonIgnore]
-    public PaginatedAsyncEnumerable<PlaylistItem> Items { get; } = items;
+    public PaginatedAsyncEnumerable<PlaylistMusicalItem> Items { get; } = items;
 
 
     /// <summary>

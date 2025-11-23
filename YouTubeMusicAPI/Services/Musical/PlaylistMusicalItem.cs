@@ -1,25 +1,25 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Playlists;
+namespace YouTubeMusicAPI.Services.Musical;
 
 /// <summary>
-/// Represents an item of a playlist on YouTube Music.
+/// Represents a musical item of a playlist on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="PlaylistItem"/> class.
+/// Creates a new instance of the <see cref="PlaylistMusicalItem"/> class.
 /// </remarks>
-/// <param name="name">The name of this playlist item.</param>
-/// <param name="id">The ID of this playlist item.</param>
-/// <param name="thumbnails">The thumbnails of this playlist item.</param>
-/// <param name="artists">The artists of this playlist item.</param>
-/// <param name="album">The album of this playlist item.</param>
-/// <param name="duration">The duration of this playlist item.</param>
-/// <param name="isExplicit">Whether this playlist item is explicit or not.</param>
-/// <param name="isCreditsAvailable">Whether credits are available to fetch for this playlist item.</param>
-/// <param name="type">The type of this playlist item.</param>
-/// <param name="radio">The radio associated with this playlist item, if available.</param>
-public class PlaylistItem(
+/// <param name="name">The name of this playlist musical item.</param>
+/// <param name="id">The ID of this playlist musical item.</param>
+/// <param name="thumbnails">The thumbnails of this playlist musical item.</param>
+/// <param name="artists">The artists of this playlist musical item.</param>
+/// <param name="album">The album of this playlist musical item.</param>
+/// <param name="duration">The duration of this playlist musical item.</param>
+/// <param name="isExplicit">Whether this playlist musical item is explicit or not.</param>
+/// <param name="isCreditsAvailable">Whether credits are available to fetch for this playlist musical item.</param>
+/// <param name="type">The type of this playlist musical item.</param>
+/// <param name="radio">The radio associated with this playlist musical item, if available.</param>
+public class PlaylistMusicalItem(
     string name,
     string? id,
     Thumbnail[] thumbnails,
@@ -28,14 +28,14 @@ public class PlaylistItem(
     TimeSpan duration,
     bool isExplicit,
     bool isCreditsAvailable,
-    PlaylistItemType type,
+    MusicalItemType type,
     Radio? radio) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistItem"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistMusicalItem"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
-    internal static PlaylistItem Parse(
+    internal static PlaylistMusicalItem Parse(
         JElement element)
     {
         JElement menu = element
@@ -100,7 +100,7 @@ public class PlaylistItem(
         bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
 
-        PlaylistItemType type = menu
+        MusicalItemType type = menu
             .SelectPlaylistItemType();
 
         Radio? radio = menu
@@ -110,10 +110,10 @@ public class PlaylistItem(
     }
 
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistItem"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="PlaylistMusicalItem"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "playlistPanelVideoRenderer".</param>
-    internal static PlaylistItem ParseRadio(
+    internal static PlaylistMusicalItem ParseRadio(
         JElement element)
     {
         JElement menu = element
@@ -163,7 +163,7 @@ public class PlaylistItem(
         bool isCreditsAvailable = menu
             .SelectIsCreditsAvailable();
 
-        PlaylistItemType type = menu
+        MusicalItemType type = menu
             .SelectPlaylistItemType();
 
         Radio? radio = menu
@@ -174,54 +174,54 @@ public class PlaylistItem(
 
 
     /// <summary>
-    /// The ID of this playlist item.
+    /// The ID of this playlist musical item.
     /// </summary>
     /// <remarks>
-    /// Only available if <see cref="Type"/> is <see cref="PlaylistItemType.Song"/> or <see cref="PlaylistItemType.Video"/>, else <see langword="null"/>.
+    /// Only available if <see cref="Type"/> is <see cref="MusicalItemType.Song"/> or <see cref="MusicalItemType.Video"/>, else <see langword="null"/>.
     /// </remarks>
     public override string? Id { get; } = id;
 
 
     /// <summary>
-    /// The thumbnails of this playlist item.
+    /// The thumbnails of this playlist musical item.
     /// </summary>
     public Thumbnail[] Thumbnails { get; } = thumbnails;
 
     /// <summary>
-    /// The artists of this playlist item.
+    /// The artists of this playlist musical item.
     /// </summary>
     public YouTubeMusicEntity[] Artists { get; } = artists;
 
     /// <summary>
-    /// The album of this playlist item.
+    /// The album of this playlist musical item.
     /// </summary>
     /// <remarks>
-    /// Only available if <see cref="Type"/> is <see cref="PlaylistItemType.Song"/>, else <see langword="null"/>.
+    /// Only available if <see cref="Type"/> is <see cref="MusicalItemType.Song"/>, else <see langword="null"/>.
     /// </remarks>
     public YouTubeMusicEntity? Album { get; } = album;
 
     /// <summary>
-    /// The duration of this playlist item.
+    /// The duration of this playlist musical item.
     /// </summary>
     public TimeSpan Duration { get; } = duration;
 
     /// <summary>
-    /// Whether this playlist item is explicit or not.
+    /// Whether this playlist musical item is explicit or not.
     /// </summary>
     public bool IsExplicit { get; } = isExplicit;
 
     /// <summary>
-    /// Whether credits are available to fetch for this playlist item.
+    /// Whether credits are available to fetch for this playlist musical item.
     /// </summary>
     public bool IsCreditsAvailable { get; } = isCreditsAvailable;
 
     /// <summary>
-    /// The type of this playlist item.
+    /// The type of this playlist musical item.
     /// </summary>
-    public PlaylistItemType Type { get; } = type;
+    public MusicalItemType Type { get; } = type;
 
     /// <summary>
-    /// The radio associated with this playlist item, if available.
+    /// The radio associated with this playlist musical item, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
 }

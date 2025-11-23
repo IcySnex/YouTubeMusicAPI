@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Services.Musical;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Playlists;
@@ -12,7 +13,7 @@ namespace YouTubeMusicAPI.Services.Playlists;
 /// <param name="suggestions">The suggested items (songs/videos) to add to the source playlist.</param>
 /// <param name="related">The related playlists, similar to the source playlist.</param>
 public class PlaylistRelations(
-    IReadOnlyList<PlaylistItem>? suggestions,
+    IReadOnlyList<PlaylistMusicalItem>? suggestions,
     IReadOnlyList<RelatedPlaylist> related)
 {
     /// <summary>
@@ -24,7 +25,7 @@ public class PlaylistRelations(
         JElement suggestionsElement,
         JElement relatedElement)
     {
-        IReadOnlyList<PlaylistItem>? suggestions = suggestionsElement
+        IReadOnlyList<PlaylistMusicalItem>? suggestions = suggestionsElement
             .Get("contents")
             .GetAt(0)
             .Get("musicShelfRenderer")
@@ -34,7 +35,7 @@ public class PlaylistRelations(
                 ? suggestionsContents
                     .Select(item => item
                         .Get("musicResponsiveListItemRenderer"))
-                    .Select(PlaylistItem.Parse)
+                    .Select(PlaylistMusicalItem.Parse)
                     .ToList()
                 : null; // grrr no fluent syntax
 
@@ -62,7 +63,7 @@ public class PlaylistRelations(
     /// <remarks>
     /// Only available if <see cref="PlaylistInfo.IsOwner"/> is true, else <see langword="null"/>.
     /// </remarks>
-    public IReadOnlyList<PlaylistItem>? Suggestions { get; } = suggestions;
+    public IReadOnlyList<PlaylistMusicalItem>? Suggestions { get; } = suggestions;
 
     /// <summary>
     /// The related playlists, similar to the source playlist.

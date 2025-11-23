@@ -1,9 +1,9 @@
-﻿namespace YouTubeMusicAPI.Services.Playlists;
+﻿namespace YouTubeMusicAPI.Services.Musical;
 
 /// <summary>
-/// Represents the type of a playlist item on YouTube Music.
+/// Represents the type of a musical item on YouTube Music.
 /// </summary>
-public enum PlaylistItemType
+public enum MusicalItemType
 {
     /// <summary>
     /// The item is a song.

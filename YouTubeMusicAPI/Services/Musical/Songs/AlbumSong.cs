@@ -1,24 +1,24 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Albums;
+namespace YouTubeMusicAPI.Services.Musical.Songs;
 
 /// <summary>
-/// Represents an item of an album on YouTube Music.
+/// Represents an album song on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="AlbumItem"/> class.
+/// Creates a new instance of the <see cref="AlbumSong"/> class.
 /// </remarks>
-/// <param name="name">The name of this album item.</param>
-/// <param name="id">The ID of this album item.</param>
-/// <param name="artists">The artists of this album item.</param>
-/// <param name="duration">The duration of this album item.</param>
-/// <param name="isExplicit">Whether this album item is explicit or not.</param>
-/// <param name="index">The index of this album item.</param>
-/// <param name="playsInfo">The information about the numbers of plays this album item has.</param>
-/// <param name="isCreditsAvailable">Whether credits are available to fetch for this album item.</param>
-/// <param name="radio">The radio associated with this album item, if available.</param>
-public class AlbumItem(
+/// <param name="name">The name of this album song.</param>
+/// <param name="id">The ID of this album song.</param>
+/// <param name="artists">The artists of this album song.</param>
+/// <param name="duration">The duration of this album song.</param>
+/// <param name="isExplicit">Whether this album song is explicit or not.</param>
+/// <param name="index">The index of this album song.</param>
+/// <param name="playsInfo">The information about the numbers of plays this album song has.</param>
+/// <param name="isCreditsAvailable">Whether credits are available to fetch for this album song.</param>
+/// <param name="radio">The radio associated with this album song, if available.</param>
+public class AlbumSong(
     string name,
     string id,
     YouTubeMusicEntity[] artists,
@@ -30,11 +30,11 @@ public class AlbumItem(
     Radio? radio) : YouTubeMusicEntity(name, id, null)
 {
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="AlbumItem"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="AlbumSong"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "musicResponsiveListItemRenderer".</param>
     /// <param name="artists">The artists of this album.</param>
-    internal static AlbumItem Parse(
+    internal static AlbumSong Parse(
         JElement element,
         YouTubeMusicEntity[] artists)
     {
@@ -101,43 +101,43 @@ public class AlbumItem(
 
 
     /// <summary>
-    /// The ID of this album item.
+    /// The ID of this album song.
     /// </summary>
     public override string Id { get; } = id;
 
 
     /// <summary>
-    /// The artists of this album item.
+    /// The artists of this album song.
     /// </summary>
     public YouTubeMusicEntity[] Artists { get; } = artists;
 
     /// <summary>
-    /// The duration of this album item.
+    /// The duration of this album song.
     /// </summary>
     public TimeSpan Duration { get; } = duration;
 
     /// <summary>
-    /// Whether this album item is explicit or not.
+    /// Whether this album song is explicit or not.
     /// </summary>
     public bool IsExplicit { get; } = isExplicit;
 
     /// <summary>
-    /// The index of this album item.
+    /// The index of this album song.
     /// </summary>
     public int Index { get; } = index;
 
     /// <summary>
-    /// The information about the numbers of plays this album item has.
+    /// The information about the numbers of plays this song item has.
     /// </summary>
     public string PlaysInfo { get; } = playsInfo;
 
     /// <summary>
-    /// Whether credits are available to fetch for this album item.
+    /// Whether credits are available to fetch for this album song.
     /// </summary>
     public bool IsCreditsAvailable { get; } = isCreditsAvailable;
 
     /// <summary>
-    /// The radio associated with this album item, if available.
+    /// The radio associated with this album song, if available.
     /// </summary>
     public Radio? Radio { get; } = radio;
 }

@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Musical;
 using YouTubeMusicAPI.Services.Playlists;
 
 namespace YouTubeMusicAPI.Tests.Services;
@@ -75,7 +76,7 @@ public class PlaylistServiceTests
     {
         // Act
         PlaylistInfo? result = null;
-        IReadOnlyList<PlaylistItem>? items = null;
+        IReadOnlyList<PlaylistMusicalItem>? items = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {

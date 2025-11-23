@@ -1,5 +1,5 @@
 ﻿using YouTubeMusicAPI.Services;
-using YouTubeMusicAPI.Services.Playlists;
+using YouTubeMusicAPI.Services.Musical;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Json;
@@ -235,14 +235,14 @@ internal static class Selectors
                 .AsString()
                 .Is("MUSIC_EXPLICIT_BADGE"));
 
-    public static PlaylistItemType SelectPlaylistItemType(
+    public static MusicalItemType SelectPlaylistItemType(
         this JElement element)
     {
         JArray? menu = element
             .AsArray();
 
         if (menu is null)
-            return PlaylistItemType.Unavailable; // Only unavailable items don't have a menu.
+            return MusicalItemType.Unavailable; // Only unavailable items don't have a menu.
 
         foreach (JElement item in menu)
         {
@@ -252,17 +252,17 @@ internal static class Selectors
                 .SelectRunTextAt("text", 0)
                 .Is("´Save to library", "Remove from library");
             if (hasGoToArtist)
-                return PlaylistItemType.Song;
+                return MusicalItemType.Song;
 
             bool hasGoToAlbum = item
                 .Get("menuNavigationItemRenderer")
                 .SelectRunTextAt("text", 0)
                 .Is("Go to album");
             if (hasGoToAlbum)
-                return PlaylistItemType.Song;
+                return MusicalItemType.Song;
         }
 
-        return PlaylistItemType.Video; // If none of the unique song items were found, treat it as a video.
+        return MusicalItemType.Video; // If none of the unique song items were found, treat it as a video.
     }
 
     public static bool SelectIsCreditsAvailable(

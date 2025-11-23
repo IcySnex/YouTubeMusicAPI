@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Services.Musical.Songs;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Albums;
@@ -36,7 +37,7 @@ public class AlbumInfo(
     string itemsInfo,
     string lengthInfo,
     Radio? radio,
-    IReadOnlyList<AlbumItem> items,
+    IReadOnlyList<AlbumSong> items,
     AlbumRelations relations) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
@@ -161,7 +162,7 @@ public class AlbumInfo(
             .Get("items")
             .SelectRadio();
 
-        IReadOnlyList<AlbumItem> items = secondary
+        IReadOnlyList<AlbumSong> items = secondary
             .GetAt(0)
             .Get("musicShelfRenderer")
             .Get("contents")
@@ -171,7 +172,7 @@ public class AlbumInfo(
                 .Contains("musicResponsiveListItemRenderer"))
             .Select(item => item
                 .Get("musicResponsiveListItemRenderer"))
-            .Select(item => AlbumItem.Parse(item, artists))
+            .Select(item => AlbumSong.Parse(item, artists))
             .ToList();
 
         AlbumRelations relations = AlbumRelations.Parse(secondary);
@@ -239,7 +240,7 @@ public class AlbumInfo(
     /// <summary>
     /// The items of this album.
     /// </summary>
-    public IReadOnlyList<AlbumItem> Items { get; } = items;
+    public IReadOnlyList<AlbumSong> Items { get; } = items;
 
 
     /// <summary>

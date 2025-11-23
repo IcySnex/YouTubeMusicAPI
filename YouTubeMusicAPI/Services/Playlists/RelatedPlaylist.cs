@@ -16,6 +16,7 @@ namespace YouTubeMusicAPI.Services.Playlists;
 /// <param name="creator">The creator of this playlist, if available</param>
 /// <param name="isMix">Whether this playlist is a mix</param>
 /// <param name="viewsInfo">The information about the number of views this playlist has</param>
+/// <param name="radio">The radio associated with this playlist, if available.</param>
 public class RelatedPlaylist(
     string name,
     string id,
@@ -23,7 +24,8 @@ public class RelatedPlaylist(
     Thumbnail[] thumbnails,
     YouTubeMusicEntity? creator,
     bool isMix,
-    string viewsInfo) : YouTubeMusicEntity(name, id, browseId)
+    string viewsInfo,
+    Radio? radio) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="RelatedPlaylist"/>.
@@ -87,7 +89,11 @@ public class RelatedPlaylist(
                     .Or("N/A views")
                 : "N/A views";
 
-        return new(name, id, browseId, thumbnails, creator, isMix, viewsInfo);
+        Radio? radio = element
+            .SelectMenu()
+            .SelectRadio();
+
+        return new(name, id, browseId, thumbnails, creator, isMix, viewsInfo, radio);
     }
 
 
@@ -127,4 +133,9 @@ public class RelatedPlaylist(
     /// The information about the number of views this related playlist has.
     /// </summary>
     public string ViewsInfo { get; } = viewsInfo;
+
+    /// <summary>
+    /// The radio associated with this related playlist, if available.
+    /// </summary>
+    public Radio? Radio { get; } = radio;
 }

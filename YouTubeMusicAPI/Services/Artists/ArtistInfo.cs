@@ -51,9 +51,7 @@ public class ArtistInfo(
     IReadOnlyList<ArtistVideo> livePerformances,
     IReadOnlyList<ArtistPlaylist> featuredOn,
     IReadOnlyList<ArtistPlaylist> playlists,
-    IReadOnlyList<ArtistCorrelation> fansMightAlsoLike,
-    IReadOnlyList<ArtistEpisode> latestEpisodes,
-    IReadOnlyList<ArtistPodcast> podcasts) : YouTubeMusicEntity(name, id, browseId)
+    IReadOnlyList<ArtistCorrelation> fansMightAlsoLike) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="ArtistInfo"/>.
@@ -145,8 +143,8 @@ public class ArtistInfo(
         List<ArtistPlaylist> featuredOn = [];
         List<ArtistPlaylist> playlists = [];
         List<ArtistCorrelation> fansMightAlsoLike = [];
-        List<ArtistEpisode> latestEpisodes = [];
-        List<ArtistPodcast> podcasts = [];
+        List<ProfileEpisode> latestEpisodes = [];
+        List<ProfilePodcast> podcasts = [];
 
         element
             .Get("contents")
@@ -211,14 +209,6 @@ public class ArtistInfo(
                         fansMightAlsoLike = Parse(shelf, "musicTwoRowItemRenderer", ArtistCorrelation.Parse);
                         break;
 
-                    case "Latest episodes":
-                        latestEpisodes = Parse(shelf, "musicMultiRowListItemRenderer", ArtistEpisode.Parse);
-                        break;
-
-                    case "Podcasts":
-                        podcasts = Parse(shelf, "musicTwoRowItemRenderer", ArtistPodcast.Parse);
-                        break;
-
                     case "About":
                         viewsInfo = shelf
                             .SelectRunTextAt("subheader", 0)
@@ -232,7 +222,7 @@ public class ArtistInfo(
                 }
             });
 
-        return new(name, id, browseId, thumbnails, description, monthlyListenersInfo, subscribersInfo, viewsInfo, radio, topSongs, albums, singlesAndEps, videos, livePerformances, featuredOn, playlists, fansMightAlsoLike, latestEpisodes, podcasts);
+        return new(name, id, browseId, thumbnails, description, monthlyListenersInfo, subscribersInfo, viewsInfo, radio, topSongs, albums, singlesAndEps, videos, livePerformances, featuredOn, playlists, fansMightAlsoLike);
     }
 
 
@@ -318,14 +308,4 @@ public class ArtistInfo(
     /// The correlations to this artists which fans might also like.
     /// </summary>
     public IReadOnlyList<ArtistCorrelation> FansMightAlsoLike { get; } = fansMightAlsoLike;
-
-    /// <summary>
-    /// The latest podcast episodes of this artist.
-    /// </summary>
-    public IReadOnlyList<ArtistEpisode> LatestEpisodes { get; } = latestEpisodes;
-
-    /// <summary>
-    /// Some of the recent and popluar podcasts of this artist.
-    /// </summary>
-    public IReadOnlyList<ArtistPodcast> Podcasts { get; } = podcasts;
 }

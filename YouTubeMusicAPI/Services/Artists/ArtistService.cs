@@ -70,6 +70,15 @@ public sealed class ArtistService
         client.Logger?.LogInformation("[ArtistService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
+        bool isArtist = root
+            .Get("header")
+            .Contains("musicImmersiveHeaderRenderer");
+        if (!isArtist)
+        {
+            client.Logger?.LogError("[ArtistService-GetAsync] The provided browse ID does not correspond to an artist. Use 'client.Profiles.GetAsync(string browseId)' instead.");
+            throw new InvalidOperationException("The provided browse ID does not correspond to an artist. Use 'client.Profiles.GetAsync(string browseId)' instead.");
+        }
+
         ArtistInfo artist = ArtistInfo.Parse(root);
         return artist;
     }

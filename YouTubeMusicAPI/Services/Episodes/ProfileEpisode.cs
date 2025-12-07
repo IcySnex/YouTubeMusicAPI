@@ -34,18 +34,28 @@ public class ProfileEpisode(
     internal static ProfileEpisode Parse(
         JElement element)
     {
+        JElement titleRun = element
+            .Get("title")
+            .Get("runs")
+            .GetAt(0);
+
         JElement descriptionRuns = element
             .Get("subtitle")
             .Get("runs");
 
 
-        string name = element
-            .SelectRunTextAt("title", 0)
+        string name = titleRun
+            .Get("text")
+            .AsString()
             .OrThrow();
 
         string id = element
             .Get("overlay")
             .SelectOverlayVideoId()
+            .OrThrow();
+
+        string browseId = titleRun
+            .SelectNavigationBrowseId()
             .OrThrow();
 
         Thumbnail[] thumbnails = element
@@ -75,7 +85,7 @@ public class ProfileEpisode(
             .SelectMenu()
             .SelectPodcastUnknown();
 
-        return new(name, id, "browseId", thumbnails, description, releasedAt, duration, podcast);
+        return new(name, id, browseId, thumbnails, description, releasedAt, duration, podcast);
     }
 
 

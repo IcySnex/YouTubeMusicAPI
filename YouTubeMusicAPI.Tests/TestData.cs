@@ -121,7 +121,7 @@ internal static class TestData
     public const int FetchOffset = 0;
     public const int FetchLimit = 20;
 
-    public const string SearchQuery = "relax";
+    public const string SearchQuery = "JORDAN HYPE, SNEAKER LOAFERS & FORMEL 1 FASHION! | OH, SCHUHEN! EP179";
     public const SearchScope SearchScope = YouTubeMusicAPI.Services.Search.SearchScope.Global;
     public const bool SearchIgnoreSpelling = false;
 
@@ -137,5 +137,5 @@ internal static class TestData
 
     public const string ArtistBrowseId = "UCUTgzHNGIufzRPkRHdEJUNQ";
 
-    public const string ProfileBrowseId = "UCJLHPUBD6KvubhoJ0mxmGiw";
+    public const string ProfileBrowseId = "UCjZL2PeAdLA602k4FLko58g";
 }

@@ -23,6 +23,7 @@ namespace YouTubeMusicAPI.Services.Artists;
 /// <param name="monthlyListenersInfo">The information about the monthly listeners of this artist.</param>
 /// <param name="subscribersInfo">The information about the numbers of subscribers this artist has.</param>
 /// <param name="viewsInfo">The information about the numbers of views this artist has.</param>
+/// <param name="pronouns">The pronouns of this artist, if available.</param>
 /// <param name="radio">The radio associated with this artist, if available.</param>
 /// <param name="topSongs">The top songs of this artist.</param>
 /// <param name="albums">Some of the recent albums of this artist.</param>
@@ -32,8 +33,6 @@ namespace YouTubeMusicAPI.Services.Artists;
 /// <param name="featuredOn">Some of the playlists this artists is featured on.</param>
 /// <param name="playlists">Some of the playlists created by this artists.</param>
 /// <param name="fansMightAlsoLike">The correlations to this artists which fans might also like.</param>
-/// <param name="latestEpisodes">The latest podcast episodes of this artist.</param>
-/// <param name="podcasts">Some of the recent and popluar podcasts of this artist.</param>
 public class ArtistInfo(
     string name,
     string id,
@@ -43,6 +42,7 @@ public class ArtistInfo(
     string monthlyListenersInfo,
     string subscribersInfo,
     string viewsInfo,
+    string? pronouns,
     Radio? radio,
     IReadOnlyList<ArtistSong> topSongs,
     IReadOnlyList<ArtistAlbum> albums,
@@ -127,6 +127,9 @@ public class ArtistInfo(
             .Or("N/A subscribers");
 
         string viewsInfo = "N/A views";
+
+        string? pronouns = item
+            .SelectRunTextAt("pronouns", 0);
 
         Radio? radio = item
             .Get("startRadioButton")
@@ -222,7 +225,7 @@ public class ArtistInfo(
                 }
             });
 
-        return new(name, id, browseId, thumbnails, description, monthlyListenersInfo, subscribersInfo, viewsInfo, radio, topSongs, albums, singlesAndEps, videos, livePerformances, featuredOn, playlists, fansMightAlsoLike);
+        return new(name, id, browseId, thumbnails, description, monthlyListenersInfo, subscribersInfo, viewsInfo, pronouns, radio, topSongs, albums, singlesAndEps, videos, livePerformances, featuredOn, playlists, fansMightAlsoLike);
     }
 
 
@@ -250,17 +253,22 @@ public class ArtistInfo(
     /// <summary>
     /// The information about the monthly listeners of this artist.
     /// </summary>
-    public string? MonthlyListenersInfo { get; } = monthlyListenersInfo;
+    public string MonthlyListenersInfo { get; } = monthlyListenersInfo;
 
     /// <summary>
     /// The information about the numbers of subscribers this artist has.
     /// </summary>
-    public string? SubscribersInfo { get; } = subscribersInfo;
+    public string SubscribersInfo { get; } = subscribersInfo;
 
     /// <summary>
     /// The information about the numbers of views this artist has.
     /// </summary>
-    public string? ViewsInfo { get; } = viewsInfo;
+    public string ViewsInfo { get; } = viewsInfo;
+
+    /// <summary>
+    /// The pronouns of this artist, if available.
+    /// </summary>
+    public string? Pronouns { get; } = pronouns;
 
     /// <summary>
     /// The radio associated with this artist, if available.

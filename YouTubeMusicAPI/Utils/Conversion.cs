@@ -36,16 +36,69 @@ internal static class Conversion
     public static TimeSpan? ToTimeSpan(
         this string? text)
     {
+        TimeSpan? ParseShort()
+        {
+            string[] parts = text.Split(':');
+            return parts.Length switch
+            {
+                2 when int.TryParse(parts[0], out int minutes) && int.TryParse(parts[1], out int seconds) => new(0, minutes, seconds),
+                3 when int.TryParse(parts[0], out int hours) && int.TryParse(parts[1], out int minutes) && int.TryParse(parts[2], out int seconds) => new(hours, minutes, seconds),
+                _ => null,
+            };
+        }
+
+        TimeSpan? ParseLong()
+        {
+            string[] parts = text.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length % 2 != 0)
+                return null;
+
+            int hours = 0, minutes = 0, seconds = 0;
+            for (int i = 0; i < parts.Length; i += 2)
+            {
+                if (!int.TryParse(parts[i], out int value))
+                    return null;
+
+                string unit = parts[i + 1];
+                switch (unit)
+                {
+                    case "hr":
+                    case "hrs":
+                    case "hour":
+                    case "hours":
+                        hours = value;
+                        break;
+
+                    case "min":
+                    case "mins":
+                    case "minute":
+                    case "minutes":
+                        minutes = value;
+                        break;
+
+                    case "sec":
+                    case "secs":
+                    case "second":
+                    case "seconds":
+                        seconds = value;
+                        break;
+
+                    default:
+                        return null;
+                }
+            }
+
+            return new(hours, minutes, seconds);
+        }
+
+
         if (text is null)
             return null;
 
-        string[] parts = text.Split(':');
-        return parts.Length switch
-        {
-            2 when int.TryParse(parts[0], out int minutes) && int.TryParse(parts[1], out int seconds) => new(0, minutes, seconds),
-            3 when int.TryParse(parts[0], out int hours) && int.TryParse(parts[1], out int minutes) && int.TryParse(parts[2], out int seconds) => new(hours, minutes, seconds),
-            _ => null,
-        };
+        if (text.Contains(':'))
+            return ParseShort();
+
+        return ParseLong();
     }
 
     /// <summary>

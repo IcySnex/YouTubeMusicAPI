@@ -136,4 +136,6 @@ internal static class TestData
     public const string AlbumBrowseId = "MPREb_78cZiOmrPmB";
 
     public const string ArtistBrowseId = "UCuT7Bw92ejRe1gGjLAifoow";
+
+    public const string ProfileBrowseId = "UCJLHPUBD6KvubhoJ0mxmGiw";
 }

@@ -4,17 +4,17 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicAPI.Services.Podcasts;
 
 /// <summary>
-/// Represents an artist podcast on YouTube Music.
+/// Represents a profile podcast on YouTube Music.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="ArtistPodcast"/> class.
+/// Creates a new instance of the <see cref="ProfilePodcast"/> class.
 /// </remarks>
-/// <param name="name">The name of this artist podcast.</param>
-/// <param name="id">The ID of this artist podcast.</param>
-/// <param name="thumbnails">The thumbnails of this artist podcast.</param>
-/// <param name="browseId">The browse ID of this artist podcast.</param>
-/// <param name="host">The host of this artist podcast.</param>
-public class ArtistPodcast(
+/// <param name="name">The name of this profile podcast.</param>
+/// <param name="id">The ID of this profile podcast.</param>
+/// <param name="thumbnails">The thumbnails of this profile podcast.</param>
+/// <param name="browseId">The browse ID of this profile podcast.</param>
+/// <param name="host">The host of this profile podcast.</param>
+public class ProfilePodcast(
     string name,
     string id,
     string browseId,
@@ -22,10 +22,10 @@ public class ArtistPodcast(
     YouTubeMusicEntity host) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
-    /// Parses a <see cref="JElement"/> into a <see cref="ArtistPodcast"/>.
+    /// Parses a <see cref="JElement"/> into a <see cref="ProfilePodcast"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "musicTwoRowItemRenderer".</param>
-    internal static ArtistPodcast Parse(
+    internal static ProfilePodcast Parse(
         JElement element)
     {
         string name = element
@@ -57,23 +57,23 @@ public class ArtistPodcast(
 
 
     /// <summary>
-    /// The ID of this artist podcast.
+    /// The ID of this profile podcast.
     /// </summary>
     public override string Id { get; } = id;
 
     /// <summary>
-    /// The browse ID of this artist podcast.
+    /// The browse ID of this profile podcast.
     /// </summary>
     public override string BrowseId { get; } = browseId;
 
 
     /// <summary>
-    /// The thumbnails of this artist podcast.
+    /// The thumbnails of this profile podcast.
     /// </summary>
     public Thumbnail[] Thumbnails { get; } = thumbnails;
 
     /// <summary>
-    /// The host of this artist podcast.
+    /// The host of this profile podcast.
     /// </summary>
     public YouTubeMusicEntity Host { get; } = host;
 }

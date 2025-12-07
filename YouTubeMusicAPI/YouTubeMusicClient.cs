@@ -8,6 +8,7 @@ using YouTubeMusicAPI.Services.Musical;
 using YouTubeMusicAPI.Services.Musical.Songs;
 using YouTubeMusicAPI.Services.Musical.Videos;
 using YouTubeMusicAPI.Services.Playlists;
+using YouTubeMusicAPI.Services.Profiles;
 using YouTubeMusicAPI.Services.Search;
 using YouTubeMusicAPI.Utils;
 
@@ -41,6 +42,7 @@ public class YouTubeMusicClient
         Playlists = new(this);
         Albums = new(this);
         Artists = new(this);
+        Profiles = new(this);
     }
 
 
@@ -79,6 +81,11 @@ public class YouTubeMusicClient
     /// The service which handles getting information about artists from YouTube Music.
     /// </summary>
     public ArtistService Artists { get; }
+
+    /// <summary>
+    /// The service which handles getting information about profiles from YouTube Music.
+    /// </summary>
+    public ProfileService Profiles { get; }
 
 
     /// <summary>

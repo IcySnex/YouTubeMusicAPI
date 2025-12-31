@@ -21,7 +21,7 @@ internal abstract class TestData
     /// Test po token for requests
     /// </summary>
     public const string? PoToken = null;
-
+        
     /// <summary>
     /// Test cookies for authentication
     /// </summary>
@@ -30,7 +30,7 @@ internal abstract class TestData
         get
         {
             string? cookies = null;
-
+                
             return cookies?
                 .Split(';')
                 .Select(cookieString =>
@@ -49,12 +49,12 @@ internal abstract class TestData
 
 
     /// <summary>
-    /// Test offset from which items should be retruened for fetch requests
+    /// Test offset from which items should be returned for fetch requests
     /// </summary>
     public const int FetchOffset = 0;
 
     /// <summary>
-    /// Test maximum items of items which should be retruened for fetch requests
+    /// Test maximum items of items which should be returned for fetch requests
     /// </summary>
     public const int FetchLimit = 20;
 
@@ -100,5 +100,5 @@ internal abstract class TestData
     /// <summary>
     /// File path to download test media stream
     /// </summary>
-    public static string FilePath = @$"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\test.mp4";
+    public static readonly string FilePath = @$"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\test.mp4";
 }

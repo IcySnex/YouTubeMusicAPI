@@ -55,9 +55,8 @@ internal static class JsMatchers
     public static Node? SignatureTimestamp(
         Node node)
     {
-        if (node is not ExpressionStatement expressionStmt ||
-            expressionStmt.Expression is not AssignmentExpression assignmentExpr ||
-            assignmentExpr.Right is not FunctionExpression functionExpr ||
+        if (node is not VariableDeclarator variableDeclarator ||
+            variableDeclarator.Init is not FunctionExpression functionExpr ||
             functionExpr.Body is not BlockStatement blockStmt)
             return null;
 

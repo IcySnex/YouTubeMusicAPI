@@ -24,8 +24,10 @@ public class YouTubeMusicClient
     readonly YouTubeMusicBase baseClient;
 
     readonly bool isCookieAuthenticated;
+    readonly string? playerId;
 
     Player? player = null;
+    readonly SemaphoreSlim playerSemaphore;
 
     /// <summary>
     /// Creates a new search client
@@ -35,12 +37,14 @@ public class YouTubeMusicClient
     /// <param name="poToken">The Proof of Origin Token for attestation (may be required for streaming)</param>
     /// <param name="cookies">Initial cookies used for authentication</param>
     /// <param name="httpClient">Http client which handles sending requests</param>
+    /// <param name="playerId">Optional player id; if empty, derive the most recent player id from the iframe API</param>
     public YouTubeMusicClient(
         string geographicalLocation = "US",
         string? visitorData = null,
         string? poToken = null,
         IEnumerable<Cookie>? cookies = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        string? playerId = null)
     {
         GeographicalLocation = geographicalLocation;
         VisitorData = visitorData;
@@ -50,6 +54,8 @@ public class YouTubeMusicClient
 
         this.requestHelper = new(httpClient ?? new(), cookies);
         this.baseClient = new(requestHelper);
+        this.playerSemaphore = new SemaphoreSlim(1, 1);
+        this.playerId = playerId;
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient has been initialized.");
     }
@@ -69,7 +75,8 @@ public class YouTubeMusicClient
         string? visitorData = null,
         string? poToken = null,
         IEnumerable<Cookie>? cookies = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        string? playerId = null)
     {
         GeographicalLocation = geographicalLocation;
         VisitorData = visitorData;
@@ -80,6 +87,8 @@ public class YouTubeMusicClient
         this.logger = logger;
         this.requestHelper = new(logger, httpClient ?? new(), cookies);
         this.baseClient = new(logger, requestHelper);
+        this.playerSemaphore = new SemaphoreSlim(1, 1);
+        this.playerId = playerId;
 
         logger?.LogInformation($"[YouTubeMusicClient-.ctor] YouTubeMusicClient with extendended logging functions has been initialized.");
     }
@@ -686,10 +695,18 @@ public class YouTubeMusicClient
         }
         else // Mobile client does not support cookie authentication -> falling back to WebRemix client
         {
-            if (player is null)
+            await playerSemaphore.WaitAsync(cancellationToken);
+            try
             {
-                logger?.LogInformation("[YouTubeMusicClient-GetStreamingDataAsync] Creating required player for streaming...");
-                player = await Player.CreateAsync(requestHelper, PoToken, cancellationToken);
+                if (player is null)
+                {
+                    logger?.LogInformation("[YouTubeMusicClient-GetStreamingDataAsync] Creating required player for streaming...");
+                    player = await Player.CreateAsync(requestHelper, PoToken, playerId, cancellationToken);
+                }
+            }
+            finally
+            {
+                playerSemaphore.Release();
             }
 
             // Send request

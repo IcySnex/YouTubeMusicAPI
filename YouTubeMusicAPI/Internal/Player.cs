@@ -35,18 +35,23 @@ internal class Player(
     /// </summary>
     /// <param name="requestHelper">The HTTP request helper</param>
     /// <param name="poToken">The Proof of Origin Token (required for SABR Requests)</param>
+    /// <param name="playerId">Optional player id; if empty, derive the most recent player id from the iframe API</param>
     /// <param name="cancellationToken">The token to cancel this action</param>
     /// <returns>The player</returns>
     public static async Task<Player> CreateAsync(
         RequestHelper requestHelper,
         string? poToken,
+        string? playerId = null,
         CancellationToken cancellationToken = default)
     {
-        string url = "https://www.youtube.com" + "/iframe_api";
-        string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
+        if (string.IsNullOrEmpty(playerId))
+        {
+            string url = "https://www.youtube.com/iframe_api";
+            string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
 
-        string playerId = js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
-        string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
+            playerId = js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
+        }
+        string playerUrl = $"https://www.youtube.com/s/player/{playerId}/player_ias.vflset/en_US/base.js";
 
         string playerJs = await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
 

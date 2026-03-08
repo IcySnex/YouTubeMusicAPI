@@ -10,9 +10,8 @@ internal class Player(
     int signatureTimestamp,
     string? poToken)
 {
-    readonly Engine jsEngine = new Engine().Execute(javasScript.Output);
-
-
+    readonly ThreadLocal<Engine> jsEngine = new(() => new Engine().Execute(javasScript.Output), true);
+    
 
     /// <summary>
     /// The JavaScript extraction result.
@@ -35,19 +34,24 @@ internal class Player(
     /// </summary>
     /// <param name="requestHelper">The HTTP request helper</param>
     /// <param name="poToken">The Proof of Origin Token (required for SABR Requests)</param>
+    /// <param name="playerId">The ID of the player. Null to get the most recent YouTube player.</param>
     /// <param name="cancellationToken">The token to cancel this action</param>
     /// <returns>The player</returns>
     public static async Task<Player> CreateAsync(
         RequestHelper requestHelper,
         string? poToken,
+        string? playerId,
         CancellationToken cancellationToken = default)
     {
-        string url = "https://www.youtube.com" + "/iframe_api";
-        string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
-
-        string playerId = js.GetStringBetween(@"player\/", @"\/") ?? throw new Exception("Failed to get player id");
+        if (playerId is null)
+        {
+            string url = "https://www.youtube.com" + "/iframe_api";
+            string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
+        
+            playerId = js.GetStringBetween(@"player\/", @"\/") ?? throw new("Failed to get player id");
+        }
+        
         string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
-
         string playerJs = await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
 
         JsAnalyzer analyzer = new(playerJs,
@@ -86,7 +90,7 @@ internal class Player(
         string? signatureCipher,
         string? cipher)
     {
-        string actualUrl = url ?? signatureCipher ?? cipher ?? throw new Exception("No url, signature cipher or cipher provided");
+        string actualUrl = url ?? signatureCipher ?? cipher ?? throw new("No url, signature cipher or cipher provided");
 
         // Parse
         NameValueCollection query = HttpUtility.ParseQueryString(actualUrl);
@@ -105,12 +109,12 @@ internal class Player(
         // Signatures
         if (sig is not null)
         {
-            string decipheredSig = jsEngine.Evaluate($"exportedVars.decipherSignature('{sig}');").AsString();
+            string decipheredSig = jsEngine.Value.Evaluate($"exportedVars.decipherSignature('{sig}');").AsString();
             urlQuery[sp] = decipheredSig;
         }
         if (nsig is not null)
         {
-            string decipheredNSig = jsEngine.Evaluate($"exportedVars.decipherNSignature('{nsig}');").AsString();
+            string decipheredNSig = jsEngine.Value.Evaluate($"exportedVars.decipherNSignature('{nsig}');").AsString();
             urlQuery["n"] = decipheredNSig;
         }
 
@@ -133,4 +137,5 @@ internal class Player(
         string result = urlQuery.ToString() ?? throw new Exception("Failed to build url with deciphered signature");
         return result;
     }
+
 }

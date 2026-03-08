@@ -23,7 +23,7 @@ internal class Streaming
         });
 
         logger = factory.CreateLogger<Search>();
-        client = new(logger, TestData.GeographicalLocation, TestData.VisitorData, TestData.PoToken, TestData.Cookies);
+        client = new(logger, TestData.GeographicalLocation, TestData.VisitorData, TestData.PoToken, TestData.Cookies, TestData.PlayerId);
     }
 
 

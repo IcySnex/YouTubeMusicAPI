@@ -25,6 +25,7 @@ public class YouTubeMusicClient
 
     readonly bool isCookieAuthenticated;
 
+    readonly string? playerId;
     Player? player = null;
 
     /// <summary>
@@ -34,12 +35,14 @@ public class YouTubeMusicClient
     /// <param name="visitorData">The persistent visitor data used for session tailoring</param>
     /// <param name="poToken">The Proof of Origin Token for attestation (may be required for streaming)</param>
     /// <param name="cookies">Initial cookies used for authentication</param>
+    /// <param name="playerId">The ID of the player for streaming. Null to get the most recent YouTube player</param>
     /// <param name="httpClient">Http client which handles sending requests</param>
     public YouTubeMusicClient(
         string geographicalLocation = "US",
         string? visitorData = null,
         string? poToken = null,
         IEnumerable<Cookie>? cookies = null,
+        string? playerId = null,
         HttpClient? httpClient = null)
     {
         GeographicalLocation = geographicalLocation;
@@ -47,7 +50,9 @@ public class YouTubeMusicClient
         PoToken = poToken;
 
         isCookieAuthenticated = cookies is not null;
-
+        
+        this.playerId = playerId;
+        
         this.requestHelper = new(httpClient ?? new(), cookies);
         this.baseClient = new(requestHelper);
 
@@ -62,6 +67,7 @@ public class YouTubeMusicClient
     /// <param name="visitorData">The persistent visitor data used for session tailoring</param>
     /// <param name="poToken">The Proof of Origin Token for attestation (may be required for streaming)</param>
     /// <param name="cookies">Initial cookies used for authentication</param>
+    /// <param name="playerId">The ID of the player for streaming. Null to get the most recent YouTube player</param>
     /// <param name="httpClient">Http client which handles sending requests</param>
     public YouTubeMusicClient(
         ILogger logger,
@@ -69,6 +75,7 @@ public class YouTubeMusicClient
         string? visitorData = null,
         string? poToken = null,
         IEnumerable<Cookie>? cookies = null,
+        string? playerId = null,
         HttpClient? httpClient = null)
     {
         GeographicalLocation = geographicalLocation;
@@ -77,6 +84,8 @@ public class YouTubeMusicClient
 
         isCookieAuthenticated = cookies is not null;
 
+        this.playerId = playerId;
+        
         this.logger = logger;
         this.requestHelper = new(logger, httpClient ?? new(), cookies);
         this.baseClient = new(logger, requestHelper);
@@ -689,7 +698,7 @@ public class YouTubeMusicClient
             if (player is null)
             {
                 logger?.LogInformation("[YouTubeMusicClient-GetStreamingDataAsync] Creating required player for streaming...");
-                player = await Player.CreateAsync(requestHelper, PoToken, cancellationToken);
+                player = await Player.CreateAsync(requestHelper, PoToken, playerId, cancellationToken);
             }
 
             // Send request

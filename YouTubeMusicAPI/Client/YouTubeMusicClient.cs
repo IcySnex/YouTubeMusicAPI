@@ -18,7 +18,8 @@ namespace YouTubeMusicAPI.Client;
 /// </summary>
 public class YouTubeMusicClient
 {
-
+    readonly object locker = new();
+    
     readonly ILogger? logger;
     readonly RequestHelper requestHelper;
     readonly YouTubeMusicBase baseClient;
@@ -26,7 +27,6 @@ public class YouTubeMusicClient
     readonly bool isCookieAuthenticated;
 
     readonly string? playerId;
-    Player? player = null;
 
     /// <summary>
     /// Creates a new search client
@@ -107,19 +107,25 @@ public class YouTubeMusicClient
     /// <summary>
     /// The Proof of Origin Token for attestation (may be required for streaming)
     /// </summary>
-    public string? PoToken
-    {
-        get => poToken;
-        set
-        {
-            poToken = value;
+    public string? PoToken  { get; set; }
+    
 
-            if (player is not null)
-                player.PoToken = value;
+    Task<Player>? playerTask;
+    
+    Task<Player> GetPlayerAsync(
+        CancellationToken cancellationToken = default)
+    {
+        lock (locker)
+        {
+            if (playerTask != null && !playerTask.IsCanceled && !playerTask.IsFaulted)
+                return playerTask;
+            
+            logger?.LogInformation("[YouTubeMusicClient-GetPlayerAsync] Creating required player for streaming...");
+            playerTask = Player.CreateAsync(requestHelper, playerId, cancellationToken);
+            return playerTask;
         }
     }
-    string? poToken = null;
-
+    
 
     /// <summary>
     /// Searches for a query on YouTube Music
@@ -695,12 +701,8 @@ public class YouTubeMusicClient
         }
         else // Mobile client does not support cookie authentication -> falling back to WebRemix client
         {
-            if (player is null)
-            {
-                logger?.LogInformation("[YouTubeMusicClient-GetStreamingDataAsync] Creating required player for streaming...");
-                player = await Player.CreateAsync(requestHelper, PoToken, playerId, cancellationToken);
-            }
-
+            Player player = await GetPlayerAsync(cancellationToken);
+            
             // Send request
             Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, player.SignatureTimestamp,
                 [
@@ -709,7 +711,7 @@ public class YouTubeMusicClient
             JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Player, payload, cancellationToken);
 
             // Parse request response
-            StreamingData streamingData = StreamingParser.GetData(requestResponse, player);
+            StreamingData streamingData = StreamingParser.GetData(requestResponse, player, PoToken);
             return streamingData;
         }
     }

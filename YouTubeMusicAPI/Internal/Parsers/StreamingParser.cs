@@ -31,11 +31,13 @@ internal static class StreamingParser
     /// </summary>
     /// <param name="jsonToken">The json token containing the item data</param>
     /// <param name="player">The player for deciphering</param>
+    /// <param name="poToken">The Proof of Origin Token (required for SABR Requests)</param>
     /// <returns>The streaming data</returns>
     /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
     public static StreamingData GetData(
         JObject jsonToken,
-        Player player)
+        Player player,
+        string? poToken = null)
     {
         if (jsonToken.SelectObject<string>("playabilityStatus.status") != "OK")
             throw new InvalidOperationException($"This media stream is not playable: {jsonToken.SelectObjectOptional<string>("playabilityStatus.reason") ?? "Unknown reason"}");
@@ -47,7 +49,7 @@ internal static class StreamingParser
                 string? signatureCipher = content.SelectObjectOptional<string>("signatureCipher");
                 string? cipher = content.SelectObjectOptional<string>("cipher");
 
-                return player.Decipher(url, signatureCipher, cipher);
+                return player.Decipher(url, signatureCipher, cipher, poToken);
             }),
             isLiveContent: jsonToken.SelectObject<bool>("videoDetails.isLiveContent"),
             expiresIn: TimeSpan.FromSeconds(jsonToken.SelectObject<int>("streamingData.expiresInSeconds")),

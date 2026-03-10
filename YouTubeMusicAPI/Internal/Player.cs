@@ -7,8 +7,7 @@ namespace YouTubeMusicAPI.Internal;
 
 internal class Player(
     JsExtractor.Result javasScript,
-    int signatureTimestamp,
-    string? poToken)
+    int signatureTimestamp)
 {
     readonly ThreadLocal<Engine> jsEngine = new(() => new Engine().Execute(javasScript.Output), true);
     
@@ -23,23 +22,16 @@ internal class Player(
     /// </summary>
     public int SignatureTimestamp { get; } = signatureTimestamp;
 
-    /// <summary>
-    /// The Proof of Origin Token (required for SABR Requests)
-    /// </summary>
-    public string? PoToken { get; set; } = poToken;
-
 
     /// <summary>
     /// Creates a new player
     /// </summary>
     /// <param name="requestHelper">The HTTP request helper</param>
-    /// <param name="poToken">The Proof of Origin Token (required for SABR Requests)</param>
     /// <param name="playerId">The ID of the player. Null to get the most recent YouTube player.</param>
     /// <param name="cancellationToken">The token to cancel this action</param>
     /// <returns>The player</returns>
     public static async Task<Player> CreateAsync(
         RequestHelper requestHelper,
-        string? poToken,
         string? playerId,
         CancellationToken cancellationToken = default)
     {
@@ -74,7 +66,7 @@ internal class Player(
             ? Convert.ToInt32(rawSignatureTimestamp)
             : throw new Exception("Failed to extract signature timestamp");
 
-        return new(result, signatureTimestamp, poToken);
+        return new(result, signatureTimestamp);
     }
 
 
@@ -84,11 +76,13 @@ internal class Player(
     /// <param name="url">The url</param>
     /// <param name="signatureCipher">The signature cipher</param>
     /// <param name="cipher">The cipher</param>
+    /// <param name="poToken">The Proof of Origin Token (required for SABR Requests)</param>
     /// <returns>The deciphered url</returns>
     public string Decipher(
         string? url,
         string? signatureCipher,
-        string? cipher)
+        string? cipher,
+        string? poToken = null)
     {
         string actualUrl = url ?? signatureCipher ?? cipher ?? throw new("No url, signature cipher or cipher provided");
 
@@ -121,9 +115,9 @@ internal class Player(
         // SABR Requests
         if (sabr != "1")
         {
-            if (PoToken is null)
+            if (poToken is null)
                 throw new Exception("Proof of Origin Token missing. SABR Request must include a PoToken.");
-            urlQuery["pot"] = PoToken;
+            urlQuery["pot"] = poToken;
         }
 
         // Client Version

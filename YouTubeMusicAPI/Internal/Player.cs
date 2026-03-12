@@ -1,4 +1,6 @@
-﻿using Jint;
+﻿using Acornima.Ast;
+using Jint;
+using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Web;
 using YouTubeMusicAPI.Internal.JavaScript;
@@ -6,16 +8,35 @@ using YouTubeMusicAPI.Internal.JavaScript;
 namespace YouTubeMusicAPI.Internal;
 
 internal class Player(
-    JsExtractor.Result javasScript,
+    Prepared<Script> javaScript,
     int signatureTimestamp)
 {
-    readonly ThreadLocal<Engine> jsEngine = new(() => new Engine().Execute(javasScript.Output), true);
-    
+    readonly Prepared<Script> javaScript = javaScript;
 
-    /// <summary>
-    /// The JavaScript extraction result.
-    /// </summary>
-    public JsExtractor.Result JavaScript { get; } = javasScript;
+    readonly ConcurrentBag<Engine> enginePool = [];
+    readonly int enginePoolMaxSize = 5;
+
+
+    Engine GetEngine()
+    {
+        if (enginePool.TryTake(out Engine engine))
+            return engine;
+
+        return new Engine().Execute(javaScript);
+    }
+
+    void ReturnEngine(
+        Engine engine)
+    {
+        if (enginePool.Count >= enginePoolMaxSize)
+        {
+            engine.Dispose();
+            return;
+        }
+
+        enginePool.Add(engine);
+    }
+
 
     /// <summary>
     /// The timestamp of the JavaScript signature.
@@ -66,7 +87,8 @@ internal class Player(
             ? Convert.ToInt32(rawSignatureTimestamp)
             : throw new Exception("Failed to extract signature timestamp");
 
-        return new(result, signatureTimestamp);
+        Prepared<Script> script = Engine.PrepareScript(result.Output);
+        return new(script, signatureTimestamp);
     }
 
 
@@ -101,15 +123,26 @@ internal class Player(
             throw new Exception("Signature cipher does not contain s parameter.");
 
         // Signatures
-        if (sig is not null)
+        if (sig is not null || nsig is not null)
         {
-            string decipheredSig = jsEngine.Value.Evaluate($"exportedVars.sigFunction('{sig}');").AsString();
-            urlQuery[sp] = decipheredSig;
-        }
-        if (nsig is not null)
-        {
-            string decipheredNSig = jsEngine.Value.Evaluate($"exportedVars.nFunction('{nsig}');").AsString();
-            urlQuery["n"] = decipheredNSig;
+            Engine jsEngine = GetEngine();
+            try
+            {
+                if (sig is not null)
+                {
+                    string decipheredSig = jsEngine.Evaluate($"exportedVars.sigFunction('{sig}');").AsString();
+                    urlQuery[sp] = decipheredSig;
+                }
+                if (nsig is not null)
+                {
+                    string decipheredNSig = jsEngine.Evaluate($"exportedVars.nFunction('{nsig}');").AsString();
+                    urlQuery["n"] = decipheredNSig;
+                }
+            }
+            finally
+            {
+                ReturnEngine(jsEngine);
+            }
         }
 
         // SABR Requests
@@ -131,5 +164,4 @@ internal class Player(
         string result = urlQuery.ToString() ?? throw new Exception("Failed to build url with deciphered signature");
         return result;
     }
-
 }

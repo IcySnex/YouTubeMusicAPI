@@ -100,15 +100,27 @@ internal static class Selectors
         if (!stringifiedDate.Contains(" ago"))
             return DateTime.Parse(stringifiedDate);
 
-        string[] timeSpanParts = stringifiedDate.Split(' ');
-        int timeSpanValue = int.Parse(timeSpanParts[0]);
+        string data = stringifiedDate.Replace(" ago", "").Trim();
 
-        return timeSpanParts[1][0] switch
+        string digits = "";
+        string unit = "";
+        foreach (char c in data)
         {
-            'd' => DateTime.Now - TimeSpan.FromDays(timeSpanValue),
-            'h' => DateTime.Now - TimeSpan.FromHours(timeSpanValue),
-            'm' => DateTime.Now - TimeSpan.FromMinutes(timeSpanValue),
-            's' => DateTime.Now - TimeSpan.FromSeconds(timeSpanValue),
+            if (char.IsDigit(c))
+                digits += c;
+            else if (char.IsLetter(c))
+                unit += c;
+        }
+
+        if (!int.TryParse(digits, out int number))
+            return DateTime.Now;
+
+        return unit.ToLower().FirstOrDefault() switch
+        {
+            'd' => DateTime.Now.AddDays(-number),
+            'h' => DateTime.Now.AddHours(-number),
+            'm' => DateTime.Now.AddMinutes(-number),
+            's' => DateTime.Now.AddSeconds(-number),
             _ => DateTime.Now
         };
     }

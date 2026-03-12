@@ -156,7 +156,7 @@ internal class Player(
         // Client Version
         urlQuery["cver"] = client switch
         {
-            "WEB_REMIX" => "1.20251022.00.01",
+            "WEB_REMIX" => "1.20260309.03.00",
             _ => throw new Exception("This client is not supported"),
         };
 

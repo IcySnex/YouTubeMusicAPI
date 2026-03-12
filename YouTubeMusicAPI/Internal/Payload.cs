@@ -28,12 +28,12 @@ public static class Payload
                 client = new
                 {
                     clientName = "WEB_REMIX",
-                    clientVersion = "1.20251022.00.01",
+                    clientVersion = "1.20260309.03.00",
                     browserName = "Chrome",
-                    browserVersion = "130.0.0.0",
+                    browserVersion = "142.0.0.0",
                     osName = "Windows",
                     osVersion = "10.0",
-                    userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36,gzip(gfe)",
+                    userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36,gzip(gfe)",
                     timeZone = "UTC",
                     utcOffsetMinutes = 0,
                     hl = "en",

@@ -67,7 +67,7 @@ public class AuthenticationHandler
         string requestUrl = request.RequestUri.OriginalString;
         request.RequestUri = new(requestUrl + (requestUrl.Contains('?') ? '&' : '?') + "key=AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w");
 
-        request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+        request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36");
         request.Headers.Add("Origin", request.RequestUri.Scheme + Uri.SchemeDelimiter + request.RequestUri.Host);
 
         if (TryGenerateAuthHeaderValue(request.RequestUri) is string authHeaderValue)

@@ -80,14 +80,14 @@ public static class Payload
             {
                 client = new
                 {
-                    clientName = "iOS",
-                    clientVersion = "20.11.6",
-                    deviceMake = "Apple",
-                    deviceModel = "iPhone16,2",
-                    osName = "IOS",
+                    clientName = "ANDROID_VR",
+                    clientVersion = "1.60.19",
+                    deviceMake = "Oculus",
+                    deviceModel = "Quest 3",
+                    osName = "Android",
+                    osVersion = "12L",
                     platform = "MOBILE",
-                    osVersion = "18.1.0.22B83",
-                    userAgent = "com.google.ios.youtube/20.11.6 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; US)",
+                    userAgent = "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; Quest 3 Build/SQ3A.220605.009.A1) gzip",
                     timeZone = "UTC",
                     utcOffsetMinutes = 0,
                     hl = "en",

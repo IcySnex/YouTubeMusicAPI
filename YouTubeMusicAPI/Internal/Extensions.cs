@@ -1,4 +1,5 @@
-﻿using Acornima.Ast;
+﻿using Acornima;
+using Acornima.Ast;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using YouTubeMusicAPI.Internal.JavaScript;
@@ -151,7 +152,7 @@ internal static class Extensions
 
 
     public static string? MemberToString(
-        this MemberExpression value,
+        this Node value,
         string source)
     {
         List<string> segments = [];
@@ -225,11 +226,21 @@ internal static class Extensions
         string name,
         JsAnalyzer analyzer)
     {
+        string GenerateSignatureWrapper(
+            string functionName,
+            string targetFunction) =>
+            $"  function {functionName}(input) {{\n    const helper = {targetFunction}('https://www.youtube.com/videoplayback', 'signature', String(input));\n    return helper.get('signature');\n  }}";
+
+        string GenerateNClassWrapper(
+            string functionName,
+            string targetClass) =>
+            $"  function {functionName}(input) {{\n    let url = input;\n    if (typeof input !== 'string' || (!input.startsWith('http://') && !input.startsWith('https://'))) {{\n      url = 'https://www.youtube.com/videoplayback?n=' + encodeURIComponent(String(input));\n    }}\n    const helper = new {targetClass}(url, true);\n    return helper.get('n');\n  }}";
+        
         string GenerateWrapper(
             string functionName,
             string targetFunction,
             string args) =>
-            $"    function {functionName}(input) {{\n        return {targetFunction}({args});\n    }}";
+            $"  function {functionName}(input) {{\n    return {targetFunction}({args});\n  }}";
 
         string ParseFunctionArguments(
             JsAnalyzer analyzer,
@@ -237,7 +248,6 @@ internal static class Extensions
         {
             List<string> parameters = [];
             foreach (Node arg in args)
-            {
                 switch (arg)
                 {
                     case Identifier id when analyzer.DeclaredVariables.ContainsKey(id.Name):
@@ -253,7 +263,6 @@ internal static class Extensions
                             parameters.Add("input");
                         break;
                 }
-            }
 
             return string.Join(", ", parameters);
         }
@@ -265,11 +274,114 @@ internal static class Extensions
                 return GenerateWrapper(name, callExprCalleeId.Name, callExprArgs);
 
             case VariableDeclarator variableDecl when variableDecl.Init is FunctionExpression functionExpr && variableDecl.Id is Identifier variableDeclId:
+                if (LooksLikeSignatureHelper(functionExpr))
+                    return GenerateSignatureWrapper(name, variableDeclId.Name);
+
                 string variableDeclArgs = ParseFunctionArguments(analyzer, functionExpr.Params);
                 return GenerateWrapper(name, variableDeclId.Name, variableDeclArgs);
 
-            default:
-                return null;
+            // holy shit. why did you hard code that nFunction name chadacious ????? then why even bother letting the extractor choose the name??
+            case ExpressionStatement exprStmt when name == "nFunction" && exprStmt.Expression is AssignmentExpression assignExpr && assignExpr.Operator == Operator.Assignment && assignExpr.Right is FunctionExpression:
+                string? targetName = MemberToString(assignExpr.Left, analyzer.Source);
+                if (targetName is not null && targetName.StartsWith("g."))
+                    return GenerateNClassWrapper(name, targetName);
+
+                break;
         }
+
+        return null;
     }
+
+    public static bool IsTruthyBooleanNode(
+        this Node? node)
+    {
+        return (node is Literal literal && literal.Value is bool b && b) ||
+               (node is UnaryExpression unary && unary.Operator == Operator.LogicalNot && unary.Argument is Literal innerLiteral && Convert.ToInt32(innerLiteral.Value) == 0);
+    }
+
+    public static bool LooksLikeSignatureHelper(
+        this FunctionExpression node)
+    {
+        if (node.Params.Count != 3 || node.Body is null)
+            return false;
+
+        Identifier? helperName = node.Params[0] as Identifier;
+        Identifier? signatureParam = node.Params[1] as Identifier;
+        if (helperName is null || signatureParam is null)
+            return false;
+
+        bool hasUrlHelperConstructor = false;
+        bool hasAlrSet = false;
+        bool hasSignatureWrite = false;
+        bool returnsHelper = false;
+
+        AstWalker.Walk(node.Body, (innerNode, parent, ancestors) =>
+        {
+            switch (innerNode)
+            {
+                case NewExpression newExpr when newExpr.Callee is MemberExpression memberCallee && newExpr.Arguments.Count >= 2 && newExpr.Arguments[0] is Identifier arg0 && arg0.Name == helperName.Name && IsTruthyBooleanNode(newExpr.Arguments[1]):
+                    string? calleeName = MemberToString(memberCallee, "");
+                    hasUrlHelperConstructor |= calleeName != null && calleeName.StartsWith("g.");
+
+                    break;
+
+                case CallExpression callExpr when callExpr.Callee is MemberExpression memberCall && memberCall.Object is Identifier objId && objId.Name == helperName.Name:
+                    if (callExpr.Arguments.Count >= 2 &&
+                        callExpr.Arguments[0] is Literal arg0Lit &&
+                        arg0Lit.Value?.ToString() == "alr" &&
+                        callExpr.Arguments[1] is Literal arg1Lit &&
+                        arg1Lit.Value?.ToString() == "yes")
+                        hasAlrSet = true;
+                    else if (callExpr.Arguments.Count >= 2 &&
+                        callExpr.Arguments[0] is Identifier arg0Id &&
+                        arg0Id.Name == signatureParam.Name)
+                        hasSignatureWrite = true;
+
+                    break;
+
+                case ReturnStatement retStmt when retStmt.Argument is Identifier retId && retId.Name == helperName.Name:
+                    returnsHelper = true;
+
+                    break;
+            }
+
+            return AstWalker.NORMAL;
+        });
+
+        return hasUrlHelperConstructor && hasAlrSet && hasSignatureWrite && returnsHelper;
+    }
+
+    public static string? GetUrlHelperClassName(
+        this FunctionExpression node)
+    {
+        if (node.Body is null)
+            return null;
+
+        if (node.Params[0] is not Identifier helperName)
+            return null;
+
+        string? className = null;
+        AstWalker.Walk(node.Body, (innerNode, parent, ancestors) =>
+        {
+            if (innerNode is NewExpression newExpr &&
+                newExpr.Callee is MemberExpression memberCallee &&
+                newExpr.Arguments.Count >= 2 &&
+                newExpr.Arguments[0] is Identifier arg0 &&
+                arg0.Name == helperName.Name &&
+                IsTruthyBooleanNode(newExpr.Arguments[1]))
+            {
+                string? calleeName = MemberToString(memberCallee, "");
+                if (calleeName?.StartsWith("g.") == true)
+                {
+                    className = calleeName;
+                    return AstWalker.STOP;
+                }
+            }
+
+            return AstWalker.NORMAL;
+        });
+
+        return className;
+    }
+
 }

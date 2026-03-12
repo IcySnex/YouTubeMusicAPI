@@ -15,13 +15,13 @@ internal abstract class TestData
     /// <summary>
     /// Test visitor data for requests
     /// </summary>
-    public const string? VisitorData = "";
+    public const string? VisitorData = null;
 
     /// <summary>
     /// Test po token for requests
     /// </summary>
-    public const string? PoToken = "";
-        
+    public const string? PoToken = null;
+
     /// <summary>
     /// Test cookies for authentication
     /// </summary>
@@ -29,8 +29,8 @@ internal abstract class TestData
     {
         get
         {
-            string? cookies = "";
-                
+            string? cookies = null;
+
             return cookies?
                 .Split(';')
                 .Select(cookieString =>
@@ -44,7 +44,7 @@ internal abstract class TestData
     /// <summary>
     /// Test Player Id for streaming
     /// </summary>
-    public static string? PlayerId = "267b6435";
+    public static string? PlayerId = null;
     
 
     /// <summary>

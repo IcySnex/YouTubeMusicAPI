@@ -5,6 +5,7 @@ namespace YouTubeMusicAPI.Internal.JavaScript;
 internal class VariableMetadata(
     string name,
     Node? node,
+    Node? emitNode,
     HashSet<string> dependencies,
     HashSet<string> dependents,
     bool isPredeclared)
@@ -12,6 +13,8 @@ internal class VariableMetadata(
     public string Name { get; set; } = name;
 
     public Node? Node { get; set; } = node;
+
+    public Node? EmitNode { get; set; } = emitNode;
 
     public HashSet<string> Dependencies { get; set; } = dependencies;
 

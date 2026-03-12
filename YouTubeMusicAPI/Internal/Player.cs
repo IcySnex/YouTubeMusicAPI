@@ -39,30 +39,30 @@ internal class Player(
         {
             string url = "https://www.youtube.com" + "/iframe_api";
             string js = await requestHelper.GetAndValidateAsync(url, null, cancellationToken);
-        
+
             playerId = js.GetStringBetween(@"player\/", @"\/") ?? throw new("Failed to get player id");
         }
-        
+
         string playerUrl = "https://www.youtube.com" + $"/s/player/{playerId}/player_ias.vflset/en_US/base.js";
         string playerJs = await requestHelper.GetAndValidateAsync(playerUrl, null, cancellationToken);
 
         JsAnalyzer analyzer = new(playerJs,
             [
-                new("decipherSignature", JsMatchers.Signature, true),
-                new("decipherNSignature", JsMatchers.NSignature, true),
-                new("signatureTimestamp", JsMatchers.SignatureTimestamp, false)
+                new("sigFunction", JsMatchers.Signature, true),
+                new("nFunction", JsMatchers.NSignature, true),
+                new("signatureTimestampVar", JsMatchers.SignatureTimestamp, false)
             ]);
 
-        JsExtractor extractor = new(analyzer, skipEmitFor: ["signatureTimestamp"]);
+        JsExtractor extractor = new(analyzer, isStrictMode: false, skipEmitFor: ["signatureTimestampVar"]);
         JsExtractor.Result result = extractor.BuildScript();
 
-        if (!result.Exported.Contains("decipherSignature"))
+        if (!result.Exported.Contains("sigFunction"))
             throw new Exception("Failed to extract signature deciphering function");
 
-        if (!result.Exported.Contains("decipherNSignature"))
+        if (!result.Exported.Contains("nFunction"))
             throw new Exception("Failed to extract n-signature deciphering function");
 
-        int signatureTimestamp = result.ExportedRawValues.TryGetValue("signatureTimestamp", out object? rawSignatureTimestamp)
+        int signatureTimestamp = result.ExportedRawValues.TryGetValue("signatureTimestampVar", out object? rawSignatureTimestamp)
             ? Convert.ToInt32(rawSignatureTimestamp)
             : throw new Exception("Failed to extract signature timestamp");
 
@@ -103,12 +103,12 @@ internal class Player(
         // Signatures
         if (sig is not null)
         {
-            string decipheredSig = jsEngine.Value.Evaluate($"exportedVars.decipherSignature('{sig}');").AsString();
+            string decipheredSig = jsEngine.Value.Evaluate($"exportedVars.sigFunction('{sig}');").AsString();
             urlQuery[sp] = decipheredSig;
         }
         if (nsig is not null)
         {
-            string decipheredNSig = jsEngine.Value.Evaluate($"exportedVars.decipherNSignature('{nsig}');").AsString();
+            string decipheredNSig = jsEngine.Value.Evaluate($"exportedVars.nFunction('{nsig}');").AsString();
             urlQuery["n"] = decipheredNSig;
         }
 

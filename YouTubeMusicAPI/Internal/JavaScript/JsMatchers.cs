@@ -1,5 +1,4 @@
-﻿using Acornima;
-using Acornima.Ast;
+﻿using Acornima.Ast;
 
 namespace YouTubeMusicAPI.Internal.JavaScript;
 
@@ -12,31 +11,11 @@ internal static class JsMatchers
     public static Node? Signature(
         Node node)
     {
-        if (node is not VariableDeclarator variableDecl ||
-            variableDecl.Init is not FunctionExpression functionExpr ||
-            functionExpr.Body is not BlockStatement blockStmt)
-            return null;
-
-        foreach (Statement statement in blockStmt.Body)
-        {
-            if (statement is not ExpressionStatement expressionStmt ||
-                expressionStmt.Expression is not LogicalExpression logicalExpr ||
-                logicalExpr.Operator != Operator.LogicalAnd ||
-                logicalExpr.Left is not Identifier ||
-                logicalExpr.Right is not SequenceExpression sequenceExpr ||
-                sequenceExpr.Expressions.FirstOrDefault() is not AssignmentExpression assignmentExpr ||
-                assignmentExpr.Operator != Operator.Assignment ||
-                assignmentExpr.Left is not Identifier ||
-                assignmentExpr.Right is not CallExpression callExpr ||
-                callExpr.Callee is not Identifier ||
-                callExpr.Arguments.FirstOrDefault(exp => exp is CallExpression) is not CallExpression innerCallExpr ||
-                innerCallExpr.Callee is not Identifier identifier ||
-                identifier.Name != "decodeURIComponent" ||
-                innerCallExpr.Arguments.FirstOrDefault() is not Identifier)
-                continue;
-
-            return callExpr;
-        }
+        if (node is VariableDeclarator variableDecl &&
+            variableDecl.Id is Identifier &&
+            variableDecl.Init is FunctionExpression functionExpr &&
+            functionExpr.LooksLikeSignatureHelper())
+            return node;
 
         return null;
     }
@@ -44,12 +23,28 @@ internal static class JsMatchers
     public static Node? NSignature(
         Node node)
     {
-        if (node is not VariableDeclarator variableDecr ||
-            variableDecr.Init is not ArrayExpression arrayExpr ||
-            arrayExpr.Elements.FirstOrDefault() is not Identifier identifier)
+        if (node is not VariableDeclarator variableDecl)
             return null;
 
-        return identifier;
+        if (variableDecl.Id is Identifier identifier1 &&
+            variableDecl.Init is FunctionExpression functionExpr &&
+            functionExpr.LooksLikeSignatureHelper())
+        {
+            string? className = functionExpr.GetUrlHelperClassName();
+            if (className is not null)
+                return new Identifier(className)
+                {
+                    Location = identifier1.Location,
+                    Range = identifier1.Range
+                };
+        }
+
+        if (variableDecl.Init is ArrayExpression arrayExpr &&
+            arrayExpr.Elements.Count > 0 &&
+            arrayExpr.Elements[0] is Identifier firstArrayElement)
+            return firstArrayElement;
+
+        return null;
     }
 
     public static Node? SignatureTimestamp(

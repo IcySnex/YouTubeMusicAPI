@@ -1,5 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
+using Jint.Runtime;
 using Newtonsoft.Json;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,7 +12,7 @@ internal class JsExtractor(
     int maxDepth = int.MaxValue,
     bool forceVarPredeclaration = false,
     bool isStrictMode = true, // aka disallowSideEffectInitializers
-    string[]? skipEmitFor = null) // aka disallowSideEffectInitializers
+    string[]? skipEmitFor = null)
 {
     public class Result(
         string output,
@@ -204,6 +205,9 @@ internal class JsExtractor(
         Node? node,
         bool isPreDeclared)
     {
+        if (node is ForStatement forStmt)
+            return $"  {forStmt.ExtractNodeSource(analyzer.Source)?.Trim()}";
+
         AssignmentExpression? assignmentTarget = node is AssignmentExpression assignmentExpr
             ? assignmentExpr
             : node is ExpressionStatement expressionStmt && expressionStmt.Expression is AssignmentExpression innerAssignmentExpr
@@ -215,7 +219,7 @@ internal class JsExtractor(
             : node is VariableDeclarator innerVariableDecl
                 ? innerVariableDecl.Init
                 : null;
-        bool forceRemove = init is not null && !IsSafeInitializer(init);
+        bool forceRemove = isStrictMode && init is not null && !IsSafeInitializer(init);
         string initializerFallback = GetInitializerFallback(init);
 
         string initSource = initializerFallback;
@@ -226,11 +230,12 @@ internal class JsExtractor(
             {
                 if (assignmentTarget?.Left is MemberExpression memberExpr && init is not null)
                 {
-                    if (memberExpr.Object is Identifier &&
+                    if (isStrictMode &&
+                        memberExpr.Object is Identifier &&
                         init is not FunctionExpression &&
                         init is not ArrowFunctionExpression &&
                         init is not LogicalExpression)
-                        return $"   // Skipped {memberExpr.MemberToString(analyzer.Source)} assignment.";
+                        return $"  // Skipped {memberExpr.MemberToString(analyzer.Source)} assignment.";
                 }
 
                 initSource = init?.ExtractNodeSource(analyzer.Source) is string s
@@ -257,9 +262,9 @@ internal class JsExtractor(
         string assignmentExpression = $"{idName} = {initSource};";
 
         if (node is VariableDeclarator thirdsTimesTheCharmVariableDecl && thirdsTimesTheCharmVariableDecl.Init is not null && !isPreDeclared)
-            return $"   var {assignmentExpression}";
+            return $"  var {assignmentExpression}";
 
-        return $"   {assignmentExpression}";
+        return $"  {assignmentExpression}";
     }
 
 
@@ -267,6 +272,8 @@ internal class JsExtractor(
     {
         IEnumerable<ExtractionState> extractions = analyzer.ExtractionStates;
         HashSet<string> seen = [.. extractions.Select(state => state.Metadata?.Name ?? "")];
+        HashSet<Node> emittedNodes = [];
+        HashSet<string> expandedMemberFamilies = [];
 
         List<string> snippsets = [];
         HashSet<string> predeclaredVarSet = [];
@@ -280,6 +287,76 @@ internal class JsExtractor(
                 return;
 
             predeclaredVarSet.Add(name);
+        }
+
+        void EmitMetadataNode(
+            VariableMetadata metadata,
+            bool isPreDeclared)
+        {
+            Node? node = metadata.EmitNode ?? metadata.Node;
+            if (node is null || emittedNodes.Contains(node))
+                return;
+
+            emittedNodes.Add(node);
+            snippsets.Add(RenderNode(node, isPreDeclared));
+        }
+
+        void EmitPrototypeAliasAssignments(
+            string? baseName,
+            int depth = 0)
+        {
+            if (baseName is null || depth > MaxDepth)
+                return;
+
+            if (!analyzer.PrototypeAliasAssignments.TryGetValue(baseName, out HashSet<VariableMetadata> aliasAssignments))
+                return;
+
+            foreach (VariableMetadata aliasMetadata in aliasAssignments)
+            {
+                if (seen.Contains(aliasMetadata.Name))
+                    continue;
+
+                seen.Add(aliasMetadata.Name);
+
+                Visit(aliasMetadata, depth + 1);
+                EmitMetadataNode(aliasMetadata, false);
+            }
+        }
+
+        void IncludeRelatedMemberAssignments(
+            string? baseName,
+            int depth = 0)
+        {
+            if (baseName is null || depth > MaxDepth)
+                return;
+
+            if (expandedMemberFamilies.Contains(baseName))
+                return;
+
+            expandedMemberFamilies.Add(baseName);
+
+            if (!analyzer.RelatedMemberAssignments.TryGetValue(baseName, out HashSet<VariableMetadata>? relatedAssignments))
+            {
+                EmitPrototypeAliasAssignments(baseName, depth);
+                return;
+            }
+
+            foreach (VariableMetadata declareMetadata in relatedAssignments)
+            {
+                if (declareMetadata.Name == baseName || seen.Contains(declareMetadata.Name))
+                    continue;
+
+                seen.Add(declareMetadata.Name);
+
+                bool shouldPredeclare = forceVarPredeclaration || declareMetadata.IsPredeclared;
+                if (shouldPredeclare)
+                    RegisterPredeclaredVar(declareMetadata.Name);
+
+                Visit(declareMetadata, depth + 1);
+                EmitMetadataNode(declareMetadata, shouldPredeclare);
+            }
+
+            EmitPrototypeAliasAssignments(baseName, depth);
         }
 
         void Visit(
@@ -301,12 +378,12 @@ internal class JsExtractor(
 
                 bool shouldPredeclare = forceVarPredeclaration || dependencyMetadata.IsPredeclared;
                 if (shouldPredeclare)
-                    RegisterPredeclaredVar(dependencyMetadata.Name);
+                    RegisterPredeclaredVar(dependency);
 
-                if (!dependency.Contains('.'))
-                    Visit(dependencyMetadata, depth + 1);
+                Visit(dependencyMetadata, depth + 1);
 
-                snippsets.Add(RenderNode(dependencyMetadata.Node, shouldPredeclare));
+                EmitMetadataNode(dependencyMetadata, shouldPredeclare);
+                IncludeRelatedMemberAssignments(dependencyMetadata.Name, depth + 1);
             }
         }
 
@@ -318,7 +395,7 @@ internal class JsExtractor(
             if (extraction.Metadata is not null)
             {
                 if (!shouldSkip)
-                    snippsets.Add($"    //#region --- start [{name}] ---");
+                    snippsets.Add($"  //#region --- start [{name}] ---");
 
                 bool shouldPredeclare = (forceVarPredeclaration || extraction.Metadata.IsPredeclared) && !shouldSkip;
                 if (shouldPredeclare)
@@ -344,7 +421,12 @@ internal class JsExtractor(
                 }
 
                 if (!shouldSkip)
-                    snippsets.Add($"    //#endregion --- end [{name}] ---\n");
+                {
+                    EmitMetadataNode(extraction.Metadata, shouldPredeclare);
+                    IncludeRelatedMemberAssignments(extraction.Metadata.Name, 1);
+
+                    snippsets.Add($"  //#endregion --- end [{name}] ---\n");
+                }
             }
         }
 
@@ -357,7 +439,7 @@ internal class JsExtractor(
 
         output.AppendLine($"const exportedVars = (function({analyzer.LifeParamName}) {{");
         if (predeclaredVarSet.Count > 0)
-            output.AppendLine($"    var {string.Join(", ", predeclaredVarSet)};\n");
+            output.AppendLine($"  var {string.Join(", ", predeclaredVarSet)};\n");
 
         output.AppendLine(string.Join("\n", snippsets));
 
@@ -368,10 +450,45 @@ internal class JsExtractor(
 
             if (export.Value is Identifier identifier)
             {
-                if (analyzer.DeclaredVariables.TryGetValue(identifier.Name, out VariableMetadata? metadata) &&
-                    metadata.Node is VariableDeclarator variableDecl &&
+                if (!analyzer.DeclaredVariables.TryGetValue(identifier.Name, out VariableMetadata metadata))
+                    continue;
+
+                if (metadata.Node is VariableDeclarator variableDecl &&
                     variableDecl.Init is FunctionExpression)
                     currentFunctionNode = metadata.Node;
+                else if (metadata.EmitNode is ExpressionStatement expressionStmt &&
+                    expressionStmt.Expression is AssignmentExpression assignmentExpr &&
+                    assignmentExpr.Right is FunctionExpression)
+                    currentFunctionNode = metadata.EmitNode;
+            }
+            else if (export.Value is VariableDeclarator variableNode && variableNode.Id is Identifier variableId)
+            {
+                if (variableNode.Init is FunctionExpression)
+                    currentFunctionNode = variableNode;
+                else if (analyzer.DeclaredVariables.TryGetValue(variableId.Name, out VariableMetadata metadata))
+                {
+                    if (metadata.EmitNode is ExpressionStatement expressionStmt &&
+                        expressionStmt.Expression is AssignmentExpression assignmentExpr &&
+                        assignmentExpr.Right is FunctionExpression)
+                        currentFunctionNode = metadata.EmitNode;
+                }
+            }
+            else if (export.Value is MemberExpression memberNode)
+            {
+                string? memberName = memberNode.MemberToString(analyzer.Source);
+                if (memberName is not null && analyzer.DeclaredVariables.TryGetValue(memberName, out VariableMetadata metadata))
+                {
+                    if (metadata.Node is ExpressionStatement expressionStmt &&
+                        expressionStmt.Expression is AssignmentExpression assignmentExpr &&
+                        assignmentExpr.Right is FunctionExpression)
+                        currentFunctionNode = metadata.Node;
+                }
+            }
+            else if (export.Value is ExpressionStatement expressionStmtNode &&
+                     expressionStmtNode.Expression is AssignmentExpression assignmentExprNode &&
+                     assignmentExprNode.Right is FunctionExpression)
+            {
+                currentFunctionNode = export.Value;
             }
             else if (export.Value is CallExpression)
             {
@@ -391,13 +508,13 @@ internal class JsExtractor(
         string[] rawJsonLines = rawJson.Split('\n');
 
         string formattedRawJson = rawJsonLines.Length > 0
-            ? $"{rawJsonLines[0]}\n{string.Join("\n", rawJsonLines.Skip(1).Select(line => $"    {line}"))}"
+            ? $"{rawJsonLines[0]}\n{string.Join("\n", rawJsonLines.Skip(1).Select(line => $"  {line}"))}"
             : rawJson;
 
-        output.AppendLine($"    const rawValues = {formattedRawJson};\n");
+        output.AppendLine($"  const rawValues = {formattedRawJson};\n");
         exportedVars.Add("rawValues");
 
-        output.AppendLine($"    return {{ {string.Join(", ", exportedVars)} }};");
+        output.AppendLine($"  return {{ {string.Join(", ", exportedVars)} }};");
         output.AppendLine("})({});\n");
 
         return new(

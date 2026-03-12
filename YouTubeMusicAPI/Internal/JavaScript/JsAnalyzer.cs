@@ -60,6 +60,56 @@ internal class JsAnalyzer
 
     void AnalyzeAst()
     {
+        Dictionary<string, string> prototypeAliases = [];
+        int prototypeAliasCounter = 0;
+
+        void RegisterRelatedMemberAssignment(
+            string memberName,
+            VariableMetadata metadata)
+        {
+            HashSet<string> baseNames = [];
+
+            int prototypeIndex = memberName.IndexOf(".prototype.");
+            if (prototypeIndex != -1)
+                baseNames.Add(memberName.Substring(0, prototypeIndex));
+
+            int computedIndex = memberName.IndexOf("[");
+            if (computedIndex != -1)
+                baseNames.Add(memberName.Substring(0, computedIndex));
+
+            foreach (string baseName in baseNames)
+            {
+                if (RelatedMemberAssignments.TryGetValue(baseName, out HashSet<VariableMetadata> existing))
+                    existing.Add(metadata);
+                else
+                    RelatedMemberAssignments[baseName] = [metadata];
+            }
+        }
+
+        void RegisterPrototypeAliasAssignment(
+            string baseName,
+            Node node,
+            Node right,
+            string syntheticHint)
+        {
+            string syntheticName = $"[[proto:{baseName}:{syntheticHint}:{prototypeAliasCounter++}]]";
+
+            VariableMetadata metadata = new(
+                syntheticName,
+                node,
+                null,
+                FindDependencies(right, syntheticName),
+                [],
+                false);
+            metadata.Dependencies.Add(baseName);
+
+            if (PrototypeAliasAssignments.TryGetValue(baseName, out HashSet<VariableMetadata> existing))
+                existing.Add(metadata);
+            else
+                PrototypeAliasAssignments[baseName] = [metadata];
+        }
+
+
         BlockStatement? lifeBody = null;
         foreach (Statement statement in ast.Body)
         {
@@ -83,46 +133,24 @@ internal class JsAnalyzer
         if (lifeBody is null)
             return;
 
-        foreach (Node currentNode in lifeBody.Body)
+        AstWalker.Walk(lifeBody, (currentNode, parent, ancestors) =>
         {
+            if (currentNode != lifeBody && (currentNode is FunctionDeclaration || currentNode is FunctionExpression || currentNode is ArrowFunctionExpression))
+                return AstWalker.SKIP;
+
+
             switch (currentNode)
             {
-                case VariableDeclaration variableDecl:
-                    foreach (VariableDeclarator declaration in variableDecl.Declarations)
-                    {
-                        if (declaration.Id is not Identifier declerationId)
-                            continue;
-
-                        VariableMetadata metadata = new(
-                            declerationId.Name,
-                            declaration,
-                            DependentsTracker.TryGetValue(declerationId.Name, out HashSet<string> dependents) ? dependents : [],
-                            [],
-                            false);
-
-                        Expression? init = declaration.Init;
-
-                        if (init is null && variableDecl.Kind == VariableDeclarationKind.Var)
-                            metadata.IsPredeclared = true;
-                        else if (init is not null && NeedsDependencyAnalysis(init))
-                            metadata.Dependencies = FindDependencies(init, metadata.Name);
-
-                        DependentsTracker.Remove(metadata.Name);
-                        DeclaredVariables.Add(metadata.Name, metadata);
-
-                        if (TryMatch(declaration, metadata))
-                            return;
-                    }
-                    break;
-
                 case ExpressionStatement expressionStmt:
                     if (expressionStmt.Expression is not AssignmentExpression assignmentExpr)
-                        continue;
+                        break;
+
+                    var right = assignmentExpr.Right;
 
                     if (assignmentExpr.Left is Identifier leftId)
                     {
                         if (!DeclaredVariables.TryGetValue(leftId.Name, out VariableMetadata existingVariable))
-                            continue;
+                            break;
 
                         // holy shit, luan wtf did u do here?? this a hack frfr
                         // why u manually overwriting the init; breaks the entire node code lookup
@@ -141,39 +169,90 @@ internal class JsAnalyzer
                             //};
                         }
 
-                        if (NeedsDependencyAnalysis(assignmentExpr.Right))
-                            existingVariable.Dependencies = FindDependencies(assignmentExpr.Right, leftId.Name);
+                        if (NeedsDependencyAnalysis(right))
+                            existingVariable.Dependencies = FindDependencies(right, leftId.Name);
 
                         if (existingVariable.Node is not null && TryMatch(existingVariable.Node, existingVariable))
-                            return;
+                            return AstWalker.STOP;
                     }
                     else if (assignmentExpr.Left is MemberExpression memberExpr)
                     {
                         string? memberName = memberExpr.MemberToString(Source);
+                        if (memberName is null)
+                            break;
 
-                        if (memberName is null || DeclaredVariables.ContainsKey(memberName))
-                            continue;
+                        string? rightMemberName = right is MemberExpression rm ? rm.MemberToString(Source) : null;
 
-                        VariableMetadata metadata = new(
+                        // Handle prototype aliases
+                        if (rightMemberName?.EndsWith(".prototype") == true)
+                        {
+                            string baseName = rightMemberName.Substring(0, rightMemberName.Length - ".prototype".Length);
+                            prototypeAliases[memberName] = baseName;
+
+                            RegisterPrototypeAliasAssignment(baseName, currentNode, right, memberName);
+                        }
+                        else
+                        {
+                            string? aliasObjectName = memberExpr.MemberBaseName(Source);
+
+                            if (aliasObjectName is not null && prototypeAliases.TryGetValue(aliasObjectName, out string protoBase))
+                                RegisterPrototypeAliasAssignment(protoBase, currentNode, right, memberName);
+                        }
+
+                        VariableMetadata metadata = DeclaredVariables.TryGetValue(memberName, out VariableMetadata exisiting) ? exisiting : new(
                             memberName,
                             currentNode,
-                            FindDependencies(assignmentExpr.Right, memberName),
+                            currentNode,
+                            [],
                             DependentsTracker.TryGetValue(memberName, out HashSet<string> dependents) ? dependents : [],
                             false);
+                        metadata.Node = currentNode;
+                        metadata.EmitNode = currentNode;
+                        metadata.Dependencies = FindDependencies(right, memberName);
+                        metadata.IsPredeclared = false;
 
-                        string? baseName = memberExpr.MemberBaseName(Source);
-                        if (baseName is not null && baseName != memberName && !baseName.StartsWith("this."))
-                            metadata.Dependencies.Add(baseName.Replace(".prototype", ""));
+                        string? baseName2 = memberExpr.MemberBaseName(Source);
+                        if (baseName2 is not null && baseName2 != memberName && !baseName2.StartsWith("this."))
+                            metadata.Dependencies.Add(baseName2.Replace(".prototype", ""));
 
                         DependentsTracker.Remove(memberName);
-                        DeclaredVariables.Add(memberName, metadata);
+                        DeclaredVariables[memberName] = metadata;
+                        RegisterRelatedMemberAssignment(memberName, metadata);
 
                         if (TryMatch(currentNode, metadata))
-                            return;
+                            return AstWalker.STOP;
+                    }
+                    break;
+
+                case VariableDeclaration variableDecl:
+                    foreach (var declaration in variableDecl.Declarations)
+                    {
+                        if (declaration.Id is not Identifier declId) continue;
+
+                        var metadata = new VariableMetadata(
+                            declId.Name,
+                            declaration,
+                            parent is ForStatement fs && fs.Init == variableDecl ? parent : declaration,
+                            [],
+                            DependentsTracker.TryGetValue(declId.Name, out HashSet<string> dependents) ? dependents : [],
+                            false);
+
+                        if (declaration.Init is null && variableDecl.Kind == VariableDeclarationKind.Var)
+                            metadata.IsPredeclared = true;
+                        else if (declaration.Init is not null && NeedsDependencyAnalysis(declaration.Init))
+                            metadata.Dependencies = FindDependencies(declaration.Init, metadata.Name);
+
+                        DependentsTracker.Remove(metadata.Name);
+                        DeclaredVariables[metadata.Name] = metadata;
+
+                        if (TryMatch(declaration, metadata))
+                            return AstWalker.STOP;
                     }
                     break;
             }
-        }
+
+            return AstWalker.NORMAL;
+        });
     }
 
 
@@ -181,6 +260,8 @@ internal class JsAnalyzer
     public string? LifeParamName { get; private set; } = null;
 
     public Dictionary<string, VariableMetadata> DeclaredVariables { get; } = [];
+    public Dictionary<string, HashSet<VariableMetadata>> PrototypeAliasAssignments { get; } = [];
+    public Dictionary<string, HashSet<VariableMetadata>> RelatedMemberAssignments { get; } = [];
     public Dictionary<string, HashSet<string>> DependentsTracker { get; } = [];
 
     public IEnumerable<ExtractionState> ExtractionStates => extractionStates.Where(state => state.Node is not null);

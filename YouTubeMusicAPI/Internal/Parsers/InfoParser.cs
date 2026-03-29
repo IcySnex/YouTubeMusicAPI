@@ -31,7 +31,7 @@ internal static class InfoParser
         string? albumId = albumIndex > -1 ? nextItem.SelectObjectOptional<string>($"longBylineText.runs[{albumIndex}].navigationEndpoint.browseEndpoint.browseId") : null;
 
         bool isPlayable = playerJsonToken.SelectObject<string>("playabilityStatus.status") == "OK";
-        bool isLive = playerJsonToken.SelectObject<bool>("videoDetails.isLiveContent");
+        bool isLive = playerJsonToken.SelectObjectOptional<bool?>("videoDetails.isLiveContent") ?? false;
 
         return new(
             name: playerJsonToken.SelectObject<string>("videoDetails.title"),

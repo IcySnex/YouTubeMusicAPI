@@ -134,15 +134,17 @@ internal static class SearchParser
     {
         JToken[] runs = jsonToken.SelectObject<JToken[]>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs");
 
-        NamedEntity[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", 2, runs.Length == 3 ? 0 : 1);
-        int albumIndex = artists[0].Id is null ? 4 : artists.Length * 2 + 2;
+        bool nopeDuration = runs[0].SelectObject<string>("text") == "Video";
+        
+        NamedEntity[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", nopeDuration ? 2 : 0, nopeDuration ? 2 : 4);
+        int viewsIndex = (nopeDuration ? 2 : 0) + artists.Length * 2;
 
         return new(
             name: jsonToken.SelectObject<string>("flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text"),
             id: jsonToken.SelectObject<string>("overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId"),
             artists: artists,
-            duration: jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex + 2}].text") is string durationText ? durationText.ToTimeSpan() : TimeSpan.Zero,
-            viewsInfo: jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{albumIndex}].text") ?? "0 views",
+            duration: jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{viewsIndex + 2}].text") is string durationText ? durationText.ToTimeSpan() : TimeSpan.Zero,
+            viewsInfo: jsonToken.SelectObjectOptional<string>($"flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs[{viewsIndex}].text") ?? "0 views",
             radio: runs.Length == 3 ? jsonToken.SelectRadioOptional("menu.menuRenderer.items[4].menuNavigationItemRenderer.navigationEndpoint.browseEndpoint.browseId", "menu.menuRenderer.items[0].menuNavigationItemRenderer.navigationEndpoint.watchEndpoint.videoId") : jsonToken.SelectRadio(),
             thumbnails: jsonToken.SelectThumbnails());
     }

@@ -33,10 +33,14 @@ internal static class InfoParser
         bool isPlayable = playerJsonToken.SelectObject<string>("playabilityStatus.status") == "OK";
         bool isLive = playerJsonToken.SelectObjectOptional<bool?>("videoDetails.isLiveContent") ?? false;
 
+        string browseId = nextTabContainer.SelectObjectOptional<string?>("[2].tabRenderer.endpoint.browseEndpoint.browseId")
+            ?? nextTabContainer.SelectObjectOptional<string?>("[1].tabRenderer.endpoint.browseEndpoint.browseId")
+            ?? nextTabContainer.SelectObject<string>("[3].tabRenderer.endpoint.browseEndpoint.browseId");
+
         return new(
             name: playerJsonToken.SelectObject<string>("videoDetails.title"),
             id: playerJsonToken.SelectObject<string>("videoDetails.videoId"),
-            browseId: nextTabContainer.SelectObject<string>("[2].tabRenderer.endpoint.browseEndpoint.browseId"),
+            browseId: browseId,
             description: playerJsonToken.SelectObject<string>("microformat.microformatDataRenderer.description"),
             artists: nextItem.SelectArtists("longBylineText.runs", 0, runs.Length - albumIndex),
             album: albumId is not null ? new(nextItem.SelectObject<string>($"longBylineText.runs[{albumIndex}].text"), albumId) : null,

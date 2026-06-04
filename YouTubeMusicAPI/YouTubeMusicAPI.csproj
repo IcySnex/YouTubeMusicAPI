@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>3.0.8</Version>
-		<AssemblyVersion>3.0.8</AssemblyVersion>
-		<FileVersion>3.0.8</FileVersion>
+		<Version>3.0.9</Version>
+		<AssemblyVersion>3.0.9</AssemblyVersion>
+		<FileVersion>3.0.9</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -25,7 +25,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageReleaseNotes>
-			- Fixed parsing mixup for video search results
+			- Fixed parsing for getting song/video info
 			- Updated packages
 		</PackageReleaseNotes>
 	</PropertyGroup>
@@ -46,7 +46,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <PackageReference Include="Jint" Version="4.9.2" />
+	  <PackageReference Include="Jint" Version="4.9.3" />
 	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.8" />
 	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

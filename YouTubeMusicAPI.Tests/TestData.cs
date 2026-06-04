@@ -50,7 +50,7 @@ internal abstract class TestData
     /// <summary>
     /// Test query for search requests
     /// </summary>
-    public const string SearchQuery = "Pashanim";
+    public const string SearchQuery = "太極張三豐";
 
 
     /// <summary>

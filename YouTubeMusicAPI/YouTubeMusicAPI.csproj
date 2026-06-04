@@ -26,6 +26,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageReleaseNotes>
 			- Fixed parsing for getting song/video info
+			- Fixed parsing for video searches when it contains podcast episode
 			- Updated packages
 		</PackageReleaseNotes>
 	</PropertyGroup>

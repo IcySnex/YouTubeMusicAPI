@@ -134,7 +134,7 @@ internal static class SearchParser
     {
         JToken[] runs = jsonToken.SelectObject<JToken[]>("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs");
 
-        bool nopeDuration = runs[0].SelectObject<string>("text") == "Video";
+        bool nopeDuration = runs[0].SelectObject<string>("text") == "Video" || runs.Length == 3;
         
         NamedEntity[] artists = jsonToken.SelectArtists("flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs", nopeDuration ? 2 : 0, nopeDuration ? 2 : 4);
         int viewsIndex = (nopeDuration ? 2 : 0) + artists.Length * 2;

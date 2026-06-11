@@ -58,7 +58,7 @@ public sealed partial class AlbumService
     /// <returns>The browse ID of the album.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
-    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was canceled.</exception>
     public async Task<string> GetBrowseIdAsync(
         string id,
         CancellationToken cancellationToken = default)
@@ -132,7 +132,7 @@ public sealed partial class AlbumService
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The <see cref="AlbumRelations"/> containing the related content for the album.</returns>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
-    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was canceled.</exception>
     [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Preserve consistency with similar methods in the library")]
     public Task<AlbumRelations> GetRelationsAsync(
         AlbumInfo album,
@@ -143,5 +143,39 @@ public sealed partial class AlbumService
 
         AlbumRelations relations = album.Relations;
         return Task.FromResult(relations);
+    }
+
+    /// <summary>
+    /// Gets the albums of an artist
+    /// </summary>
+    /// <param name="browseId">The browse id of artist</param>
+    /// <param name="albumCategory">The album category</param>
+    /// <param name="sortingOrder">The sorting order of the returned albums</param>
+    /// <param name="cancellationToken">The token to cancel this task.</param>
+    /// <returns>A list of the <see cref="ArtistAlbum"/> containing the information</returns>
+    /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was canceled.</exception>
+    public async Task<ArtistAlbums> GetAllByArtist(
+        string browseId,
+        AlbumCategory albumCategory,
+        AlbumSortingOrder sortingOrder,
+        CancellationToken cancellationToken = default)
+    {
+        Ensure.NotNullOrEmpty(browseId, nameof(browseId));
+        
+        KeyValuePair<string, object?>[] payload =
+        [
+            new("browseId", browseId),
+        ];
+        
+        string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
+        const string methodName = $"{nameof(AlbumService)}-{nameof(GetAllByArtist)}";
+        // Parse response
+        client.Logger?.LogInformation($"[{methodName}] Parsing response...");
+        using IDisposable _ = response.ParseJson(out JElement root);
+
+        ArtistAlbums albums = ArtistAlbums.Parse(root, browseId, albumCategory, sortingOrder);
+
+        return albums;
     }
 }

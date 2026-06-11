@@ -106,9 +106,11 @@ public sealed partial class AlbumService
         Ensure.StartsWith(browseId, "MPRE", nameof(browseId));
 
         // Send request
+        const string paramsValue = "ggMIegYIARoCAQI%3D";
         KeyValuePair<string, object?>[] payload =
         [
             new("browseId", browseId),
+            new("params", paramsValue)
         ];
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);

@@ -106,11 +106,9 @@ public sealed partial class AlbumService
         Ensure.StartsWith(browseId, "MPRE", nameof(browseId));
 
         // Send request
-        const string paramsValue = "ggMIegYIARoCAQI%3D";
         KeyValuePair<string, object?>[] payload =
         [
-            new("browseId", browseId),
-            new("params", paramsValue)
+            new("browseId", browseId)
         ];
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
@@ -164,14 +162,16 @@ public sealed partial class AlbumService
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrEmpty(browseId, nameof(browseId));
-        
+
+        const string paramsValue = "ggMIegYIARoCAQI%3D";
         KeyValuePair<string, object?>[] payload =
         [
             new("browseId", browseId),
+            new("params", paramsValue)
         ];
         
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
-        const string methodName = $"{nameof(AlbumService)}-{nameof(GetAllByArtist)}";
+        const string methodName = $"{nameof(AlbumService)}-{nameof(GetAllByArtistAsync)}";
         // Parse response
         client.Logger?.LogInformation($"[{methodName}] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);

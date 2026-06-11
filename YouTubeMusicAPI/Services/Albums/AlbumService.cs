@@ -157,7 +157,7 @@ public sealed partial class AlbumService
     /// <returns>A list of the <see cref="ArtistAlbum"/> containing the information</returns>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
     /// <exception cref="OperationCanceledException">Occurs when this task was canceled.</exception>
-    public async Task<ArtistAlbums> GetAllByArtist(
+    public async Task<ArtistAlbums> GetAllByArtistAsync(
         string browseId,
         AlbumCategory albumCategory,
         AlbumSortingOrder sortingOrder,

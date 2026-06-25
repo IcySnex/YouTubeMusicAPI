@@ -149,7 +149,7 @@ public sealed partial class AlbumService
     /// Gets the albums of an artist
     /// </summary>
     /// <param name="browseId">The browse id of artist</param>
-    /// <param name="albumCategory">The album category</param>
+    /// <param name="params">The browse params, will decide whether to return albums or singles EPs</param>
     /// <param name="sortingOrder">The sorting order of the returned albums</param>
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>A list of the <see cref="ArtistAlbum"/> containing the information</returns>
@@ -157,27 +157,90 @@ public sealed partial class AlbumService
     /// <exception cref="OperationCanceledException">Occurs when this task was canceled.</exception>
     public async Task<ArtistAlbums> GetAllByArtistAsync(
         string browseId,
-        AlbumCategory albumCategory,
-        AlbumSortingOrder sortingOrder,
+        string @params,
+        AlbumSortingOrder sortingOrder = AlbumSortingOrder.Default,
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrEmpty(browseId, nameof(browseId));
 
-        const string paramsValue = "ggMIegYIARoCAQI%3D";
         KeyValuePair<string, object?>[] payload =
         [
             new("browseId", browseId),
-            new("params", paramsValue)
+            new("params", @params)
         ];
-        
-        string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
+
+        Task<string> MakeRequest() => 
+            client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
+
+        string response = await MakeRequest();
         const string methodName = $"{nameof(AlbumService)}-{nameof(GetAllByArtistAsync)}";
+        var logger = client.Logger;
         // Parse response
-        client.Logger?.LogInformation($"[{methodName}] Parsing response...");
+        logger?.LogInformation($"[{methodName}] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        ArtistAlbums albums = ArtistAlbums.Parse(root, browseId, albumCategory, sortingOrder);
+        ArtistAlbums Parse() =>
+            ArtistAlbums.Parse(root, browseId, sortingOrder);
 
-        return albums;
+        if (sortingOrder is AlbumSortingOrder.Default)
+        {
+            return Parse();
+        }
+
+        string? continuationToken = null;
+        var sortingOptions = root.Get("contents")
+            .Get("singleColumnBrowseResultsRenderer")
+            .Get("tabs")
+            .GetAt(0)
+            .Get("tabRenderer")
+            .Get("content")
+            .Get("sectionListRenderer")
+            .Get("header")
+            .Get("musicSideAlignedItemRenderer")
+            .Get("endItems")
+            .GetAt(0)
+            .Get("musicSortFilterButtonRenderer")
+            .Get("menu")
+            .GetMultiSelectMenu()
+            .Get("options")
+            .AsArray()
+            .Or(JArray.Empty);
+
+        var sortingOrderString = sortingOrder.ToString().ToLower();
+            
+        foreach (var option in sortingOptions)
+        {
+            var optionText = option.Get("musicMultiSelectMenuItemRenderer")
+                .Get("title").GetFirstRun().GetText()
+                .AsString()
+                .OrThrow();
+            if (optionText.Equals(sortingOrderString, StringComparison.InvariantCultureIgnoreCase))
+            {
+                continuationToken = option
+                    .GetMultiSelectMenuItem()
+                    .Get("selectedCommand")
+                    .Get("commandExecutorCommand")
+                    .Get("commands")
+                    .AsArray().OrThrow()
+                    .Last()
+                    .Get("browseSectionListReloadEndpoint")
+                    .Get("continuation")
+                    .Get("reloadContinuationData")
+                    .Get("continuation")
+                    .AsString();
+                break;
+            }
+        }
+
+        if (continuationToken is null)
+        {
+            return Parse();
+        }
+
+        logger?.LogInformation($"[{methodName}] Resending response to get sorted results...");
+        payload = [new("continuation", continuationToken)];
+        var continationResponse = await MakeRequest();
+        using IDisposable __ = continationResponse.ParseJson(out root);
+        return Parse();
     }
 }

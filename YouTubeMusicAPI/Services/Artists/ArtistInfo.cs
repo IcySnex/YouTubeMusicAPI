@@ -1,10 +1,8 @@
 ﻿using YouTubeMusicAPI.Json;
 using YouTubeMusicAPI.Services.Albums;
-using YouTubeMusicAPI.Services.Episodes;
 using YouTubeMusicAPI.Services.Musical.Songs;
 using YouTubeMusicAPI.Services.Musical.Videos;
 using YouTubeMusicAPI.Services.Playlists;
-using YouTubeMusicAPI.Services.Podcasts;
 using YouTubeMusicAPI.Utils;
 
 namespace YouTubeMusicAPI.Services.Artists;
@@ -44,14 +42,14 @@ public class ArtistInfo(
     string viewsInfo,
     string? pronouns,
     Radio? radio,
-    IReadOnlyList<ArtistSong> topSongs,
-    IReadOnlyList<ArtistAlbum> albums,
-    IReadOnlyList<ArtistAlbum> singlesAndEps,
-    IReadOnlyList<ArtistVideo> videos,
-    IReadOnlyList<ArtistVideo> livePerformances,
-    IReadOnlyList<ArtistPlaylist> featuredOn,
-    IReadOnlyList<ArtistPlaylist> playlists,
-    IReadOnlyList<ArtistCorrelation> fansMightAlsoLike) : YouTubeMusicEntity(name, id, browseId)
+    ResultList<ArtistSong> topSongs,
+    ResultList<ArtistAlbum> albums,
+    ResultList<ArtistAlbum> singlesAndEps,
+    ResultList<ArtistVideo> videos,
+    ResultList<ArtistVideo> livePerformances,
+    List<ArtistPlaylist> featuredOn,
+    ResultList<ArtistPlaylist> playlists,
+    List<ArtistCorrelation> fansMightAlsoLike) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="ArtistInfo"/>.
@@ -64,8 +62,7 @@ public class ArtistInfo(
         static List<T> Parse<T>(
             JElement item,
             string path,
-            Func<JElement, T> parse) =>
-            item
+            Func<JElement, T> parse) => item
                 .Get("contents")
                 .AsArray()
                 .OrThrow()
@@ -74,7 +71,6 @@ public class ArtistInfo(
                 .Where(item => !item.IsUndefined)
                 .Select(parse)
                 .ToList();
-
 
         JElement item = element
             .Get("header")
@@ -137,17 +133,14 @@ public class ArtistInfo(
             .SelectNavigationPlaylistId()
             .Map(playlistId => new Radio(playlistId));
 
-
-        List<ArtistSong> topSongs = [];
-        List<ArtistAlbum> albums = [];
-        List<ArtistAlbum> singlesAndEps = [];
-        List<ArtistVideo> videos = [];
-        List<ArtistVideo> livePerformances = [];
+        ResultList<ArtistSong> topSongs = new ();
+        ResultList<ArtistAlbum> albums = new ();
+        ResultList<ArtistAlbum> singlesAndEps = new();
+        ResultList<ArtistVideo> videos = new();
+        ResultList<ArtistVideo> livePerformances = new();
         List<ArtistPlaylist> featuredOn = [];
-        List<ArtistPlaylist> playlists = [];
+        ResultList<ArtistPlaylist> playlists = new();
         List<ArtistCorrelation> fansMightAlsoLike = [];
-        List<ProfileEpisode> latestEpisodes = [];
-        List<ProfilePodcast> podcasts = [];
 
         element
             .Get("contents")
@@ -168,7 +161,7 @@ public class ArtistInfo(
                         item => item.Get("musicCarouselShelfRenderer"),
                         item => item.Get("musicDescriptionShelfRenderer"));
 
-                string? category = shelf
+                JElement titleNode = shelf
                     .Coalesce(
                         item => item
                             .Get("title"),
@@ -179,29 +172,50 @@ public class ArtistInfo(
                         item => item
                             .Get("header"))
                     .Get("runs")
-                    .GetAt(0)
+                    .GetAt(0);
+
+                string? category = titleNode
                     .Get("text")
                     .AsString();
+
+                JElement browseEndpointNode =
+                    titleNode.Get("navigationEndpoint")
+                    .Get("browseEndpoint");
+
+                string? browseId2 = browseEndpointNode.Get("browseId")
+                    .AsString();
+
+                string? @params = browseEndpointNode.Get("params")
+                    .AsString();
+
+                ResultList<T> ToResultList<T>(List<T> results) =>
+                    new()
+                    {
+                        Results = results,
+                        BrowseId = browseId2,
+                        Params = @params
+                    };
+
                 switch (category)
                 {
                     case "Top songs":
-                        topSongs = Parse(shelf, "musicResponsiveListItemRenderer", ArtistSong.Parse);
+                        topSongs = ToResultList(Parse(shelf, "musicResponsiveListItemRenderer", ArtistSong.Parse));
                         break;
 
                     case "Albums":
-                        albums = Parse(shelf, "musicTwoRowItemRenderer", ArtistAlbum.Parse);
+                        albums = ToResultList(Parse(shelf, "musicTwoRowItemRenderer", ArtistAlbum.Parse));
                         break;
 
                     case "Singles & EPs":
-                        singlesAndEps = Parse(shelf, "musicTwoRowItemRenderer", ArtistAlbum.Parse);
+                        singlesAndEps = ToResultList(Parse(shelf, "musicTwoRowItemRenderer", ArtistAlbum.Parse));
                         break;
 
                     case "Videos":
-                        videos = Parse(shelf, "musicTwoRowItemRenderer", ArtistVideo.Parse);
+                        videos = ToResultList(Parse(shelf, "musicTwoRowItemRenderer", ArtistVideo.Parse));
                         break;
 
                     case "Live performances":
-                        livePerformances = Parse(shelf, "musicTwoRowItemRenderer", ArtistVideo.Parse);
+                        livePerformances = ToResultList(Parse(shelf, "musicTwoRowItemRenderer", ArtistVideo.Parse));
                         break;
 
                     case "Featured on":
@@ -220,7 +234,7 @@ public class ArtistInfo(
 
                     default:
                         if (category?.StartsWith("Playlists") ?? false)
-                            playlists = Parse(shelf, "musicTwoRowItemRenderer", ArtistPlaylist.Parse);
+                            playlists = ToResultList(Parse(shelf, "musicTwoRowItemRenderer", ArtistPlaylist.Parse));
                         break;
                 }
             });
@@ -278,42 +292,42 @@ public class ArtistInfo(
     /// <summary>
     /// The top songs of this artist.
     /// </summary>
-    public IReadOnlyList<ArtistSong> TopSongs { get; } = topSongs;
+    public ResultList<ArtistSong> TopSongs { get; } = topSongs;
 
     /// <summary>
     /// Some of the recent albums of this artist.
     /// </summary>
-    public IReadOnlyList<ArtistAlbum> Albums { get; } = albums;
+    public ResultList<ArtistAlbum> Albums { get; } = albums;
 
     /// <summary>
     /// Some of the recent singles and EPs of this artist.
     /// </summary>
-    public IReadOnlyList<ArtistAlbum> SinglesAndEps { get; } = singlesAndEps;
+    public ResultList<ArtistAlbum> SinglesAndEps { get; } = singlesAndEps;
 
     /// <summary>
     /// Some of the recent and popular videos of this artist.
     /// </summary>
-    public IReadOnlyList<ArtistVideo> Videos { get; } = videos;
+    public ResultList<ArtistVideo> Videos { get; } = videos;
 
     /// <summary>
     /// Some of the recent and popular live performances of this artist.
     /// </summary>
-    public IReadOnlyList<ArtistVideo> LivePerformances { get; } = livePerformances;
+    public ResultList<ArtistVideo> LivePerformances { get; } = livePerformances;
 
     // public IReadOnlyList<ArtistLibraryItem> FromYourLibrary { get; } = fromYourLibrary // ??
 
     /// <summary>
     /// Some of the playlists this artists is featured on.
     /// </summary>
-    public IReadOnlyList<ArtistPlaylist> FeaturedOn { get; } = featuredOn;
+    public List<ArtistPlaylist> FeaturedOn { get; } = featuredOn;
 
     /// <summary>
     /// Some of the playlists created by this artists.
     /// </summary>
-    public IReadOnlyList<ArtistPlaylist> Playlists { get; } = playlists;
+    public ResultList<ArtistPlaylist> Playlists { get; } = playlists;
 
     /// <summary>
     /// The correlations to this artists which fans might also like.
     /// </summary>
-    public IReadOnlyList<ArtistCorrelation> FansMightAlsoLike { get; } = fansMightAlsoLike;
+    public List<ArtistCorrelation> FansMightAlsoLike { get; } = fansMightAlsoLike;
 }

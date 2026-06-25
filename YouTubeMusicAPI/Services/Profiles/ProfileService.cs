@@ -67,7 +67,7 @@ public sealed class ProfileService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[ProfileService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 

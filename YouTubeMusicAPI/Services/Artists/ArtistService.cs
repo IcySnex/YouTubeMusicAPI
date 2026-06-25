@@ -66,7 +66,7 @@ public sealed class ArtistService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[ArtistService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 

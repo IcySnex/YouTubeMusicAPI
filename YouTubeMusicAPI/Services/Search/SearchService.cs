@@ -52,7 +52,7 @@ public sealed class SearchService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[SearchService-FetchPageAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
@@ -215,7 +215,7 @@ public sealed class SearchService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Search, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[SearchService-AllAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
@@ -490,7 +490,7 @@ public sealed class SearchService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.SearchSuggestions, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[SearchService-GetSuggestionsAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
         if (!root.Contains("contents", out JElement contents))
@@ -627,7 +627,7 @@ public sealed class SearchService
 
         string suggestionsResponse = await client.RequestHandler.PostAsync(Endpoints.SearchSuggestions, suggestionsPayload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums suggestions response
+        // Parse suggestions response
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Parsing suggestions response...");
         using IDisposable _ = suggestionsResponse.ParseJson(out JElement suggestionsRoot);
 
@@ -663,7 +663,7 @@ public sealed class SearchService
 
         string removeResponse = await client.RequestHandler.PostAsync(Endpoints.Feedback, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums remove response
+        // Parse remove response
         client.Logger?.LogInformation("[SearchService-RemoveSuggestionAsync] Parsing remove response...");
         using IDisposable _1 = removeResponse.ParseJson(out JElement removeRoot);
 

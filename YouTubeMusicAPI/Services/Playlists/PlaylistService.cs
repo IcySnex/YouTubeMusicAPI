@@ -43,7 +43,7 @@ public sealed class PlaylistService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[PlaylistService-FetchPageAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
@@ -67,7 +67,7 @@ public sealed class PlaylistService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Next, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[PlaylistService-FetchRadioPageAsync] Parsing radio response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
@@ -166,7 +166,7 @@ public sealed class PlaylistService
 
         string response = await client.RequestHandler.PostAsync(isRadio ? Endpoints.Next : Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[PlaylistService-GetAsync] Parsing {radioInfo}response...", isRadio ? "radio " : "");
         using IDisposable _ = response.ParseJson(out JElement root);
 
@@ -218,7 +218,7 @@ public sealed class PlaylistService
 
         string firstResponse = await client.RequestHandler.PostAsync(firstUrl, null, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums first response
+        // Parse first response
         client.Logger?.LogInformation("[PlaylistService-GetRelationsAsync] Parsing first response (either suggestions or directly related)...");
         using IDisposable _ = firstResponse.ParseJson(out JElement firstRoot);
 
@@ -249,7 +249,7 @@ public sealed class PlaylistService
 
             string relatedResponse = await client.RequestHandler.PostAsync(relatedUrl, null, ClientType.WebMusic, cancellationToken);
 
-            // ParseAlbums first response
+            // Parse first response
             client.Logger?.LogInformation("[PlaylistService-GetRelationsAsync] Parsing related response...");
             using IDisposable _1 = relatedResponse.ParseJson(out JElement relatedRoot);
 

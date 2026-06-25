@@ -74,7 +74,7 @@ public sealed partial class AlbumService
 
         string response = await client.RequestHandler.GetAsync(url, null, ClientType.None, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[AlbumService-GetBrowseIdAsync] Parsing response...");
         Match match = BrowseIdRegex().Match(Regex.Unescape(response));
 

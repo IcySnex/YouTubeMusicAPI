@@ -13,6 +13,11 @@ internal static class JElementExtensions
         public JElement GetText() => element.Get("text");
 
         public JElement GetMultiSelectMenu() => element.Get("musicMultiSelectMenuRenderer");
+        public JArray GetMultiSelectMenuOptions() => element.GetMultiSelectMenu()
+            .Get("Options")
+            .Get("options")
+            .AsArray()
+            .Or(JArray.Empty);
 
         public JElement GetMultiSelectMenuItem() => element.Get("musicMultiSelectMenuItemRenderer");
     }

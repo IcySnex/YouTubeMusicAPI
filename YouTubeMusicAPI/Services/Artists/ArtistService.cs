@@ -142,10 +142,7 @@ public sealed class ArtistService
             .GetAt(0)
             .Get("musicSortFilterButtonRenderer")
             .Get("menu")
-            .GetMultiSelectMenu()
-            .Get("options")
-            .AsArray()
-            .Or(JArray.Empty);
+            .GetMultiSelectMenuOptions();
 
         var sortingOrderString = sortingOrder.ToString().ToLower();
 

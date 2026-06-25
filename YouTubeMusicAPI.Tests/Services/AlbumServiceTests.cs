@@ -89,27 +89,4 @@ public class AlbumServiceTests
         TestData.WriteResult(result.OtherVersions, "Other Versions");
         TestData.WriteResult(result.ReleasesForYou, "Releases For You");
     }
-
-    [Test]
-    public async Task Should_get_albums_from_an_artist()
-    {
-        var artistService = new YouTubeMusicClient();
-        var artistAlbums = await artistService.Albums.GetAllByArtistAsync(
-            TestData.BeatlesBrowseId,
-            TestData.BeatlesAlbumParams);
-
-        Assert.That(artistAlbums.Albums, Is.Not.Null.Or.Empty);
-    }
-
-    [Test]
-    public async Task Should_get_albums_from_an_artist_with_ordering()
-    {
-        var artistService = new YouTubeMusicClient();
-        var artistAlbums = await artistService.Albums.GetAllByArtistAsync(
-            TestData.BeatlesBrowseId,
-            TestData.BeatlesAlbumParams,
-            AlbumSortingOrder.Popularity);
-
-        Assert.That(artistAlbums.Albums, Is.Not.Null.Or.Empty);
-    }
 }

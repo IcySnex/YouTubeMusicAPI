@@ -1,4 +1,5 @@
 ﻿using YouTubeMusicAPI.Pagination;
+using YouTubeMusicAPI.Services.Albums;
 using YouTubeMusicAPI.Services.Artists;
 
 namespace YouTubeMusicAPI.Tests.Services;
@@ -47,5 +48,26 @@ public class ArtistServiceTests
         Assert.That(result, Is.Not.Null);
 
         TestData.WriteResult(result);
+    }
+
+    [Test]
+    public async Task Should_get_albums_from_an_artist()
+    {
+        var artistAlbums = await client.Artists.GetAlbumsAsync(
+            TestData.BeatlesBrowseId,
+            TestData.BeatlesAlbumParams);
+
+        Assert.That(artistAlbums.Albums, Is.Not.Null.Or.Empty);
+    }
+
+    [Test]
+    public async Task Should_get_albums_from_an_artist_with_ordering()
+    {
+        var artistAlbums = await client.Artists.GetAlbumsAsync(
+            TestData.BeatlesBrowseId,
+            TestData.BeatlesAlbumParams,
+            AlbumSortingOrder.Popularity);
+
+        Assert.That(artistAlbums.Albums, Is.Not.Null.Or.Empty);
     }
 }

@@ -1,7 +1,8 @@
 ﻿using YouTubeMusicAPI.Json;
+using YouTubeMusicAPI.Services.Albums;
 using YouTubeMusicAPI.Utils;
 
-namespace YouTubeMusicAPI.Services.Albums;
+namespace YouTubeMusicAPI.Services.Artists;
 
 /// <summary>
 /// Represents the albums of an artist on YouTube Music.

@@ -101,6 +101,7 @@ public sealed class ArtistService
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrEmpty(browseId, nameof(browseId));
+        Ensure.NotNullOrEmpty(@params, nameof(@params));
 
         KeyValuePair<string, object?>[] payload =
         [
@@ -119,7 +120,8 @@ public sealed class ArtistService
         logger?.LogInformation($"[{methodName}] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        ArtistAlbums ParseAlbums() => ArtistAlbums.Parse(root, browseId, @params, sortingOrder);
+        ArtistAlbums ParseAlbums(bool isContinuationResponse = false) 
+            => ArtistAlbums.Parse(root, browseId, @params, sortingOrder, isContinuationResponse);
 
         if (sortingOrder is AlbumSortingOrder.Default)
         {
@@ -180,6 +182,6 @@ public sealed class ArtistService
         payload = [new("continuation", continuationToken)];
         response = await MakeRequest();
         using IDisposable __ = response.ParseJson(out root);
-        return ParseAlbums();
+        return ParseAlbums(isContinuationResponse: true);
     }
 }

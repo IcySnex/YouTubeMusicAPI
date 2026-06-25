@@ -24,29 +24,28 @@ public class ArtistAlbums(
     /// <param name="browseId"><see cref="ArtistAlbums.BrowseId" /></param>
     /// <param name="params"><see cref="ArtistAlbums.Params" /></param>
     /// <param name="sortingOrder"><see cref="ArtistAlbums.SortingOrder" /></param>
+    /// <param name="isContinuationResponse">A boolean to indicate whether the element is from a contination response</param>
     internal static ArtistAlbums Parse(
         JElement element,
         string browseId,
         string @params,
-        AlbumSortingOrder sortingOrder)
+        AlbumSortingOrder sortingOrder,
+        bool isContinuationResponse)
     {
         List<ArtistAlbum> albums = [];
 
-        var contents = element.Coalesce(
-                root => root.Get("contents")
+        var contents = isContinuationResponse
+            ? element.Get("continuationContents")
+                    .Get("sectionListContinuation")
+                    .Get("contents")
+            : element.Get("contents")
                     .Get("singleColumnBrowseResultsRenderer")
                     .Get("tabs")
                     .GetAt(0)
                     .Get("tabRenderer")
                     .Get("content")
                     .Get("sectionListRenderer")
-                    .Get("contents"),
-
-                // For contents returned with non-default ordering
-                root => root.Get("continuationContents")
-                    .Get("sectionListContinuation")
-                    .Get("contents")
-            );
+                    .Get("contents");
 
         contents.GetAt(0)
             .Get("gridRenderer")

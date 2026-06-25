@@ -1,5 +1,4 @@
-﻿using NUnit.Framework.Interfaces;
-using YouTubeMusicAPI.Pagination;
+﻿using YouTubeMusicAPI.Pagination;
 using YouTubeMusicAPI.Services.Albums;
 
 namespace YouTubeMusicAPI.Tests.Services;

@@ -1,5 +1,4 @@
 ﻿using YouTubeMusicAPI.Pagination;
-using YouTubeMusicAPI.Services.Albums;
 using YouTubeMusicAPI.Services.Artists;
 
 namespace YouTubeMusicAPI.Tests.Services;

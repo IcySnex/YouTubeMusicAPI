@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Services.Albums;
+﻿namespace YouTubeMusicAPI.Services.Artists;
 
 /// <summary>
 /// Represents the sorting order when browsing albums by artist on Youtube Music

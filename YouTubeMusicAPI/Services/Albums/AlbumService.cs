@@ -177,7 +177,6 @@ public sealed partial class AlbumService
 
         string response = await MakeRequest();
 
-        // ParseAlbums response
         logger?.LogInformation($"[{methodName}] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 

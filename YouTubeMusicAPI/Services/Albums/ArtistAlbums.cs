@@ -4,13 +4,15 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicAPI.Services.Albums;
 
 /// <summary>
-/// 
+/// Represents the albums of an artist on YouTube Music.
 /// </summary>
-/// <param name="artistBrowseId">The browse id of the artist</param>
-/// <param name="sortingOrder">The sorting order of the albums</param>
-/// <param name="albums">The albums or Singles / EPs of the said artist /> </param>
+/// <param name="browseId"><see cref="ArtistAlbums.BrowseId" /></param>
+/// <param name="params"><see cref="ArtistAlbums.Params" /></param>
+/// <param name="sortingOrder"><see cref="ArtistAlbums.SortingOrder" /></param>
+/// <param name="albums"><see cref="ArtistAlbums.Albums" /> </param>
 public class ArtistAlbums(
-    string artistBrowseId,
+    string browseId,
+    string @params,
     AlbumSortingOrder sortingOrder,
     IReadOnlyList<ArtistAlbum> albums)
 {
@@ -18,11 +20,13 @@ public class ArtistAlbums(
     /// Parses a <see cref="JElement"/> into <see cref="ArtistAlbums"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "contents".</param>
-    /// <param name="browseId">The browse id of the artist</param>
-    /// <param name="sortingOrder">The sorting order of the albums</param>
+    /// <param name="browseId"><see cref="ArtistAlbums.BrowseId" /></param>
+    /// <param name="params"><see cref="ArtistAlbums.Params" /></param>
+    /// <param name="sortingOrder"><see cref="ArtistAlbums.SortingOrder" /></param>
     internal static ArtistAlbums Parse(
         JElement element,
         string browseId,
+        string @params,
         AlbumSortingOrder sortingOrder)
     {
         List<ArtistAlbum> albums = [];
@@ -55,14 +59,19 @@ public class ArtistAlbums(
                 albums.Add(album);
             });
 
-        return new(browseId, sortingOrder, albums);
+        return new(browseId, @params, sortingOrder, albums);
     }
 
     /// <summary>
-    /// The browse id of the artist
+    /// The browse id of the albums for the the artist
     /// </summary>
-    public string ArtistBrowseId { get; } = artistBrowseId;
-    
+    public string BrowseId { get; } = browseId;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string Params { get; } = @params;
+
     /// <summary>
     /// The albums of the said artist
     /// </summary>

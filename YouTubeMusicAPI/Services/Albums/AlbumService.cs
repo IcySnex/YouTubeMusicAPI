@@ -181,7 +181,7 @@ public sealed partial class AlbumService
         logger?.LogInformation($"[{methodName}] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        ArtistAlbums ParseAlbums() => ArtistAlbums.Parse(root, browseId, sortingOrder);
+        ArtistAlbums ParseAlbums() => ArtistAlbums.Parse(root, browseId, @params, sortingOrder);
 
         if (sortingOrder is AlbumSortingOrder.Default)
         {

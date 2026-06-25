@@ -113,7 +113,7 @@ public sealed partial class AlbumService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        // ParseAlbums response
+        // Parse response
         client.Logger?.LogInformation("[AlbumService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 

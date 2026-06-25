@@ -28,17 +28,18 @@ public class ArtistAlbums(
         List<ArtistAlbum> albums = [];
 
         var contents = element.Coalesce(
-                // For contents returned with non-default ordering
-                (root) => root.Get("continuationContents")
-                    .Get("sectionListContinuation")
-                    .Get("contents"),
-                (root) => root.Get("contents")
+                root => root.Get("contents")
                     .Get("singleColumnBrowseResultsRenderer")
                     .Get("tabs")
                     .GetAt(0)
                     .Get("tabRenderer")
                     .Get("content")
                     .Get("sectionListRenderer")
+                    .Get("contents"),
+
+                // For contents returned with non-default ordering
+                root => root.Get("continuationContents")
+                    .Get("sectionListContinuation")
                     .Get("contents")
             );
 

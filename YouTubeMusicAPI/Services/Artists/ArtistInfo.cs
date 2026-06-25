@@ -66,8 +66,7 @@ public class ArtistInfo(
                 .Get("contents")
                 .AsArray()
                 .OrThrow()
-                .Select(item => item
-                    .Get(path))
+                .Select(item => item.Get(path))
                 .Where(item => !item.IsUndefined)
                 .Select(parse)
                 .ToList();
@@ -79,7 +78,6 @@ public class ArtistInfo(
         JElement subscriptionButton = item
             .Get("subscriptionButton")
             .Get("subscribeButtonRenderer");
-
 
         string name = item
             .SelectRunTextAt("title", 0)

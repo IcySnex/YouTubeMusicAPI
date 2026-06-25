@@ -5,7 +5,7 @@ using YouTubeMusicAPI.Utils;
 namespace YouTubeMusicAPI.Services.Artists;
 
 /// <summary>
-/// Represents the albums of an artist on YouTube Music.
+/// Represents a list of all YouTube Music albums or singles / EPs of an artist. 
 /// </summary>
 /// <param name="browseId"><see cref="ArtistAlbums.BrowseId" /></param>
 /// <param name="params"><see cref="ArtistAlbums.Params" /></param>

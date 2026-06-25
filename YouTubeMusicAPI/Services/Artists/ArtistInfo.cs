@@ -47,9 +47,9 @@ public class ArtistInfo(
     ResultList<ArtistAlbum> singlesAndEps,
     ResultList<ArtistVideo> videos,
     ResultList<ArtistVideo> livePerformances,
-    List<ArtistPlaylist> featuredOn,
+    IReadOnlyList<ArtistPlaylist> featuredOn,
     ResultList<ArtistPlaylist> playlists,
-    List<ArtistCorrelation> fansMightAlsoLike) : YouTubeMusicEntity(name, id, browseId)
+    IReadOnlyList<ArtistCorrelation> fansMightAlsoLike) : YouTubeMusicEntity(name, id, browseId)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into a <see cref="ArtistInfo"/>.
@@ -319,7 +319,7 @@ public class ArtistInfo(
     /// <summary>
     /// Some of the playlists this artists is featured on.
     /// </summary>
-    public List<ArtistPlaylist> FeaturedOn { get; } = featuredOn;
+    public IReadOnlyList<ArtistPlaylist> FeaturedOn { get; } = featuredOn;
 
     /// <summary>
     /// Some of the playlists created by this artists.
@@ -329,5 +329,5 @@ public class ArtistInfo(
     /// <summary>
     /// The correlations to this artists which fans might also like.
     /// </summary>
-    public List<ArtistCorrelation> FansMightAlsoLike { get; } = fansMightAlsoLike;
+    public IReadOnlyList<ArtistCorrelation> FansMightAlsoLike { get; } = fansMightAlsoLike;
 }

@@ -38,7 +38,7 @@ internal sealed class MusicalService(
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        // Parse response
+        // ParseAlbums response
         client.Logger?.LogInformation("[RelationsService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
@@ -65,7 +65,7 @@ internal sealed class MusicalService(
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.IOSMusic, cancellationToken);
 
-        // Parse response
+        // ParseAlbums response
         client.Logger?.LogInformation("[LyricsService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 

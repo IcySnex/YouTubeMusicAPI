@@ -74,7 +74,7 @@ public sealed partial class AlbumService
 
         string response = await client.RequestHandler.GetAsync(url, null, ClientType.None, cancellationToken);
 
-        // Parse response
+        // ParseAlbums response
         client.Logger?.LogInformation("[AlbumService-GetBrowseIdAsync] Parsing response...");
         Match match = BrowseIdRegex().Match(Regex.Unescape(response));
 
@@ -113,7 +113,7 @@ public sealed partial class AlbumService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        // Parse response
+        // ParseAlbums response
         client.Logger?.LogInformation("[AlbumService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
@@ -172,19 +172,20 @@ public sealed partial class AlbumService
         Task<string> MakeRequest() => 
             client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        string response = await MakeRequest();
         const string methodName = $"{nameof(AlbumService)}-{nameof(GetAllByArtistAsync)}";
         var logger = client.Logger;
-        // Parse response
+
+        string response = await MakeRequest();
+
+        // ParseAlbums response
         logger?.LogInformation($"[{methodName}] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
-        ArtistAlbums Parse() =>
-            ArtistAlbums.Parse(root, browseId, sortingOrder);
+        ArtistAlbums ParseAlbums() => ArtistAlbums.Parse(root, browseId, sortingOrder);
 
         if (sortingOrder is AlbumSortingOrder.Default)
         {
-            return Parse();
+            return ParseAlbums();
         }
 
         string? continuationToken = null;
@@ -234,13 +235,13 @@ public sealed partial class AlbumService
 
         if (continuationToken is null)
         {
-            return Parse();
+            return ParseAlbums();
         }
 
-        logger?.LogInformation($"[{methodName}] Resending response to get sorted results...");
+        logger?.LogInformation($"[{methodName}] Resending request to get sorted albums...");
         payload = [new("continuation", continuationToken)];
-        var continationResponse = await MakeRequest();
-        using IDisposable __ = continationResponse.ParseJson(out root);
-        return Parse();
+        response = await MakeRequest();
+        using IDisposable __ = response.ParseJson(out root);
+        return ParseAlbums();
     }
 }

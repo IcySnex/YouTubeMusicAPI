@@ -71,7 +71,7 @@ public sealed class SongService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Next, payload, ClientType.WebMusic, cancellationToken);
 
-        // Parse response
+        // ParseAlbums response
         client.Logger?.LogInformation("[SongService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 
@@ -119,7 +119,7 @@ public sealed class SongService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
 
-        // Parse response
+        // ParseAlbums response
         client.Logger?.LogInformation("[SongService-GetCreditsAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 

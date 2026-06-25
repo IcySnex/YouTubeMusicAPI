@@ -71,7 +71,7 @@ public sealed class VideoService
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Next, payload, ClientType.WebMusic, cancellationToken);
 
-        // Parse response
+        // ParseAlbums response
         client.Logger?.LogInformation("[VideoService-GetAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 

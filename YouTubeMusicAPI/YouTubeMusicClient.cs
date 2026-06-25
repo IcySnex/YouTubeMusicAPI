@@ -107,7 +107,7 @@ public class YouTubeMusicClient
         // Send
         string response = await RequestHandler.PostAsync(Endpoints.AccountMenu, null, ClientType.WebMusic, cancellationToken);
 
-        // Parse
+        // ParseAlbums
         Logger?.LogInformation("[YouTubeMusicClient-GetAuthenticatedUserAsync] Parsing response...");
         using IDisposable _ = response.ParseJson(out JElement root);
 

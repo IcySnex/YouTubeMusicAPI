@@ -105,5 +105,5 @@ internal abstract class TestData
     /// <summary>
     /// File path to download test media stream
     /// </summary>
-    public static readonly string FilePath = @$"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\test.mp4";
+    public static readonly string FilePath = @$"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/test.mp4";
 }

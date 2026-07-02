@@ -53,8 +53,8 @@ public class ArtistServiceTests
     public async Task Should_get_albums_from_an_artist()
     {
         var artistAlbums = await client.Artists.GetAlbumsAsync(
-            TestData.BeatlesBrowseId,
-            TestData.BeatlesAlbumParams);
+            TestData.ArtistBrowseId,
+            TestData.ArtistAlbumParams);
 
         Assert.That(artistAlbums.Albums, Is.Not.Null.Or.Empty);
     }
@@ -63,8 +63,8 @@ public class ArtistServiceTests
     public async Task Should_get_albums_from_an_artist_with_ordering()
     {
         var artistAlbums = await client.Artists.GetAlbumsAsync(
-            TestData.BeatlesBrowseId,
-            TestData.BeatlesAlbumParams,
+            TestData.ArtistBrowseId,
+            TestData.ArtistAlbumParams,
             AlbumSortingOrder.Popularity);
 
         Assert.That(artistAlbums.Albums, Is.Not.Null.Or.Empty);

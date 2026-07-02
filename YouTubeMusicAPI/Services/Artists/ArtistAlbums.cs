@@ -7,29 +7,16 @@ namespace YouTubeMusicAPI.Services.Artists;
 /// <summary>
 /// Represents a list of all YouTube Music albums or singles / EPs of an artist. 
 /// </summary>
-/// <param name="browseId"><see cref="ArtistAlbums.BrowseId" /></param>
-/// <param name="params"><see cref="ArtistAlbums.Params" /></param>
-/// <param name="sortingOrder"><see cref="ArtistAlbums.SortingOrder" /></param>
 /// <param name="albums"><see cref="ArtistAlbums.Albums" /> </param>
-public class ArtistAlbums(
-    string browseId,
-    string @params,
-    AlbumSortingOrder sortingOrder,
-    IReadOnlyList<ArtistAlbum> albums)
+public class ArtistAlbums(IReadOnlyList<ArtistAlbum> albums)
 {
     /// <summary>
     /// Parses a <see cref="JElement"/> into <see cref="ArtistAlbums"/>.
     /// </summary>
     /// <param name="element">The <see cref="JElement"/> "contents".</param>
-    /// <param name="browseId"><see cref="ArtistAlbums.BrowseId" /></param>
-    /// <param name="params"><see cref="ArtistAlbums.Params" /></param>
-    /// <param name="sortingOrder"><see cref="ArtistAlbums.SortingOrder" /></param>
     /// <param name="isContinuationResponse">A boolean to indicate whether the element is from a contination response</param>
     internal static ArtistAlbums Parse(
         JElement element,
-        string browseId,
-        string @params,
-        AlbumSortingOrder sortingOrder,
         bool isContinuationResponse)
     {
         List<ArtistAlbum> albums = [];
@@ -59,26 +46,11 @@ public class ArtistAlbums(
                 albums.Add(album);
             });
 
-        return new(browseId, @params, sortingOrder, albums);
+        return new(albums);
     }
-
-    /// <summary>
-    /// The browse id of the albums for the the artist
-    /// </summary>
-    public string BrowseId { get; } = browseId;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public string Params { get; } = @params;
 
     /// <summary>
     /// The albums of the said artist
     /// </summary>
     public IReadOnlyList<ArtistAlbum> Albums { get; } = albums;
-
-    /// <summary>
-    /// The album sorting order
-    /// </summary>
-    public AlbumSortingOrder SortingOrder { get; } = sortingOrder;
 }

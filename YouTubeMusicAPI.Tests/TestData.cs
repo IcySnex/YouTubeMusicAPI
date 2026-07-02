@@ -135,11 +135,8 @@ internal static class TestData
     public const string AlbumId = "OLAK5uy_kncRLJuxDsO1_nh_xSEkUCEYguyHljIgY";
     public const string AlbumBrowseId = "MPREb_78cZiOmrPmB";
 
-    public const string ArtistBrowseId = "UC2XdaAVUannpujzv32jcouQ";
+    public const string ArtistBrowseId = "MPADUC2XdaAVUannpujzv32jcouQ";
+    public const string ArtistAlbumParams = "ggMIegYIARoCAQI%3D";
 
     public const string ProfileBrowseId = "UCjZL2PeAdLA602k4FLko58g";
-
-    public const string BeatlesBrowseId = "MPADUC2XdaAVUannpujzv32jcouQ";
-
-    public const string BeatlesAlbumParams = "ggMIegYIARoCAQI%3D";
 }

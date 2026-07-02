@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.7.11903.348
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouTubeMusicAPI", "YouTubeMusicAPI\YouTubeMusicAPI.csproj", "{106ED504-94D9-434C-AE15-15550ED1FD71}"
 EndProject

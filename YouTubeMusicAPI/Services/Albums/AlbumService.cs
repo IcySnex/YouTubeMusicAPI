@@ -58,7 +58,7 @@ public sealed partial class AlbumService
     /// <returns>The browse ID of the album.</returns>
     /// <exception cref="ArgumentException">Occurs when the <c>id</c> is <see langword="null"/> or empty.</exception>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
-    /// <exception cref="OperationCanceledException">Occurs when this task was canceled.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     public async Task<string> GetBrowseIdAsync(
         string id,
         CancellationToken cancellationToken = default)
@@ -108,7 +108,7 @@ public sealed partial class AlbumService
         // Send request
         KeyValuePair<string, object?>[] payload =
         [
-            new("browseId", browseId)
+            new("browseId", browseId),
         ];
 
         string response = await client.RequestHandler.PostAsync(Endpoints.Browse, payload, ClientType.WebMusic, cancellationToken);
@@ -132,7 +132,7 @@ public sealed partial class AlbumService
     /// <param name="cancellationToken">The token to cancel this task.</param>
     /// <returns>The <see cref="AlbumRelations"/> containing the related content for the album.</returns>
     /// <exception cref="HttpRequestException">Occurs when the HTTP request fails.</exception>
-    /// <exception cref="OperationCanceledException">Occurs when this task was canceled.</exception>
+    /// <exception cref="OperationCanceledException">Occurs when this task was cancelled.</exception>
     [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Preserve consistency with similar methods in the library")]
     public Task<AlbumRelations> GetRelationsAsync(
         AlbumInfo album,

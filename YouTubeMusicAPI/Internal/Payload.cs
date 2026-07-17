@@ -28,7 +28,7 @@ public static class Payload
                 client = new
                 {
                     clientName = "WEB_REMIX",
-                    clientVersion = "1.20260309.03.00",
+                    clientVersion = "1.20260715.04.00",
                     browserName = "Chrome",
                     browserVersion = "142.0.0.0",
                     osName = "Windows",

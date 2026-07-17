@@ -506,6 +506,9 @@ internal class JsAnalyzer
             if (!DeclaredVariables.TryGetValue(dependency, out VariableMetadata? depMeta))
                 return false;
 
+            if (depMeta.IsPredeclared && depMeta.Node is VariableDeclarator pendingDecl && pendingDecl.Init is null)
+                return false;
+
             seen.Add(dependency);
 
             if (!AreDependenciesResolved(depMeta.Dependencies, seen))

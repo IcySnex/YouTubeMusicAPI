@@ -22,6 +22,9 @@ internal sealed class MediaStream(
 {
     static readonly HttpClient Client = new();
 
+    const string WebUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36";
+    const string AndroidUserAgent = "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; Quest 3 Build/SQ3A.220605.009.A1) gzip";
+
 
     readonly long segmentLength = !string.Equals(
         HttpUtility.ParseQueryString(streamInfo.Url).Get("ratebypass"),
@@ -81,6 +84,26 @@ internal sealed class MediaStream(
         }.ToString();
     }
 
+    static HttpRequestMessage CreateSegmentRequest(
+        string url)
+    {
+        HttpRequestMessage request = new(HttpMethod.Get, url);
+
+        bool isWebClient = HttpUtility.ParseQueryString(new Uri(url).Query).Get("c") is not "ANDROID_VR";
+
+        request.Headers.TryAddWithoutValidation("User-Agent", isWebClient ? WebUserAgent : AndroidUserAgent);
+        request.Headers.TryAddWithoutValidation("Accept", "*/*");
+        request.Headers.TryAddWithoutValidation("Accept-Language", "en-US,en;q=0.9");
+
+        if (isWebClient)
+        {
+            request.Headers.TryAddWithoutValidation("Origin", "https://music.youtube.com");
+            request.Headers.TryAddWithoutValidation("Referer", "https://music.youtube.com/");
+        }
+
+        return request;
+    }
+
 
     async ValueTask<Stream> ResolveSegmentAsync(
         CancellationToken cancellationToken = default)
@@ -89,7 +112,8 @@ internal sealed class MediaStream(
             return segmentStream;
 
         string url = GetSegmentUrl(streamInfo.Url, Position, Position + segmentLength - 1);
-        HttpResponseMessage response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        using HttpRequestMessage request = CreateSegmentRequest(url);
+        HttpResponseMessage response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
         response.EnsureSuccessStatusCode();
         Stream stream = await response.Content.ReadAsStreamAsync();
@@ -103,7 +127,8 @@ internal sealed class MediaStream(
         int count,
         CancellationToken cancellationToken = default)
     {
-        for (var retriesRemaining = 5; ; retriesRemaining--)
+        const int maxRetries = 5;
+        for (var retriesRemaining = maxRetries; ; retriesRemaining--)
         {
             try
             {
@@ -113,6 +138,9 @@ internal sealed class MediaStream(
             catch (Exception ex) when (ex is HttpRequestException or IOException && retriesRemaining > 0)
             {
                 ResetSegment();
+
+                int attempt = maxRetries - retriesRemaining + 1;
+                await Task.Delay(TimeSpan.FromMilliseconds(250 * attempt), cancellationToken);
             }
         }
     }

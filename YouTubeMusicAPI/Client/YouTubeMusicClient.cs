@@ -682,9 +682,15 @@ public class YouTubeMusicClient
         // Get VisitorData if necessary
         if (VisitorData is null)
         {
+            if (PoToken is not null)
+                logger?.LogWarning("[YouTubeMusicClient-GetStreamingDataAsync] A PoToken was supplied without a matching VisitorData. A fresh VisitorData will be fetched that does NOT match the PoToken, so streaming will likely fail with 403 (Forbidden). Supply the exact VisitorData that was used to mint the PoToken.");
+
             logger?.LogInformation("[YouTubeMusicClient-GetStreamingDataAsync] Getting required visitor data for streaming...");
             VisitorData = await baseClient.GetVisitorDataAsync(cancellationToken);
         }
+
+        if (isCookieAuthenticated && PoToken is null)
+            logger?.LogWarning("[YouTubeMusicClient-GetStreamingDataAsync] Cookie-authenticated streaming uses the WEB_REMIX client which requires a PoToken. Without a PoToken bound to this session and IP, streaming will likely fail with 403 (Forbidden).");
 
         if (!isCookieAuthenticated)
         {

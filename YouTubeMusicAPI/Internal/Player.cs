@@ -110,8 +110,8 @@ internal class Player(
 
         // Parse
         NameValueCollection query = HttpUtility.ParseQueryString(actualUrl);
-        string extractedUrl = HttpUtility.UrlDecode(query["url"] ?? actualUrl);
-        string? sig = HttpUtility.UrlDecode(query["s"]);
+        string extractedUrl = query["url"] ?? actualUrl;
+        string? sig = query["s"];
         string sp = query["sp"] ?? "signature";
 
         NameValueCollection urlQuery = HttpUtility.ParseQueryString(extractedUrl);
@@ -131,12 +131,12 @@ internal class Player(
                 if (sig is not null)
                 {
                     string decipheredSig = jsEngine.Evaluate($"exportedVars.sigFunction('{sig}');").AsString();
-                    urlQuery[sp] = decipheredSig;
+                    urlQuery[sp] = HttpUtility.UrlDecode(decipheredSig);
                 }
                 if (nsig is not null)
                 {
                     string decipheredNSig = jsEngine.Evaluate($"exportedVars.nFunction('{nsig}');").AsString();
-                    urlQuery["n"] = decipheredNSig;
+                    urlQuery["n"] = HttpUtility.UrlDecode(decipheredNSig);
                 }
             }
             finally

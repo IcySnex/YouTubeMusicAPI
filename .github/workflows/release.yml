@@ -90,8 +90,6 @@ jobs:
             echo "target_framework=${target_framework}"
           } >> "${GITHUB_OUTPUT}"
 
-          fi
-
       - name: Restore library
         run: dotnet restore "${PROJECT_PATH}"
 

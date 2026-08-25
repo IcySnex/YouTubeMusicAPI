@@ -1,0 +1,185 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PROJECT_PATH: YouTubeMusicAPI/YouTubeMusicAPI.csproj
+  CONFIGURATION: Release
+  ARTIFACT_DIR: ${{ github.workspace }}/artifacts
+  NUGET_SOURCE: https://api.nuget.org/v3/index.json
+
+jobs:
+  release:
+    name: Publish NuGet package and GitHub release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out tagged commit
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate tag and read project metadata
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "${tag}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::Release tags must use the v0.0.0 format. Received: ${tag}"
+            exit 1
+          fi
+
+          version="${tag#v}"
+          metadata="$(dotnet msbuild "${PROJECT_PATH}" \
+            -getProperty:Version \
+            -getProperty:TargetFramework \
+            -getProperty:PackageReleaseNotes)"
+
+          project_version="$(jq -r '.Properties.Version' <<< "${metadata}")"
+          target_framework="$(jq -r '.Properties.TargetFramework' <<< "${metadata}")"
+          release_notes="$(jq -r '
+            .Properties.PackageReleaseNotes
+            | split("\n")
+            | map(gsub("^\\s+|\\s+$"; ""))
+            | map(select(length > 0))
+            | join("\n")
+          ' <<< "${metadata}")"
+
+          if [[ "${version}" != "${project_version}" ]]; then
+            echo "::error::Tag version ${version} does not match project version ${project_version}."
+            exit 1
+          fi
+          if [[ -z "${target_framework}" || "${target_framework}" == "null" ]]; then
+            echo "::error::TargetFramework is missing from ${PROJECT_PATH}."
+            exit 1
+          fi
+          if [[ -z "${release_notes}" || "${release_notes}" == "null" ]]; then
+            echo "::error::PackageReleaseNotes is missing from ${PROJECT_PATH}."
+            exit 1
+          fi
+
+          mkdir -p "${ARTIFACT_DIR}"
+          {
+            echo "## Information:"
+            echo "- Version: ${version}"
+            echo "- Target Framework: ${target_framework}"
+            echo
+            echo "## Release notes:"
+            printf '%s\n' "${release_notes}"
+          } > "${ARTIFACT_DIR}/release-notes.md"
+
+          {
+            echo "version=${version}"
+            echo "target_framework=${target_framework}"
+          } >> "${GITHUB_OUTPUT}"
+
+          fi
+
+      - name: Restore library
+        run: dotnet restore "${PROJECT_PATH}"
+
+      - name: Build library
+        run: dotnet build "${PROJECT_PATH}" --configuration "${CONFIGURATION}" --no-restore
+
+      - name: Pack NuGet artifacts
+        run: >-
+          dotnet pack "${PROJECT_PATH}"
+          --configuration "${CONFIGURATION}"
+          --no-build
+          --output "${ARTIFACT_DIR}"
+
+      - name: Create framework archive
+        shell: bash
+        env:
+          TARGET_FRAMEWORK: ${{ steps.metadata.outputs.target_framework }}
+        run: |
+          set -euo pipefail
+
+          build_dir="YouTubeMusicAPI/bin/${CONFIGURATION}/${TARGET_FRAMEWORK}"
+          files=(
+            YouTubeMusicAPI.pdb
+            YouTubeMusicAPI.deps.json
+            YouTubeMusicAPI.dll
+            YouTubeMusicAPI.xml
+          )
+
+          for file in "${files[@]}"; do
+            if [[ ! -f "${build_dir}/${file}" ]]; then
+              echo "::error::Expected release file is missing: ${build_dir}/${file}"
+              exit 1
+            fi
+          done
+
+          (
+            cd "${build_dir}"
+            zip -q "${ARTIFACT_DIR}/${TARGET_FRAMEWORK}.zip" "${files[@]}"
+          )
+
+      - name: Verify release artifacts
+        shell: bash
+        env:
+          VERSION: ${{ steps.metadata.outputs.version }}
+          TARGET_FRAMEWORK: ${{ steps.metadata.outputs.target_framework }}
+        run: |
+          set -euo pipefail
+          test -f "${ARTIFACT_DIR}/YouTubeMusicAPI.${VERSION}.nupkg"
+          test -f "${ARTIFACT_DIR}/YouTubeMusicAPI.${VERSION}.snupkg"
+          test -f "${ARTIFACT_DIR}/${TARGET_FRAMEWORK}.zip"
+
+      - name: Create draft GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+          TARGET_FRAMEWORK: ${{ steps.metadata.outputs.target_framework }}
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" \
+            "${ARTIFACT_DIR}/YouTubeMusicAPI.${VERSION}.nupkg" \
+            "${ARTIFACT_DIR}/YouTubeMusicAPI.${VERSION}.snupkg" \
+            "${ARTIFACT_DIR}/${TARGET_FRAMEWORK}.zip" \
+            --verify-tag \
+            --draft \
+            --title "Version ${VERSION}" \
+            --notes-file "${ARTIFACT_DIR}/release-notes.md"
+
+      - name: Authenticate with NuGet.org
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: IcySnex
+
+      - name: Publish package to NuGet.org
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+        run: |
+          set -euo pipefail
+          dotnet nuget push "${ARTIFACT_DIR}/YouTubeMusicAPI.${VERSION}.nupkg" \
+            --api-key "${NUGET_API_KEY}" \
+            --source "${NUGET_SOURCE}" \
+            --skip-duplicate
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "${GITHUB_REF_NAME}" --draft=false

@@ -695,7 +695,7 @@ public class YouTubeMusicClient
         if (!isCookieAuthenticated)
         {
             // Send requests
-            Dictionary<string, object> payload = Payload.Mobile(GeographicalLocation, VisitorData, PoToken,
+            Dictionary<string, object> payload = Payload.VisionOs(GeographicalLocation, VisitorData, PoToken,
                 [
                     ("videoId", id)
                 ]);
@@ -705,7 +705,7 @@ public class YouTubeMusicClient
             StreamingData streamingData = StreamingParser.GetData(requestResponse);
             return streamingData;
         }
-        else // Mobile client does not support cookie authentication -> falling back to WebRemix client
+        else // visionOS client does not support cookie authentication -> falling back to WebRemix client
         {
             Player player = await GetPlayerAsync(cancellationToken);
             

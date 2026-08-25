@@ -5,6 +5,10 @@
 /// </summary>
 public static class Payload
 {
+    internal const string VisionOsClientName = "VISIONOS";
+    internal const string VisionOsClientVersion = "1.02";
+    internal const string VisionOsUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_7_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15";
+
     /// <summary>
     /// Creates a new payload which mimics a YouTube Music web client
     /// </summary>
@@ -61,14 +65,14 @@ public static class Payload
     }
 
     /// <summary>
-    /// Creates a new payload which mimics a YouTube mobile client
+    /// Creates a new payload which mimics the YouTube visionOS client
     /// </summary>
     /// <param name="geographicalLocation">The region for the payload</param>
     /// <param name="visitorData">The visitor data</param>
     /// <param name="poToken">The proof of origin token</param>
     /// <param name="items">The items to add to the request payload</param>
     /// <returns>The new payload</returns>
-    public static Dictionary<string, object> Mobile(
+    public static Dictionary<string, object> VisionOs(
         string geographicalLocation,
         string? visitorData,
         string? poToken,
@@ -80,14 +84,13 @@ public static class Payload
             {
                 client = new
                 {
-                    clientName = "ANDROID_VR",
-                    clientVersion = "1.60.19",
-                    deviceMake = "Oculus",
-                    deviceModel = "Quest 3",
-                    osName = "Android",
-                    osVersion = "12L",
-                    platform = "MOBILE",
-                    userAgent = "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; Quest 3 Build/SQ3A.220605.009.A1) gzip",
+                    clientName = VisionOsClientName,
+                    clientVersion = VisionOsClientVersion,
+                    deviceMake = "Apple",
+                    deviceModel = "RealityDevice17,1",
+                    osName = "visionOS",
+                    osVersion = "26.5.23O471",
+                    userAgent = VisionOsUserAgent,
                     timeZone = "UTC",
                     utcOffsetMinutes = 0,
                     hl = "en",
@@ -106,4 +109,20 @@ public static class Payload
 
         return payload;
     }
+
+    /// <summary>
+    /// Creates a new payload which mimics a cipher-less YouTube client
+    /// </summary>
+    /// <param name="geographicalLocation">The region for the payload</param>
+    /// <param name="visitorData">The visitor data</param>
+    /// <param name="poToken">The proof of origin token</param>
+    /// <param name="items">The items to add to the request payload</param>
+    /// <returns>The new payload</returns>
+    [Obsolete($"Use {nameof(VisionOs)} instead.")]
+    public static Dictionary<string, object> Mobile(
+        string geographicalLocation,
+        string? visitorData,
+        string? poToken,
+        (string key, object? value)[] items) =>
+        VisionOs(geographicalLocation, visitorData, poToken, items);
 }

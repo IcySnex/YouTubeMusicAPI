@@ -6,9 +6,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>3.0.10</Version>
-		<AssemblyVersion>3.0.10</AssemblyVersion>
-		<FileVersion>3.0.10</FileVersion>
+		<Version>3.0.11</Version>
+		<AssemblyVersion>3.0.11</AssemblyVersion>
+		<FileVersion>3.0.11</FileVersion>
 
 		<Title>YouTube Music API</Title>
 		<Authors>IcySnex</Authors>
@@ -25,10 +25,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageReleaseNotes>
-			- Fixed "Cannot read property 'call' of undefined" when getting streaming data
-			- Fixed double encoding streaming url resulting in 403 errors
-			- Matched user agent when getting stream
-			- Updated YTM client version
+			- Switched to VisionOS client for unauthenticated streams
 			- Updated packages
 		</PackageReleaseNotes>
 	</PropertyGroup>
@@ -49,9 +46,9 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <PackageReference Include="Jint" Version="4.13.0" />
-	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.10" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+	  <PackageReference Include="Jint" Version="4.16.1" />
+	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.11" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 	

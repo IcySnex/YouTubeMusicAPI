@@ -450,8 +450,62 @@ public class YouTubeMusicClient
             ]);
         JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
 
+        // Parse album and single sections, following "More" buttons when available
+        JToken[]? contents = requestResponse.SelectObjectOptional<JToken[]>(
+            "contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents");
+
+        List<ArtistAlbum> albums = [];
+
+        if (contents is not null)
+        {
+            foreach (JToken content in contents)
+            {
+                string? shelfTitle = content.SelectObjectOptional<string>(
+                    "musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.title.runs[0].text");
+
+                if (shelfTitle is "Albums" or "Singles" or "Singles & EPs" or "Singles and EPs")
+                {
+                    string? moreBrowseId = content.SelectObjectOptional<string>(
+                        "musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint.browseId");
+                    string? moreParams = content.SelectObjectOptional<string>(
+                        "musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint.params");
+
+                    ArtistAlbum[]? shelfAlbums = null;
+
+                    if (!string.IsNullOrEmpty(moreBrowseId))
+                    {
+                        try
+                        {
+                            Dictionary<string, object> morePayload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
+                                [
+                                    ("browseId", moreBrowseId),
+                                    ("params", moreParams)
+                                ]);
+                            JObject discographyResponse = await baseClient.SendRequestAsync(Endpoints.Browse, morePayload, cancellationToken);
+                            ArtistAlbum[] gridAlbums = InfoParser.GetArtistAlbumsGrid(discographyResponse);
+                            if (gridAlbums.Length > 0)
+                            {
+                                shelfAlbums = gridAlbums;
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            logger?.LogWarning(ex, "[YouTubeMusicClient-GetArtistInfoAsync] Failed to fetch full discography for shelf '{shelfTitle}'. Falling back to preview items.", shelfTitle);
+                        }
+                    }
+
+                    shelfAlbums ??= content.SelectArtistAlbums("musicCarouselShelfRenderer.contents");
+                    albums.AddRange(shelfAlbums);
+                }
+            }
+        }
+
         // Parse request response
-        ArtistInfo info = InfoParser.GetArtist(requestResponse);
+        ArtistInfo info = InfoParser.GetArtist(requestResponse, [.. albums]);
         return info;
     }
 

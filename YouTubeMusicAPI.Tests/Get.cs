@@ -157,4 +157,24 @@ internal class Get
         string readableResults = JsonConvert.SerializeObject(artist, Formatting.Indented);
         logger.LogInformation("\nArtist Info:\n{readableResults}", readableResults);
     }
+
+    /// <summary>
+    /// Get artist information for an artist with more than 10 albums, verifying the "More" button is followed
+    /// </summary>
+    [Test]
+    public void Artist_MoreContentDiscography()
+    {
+        ArtistInfo? artist = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            artist = await client.GetArtistInfoAsync("UCY2qt3dw2TQJxvBrDiYGHdQ");
+        });
+        Assert.That(artist, Is.Not.Null);
+        Assert.That(artist!.Albums.Length, Is.GreaterThan(10));
+        Assert.That(artist.Albums.Any(album => album.Name.Contains("The Dark Side of the Moon")), Is.True, "Expected discography to include The Dark Side of the Moon");
+
+        // Output
+        logger.LogInformation("\nPink Floyd Albums Count: {count}", artist.Albums.Length);
+    }
 }

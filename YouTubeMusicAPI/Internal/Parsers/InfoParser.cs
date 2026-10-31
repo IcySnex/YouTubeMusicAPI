@@ -219,13 +219,35 @@ internal static class InfoParser
     }
 
     /// <summary>
+    /// Parses artist albums from the discography grid json token
+    /// </summary>
+    /// <param name="jsonToken">The json token containing the discography grid data</param>
+    /// <returns>An array of artist albums</returns>
+    public static ArtistAlbum[] GetArtistAlbumsGrid(
+        JObject jsonToken)
+    {
+        ArtistAlbum[] albums = jsonToken.SelectArtistAlbums(
+            "contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].gridRenderer.items");
+        if (albums.Length > 0)
+            return albums;
+
+        JToken? items = jsonToken.SelectToken("..gridRenderer.items");
+        if (items is not null)
+            return items.SelectArtistAlbums("");
+
+        return [];
+    }
+
+    /// <summary>
     /// Parses artist info data from the json token
     /// </summary>
     /// <param name="jsonToken">The json token containing the item data</param>
+    /// <param name="albums">Optional pre-parsed artist albums</param>
     /// <returns>The artist info</returns>
     /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
     public static ArtistInfo GetArtist(
-        JObject jsonToken)
+        JObject jsonToken,
+        ArtistAlbum[]? albums = null)
     {
         JToken? innerJsonToken = jsonToken.SelectToken("header.musicImmersiveHeaderRenderer");
         bool isRich = innerJsonToken is not null;
@@ -235,7 +257,7 @@ internal static class InfoParser
 
         string? allSongsPlaylistId = null;
         ArtistSong[] songs = [];
-        List<ArtistAlbum> albums = [];
+        List<ArtistAlbum> parsedAlbums = [];
         ArtistVideo[] videos = [];
         ArtistFeaturedOn[] featuredOns = [];
         ArtistsRelated[] related = [];
@@ -260,7 +282,12 @@ internal static class InfoParser
             {
                 case "Albums":
                 case "Singles":
-                    albums.AddRange(content.SelectArtistAlbums("musicCarouselShelfRenderer.contents"));
+                case "Singles & EPs":
+                case "Singles and EPs":
+                    if (albums is null)
+                    {
+                        parsedAlbums.AddRange(content.SelectArtistAlbums("musicCarouselShelfRenderer.contents"));
+                    }
                     break;
                 case "Videos":
                     videos = content.SelectArtistVideos("musicCarouselShelfRenderer.contents");
@@ -283,7 +310,7 @@ internal static class InfoParser
             thumbnails: innerJsonToken.SelectThumbnails(isRich ? "thumbnail.musicThumbnailRenderer.thumbnail.thumbnails" : "foregroundThumbnail.musicThumbnailRenderer.thumbnail.thumbnails"),
             allSongsPlaylistId: allSongsPlaylistId is null ? null : allSongsPlaylistId.StartsWith("VL") ? allSongsPlaylistId.Substring(2) : allSongsPlaylistId,
             songs: songs,
-            albums: [.. albums],
+            albums: albums ?? [.. parsedAlbums],
             videos: videos,
             featuredOns: featuredOns,
             related: related);

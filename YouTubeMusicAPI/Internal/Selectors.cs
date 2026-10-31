@@ -328,23 +328,63 @@ internal static class Selectors
     /// <returns>An array of artist albums</returns>
     public static ArtistAlbum[] SelectArtistAlbums(
         this JToken value,
-        string path)
+        string? path = null)
     {
         List<ArtistAlbum> result = [];
-        foreach (JToken content in value.SelectObject<JToken[]>(path))
+        JToken[]? contents = string.IsNullOrEmpty(path)
+            ? (value as JArray)?.ToArray() ?? value.SelectObjectOptional<JToken[]>(path!)
+            : value.SelectObjectOptional<JToken[]>(path!);
+
+        if (contents is null)
+            return [];
+
+        foreach (JToken content in contents)
         {
-            string kind = content.SelectObject<string>("musicTwoRowItemRenderer.subtitle.runs[0].text");
-            bool isAlbum = kind == "Album";
-            bool isEp = kind == "EP";
+            JToken itemRenderer = content.SelectToken("musicTwoRowItemRenderer") ?? content;
+
+            string? name = itemRenderer.SelectObjectOptional<string>("title.runs[0].text");
+            if (string.IsNullOrEmpty(name))
+                continue;
+
+            string? id = itemRenderer.SelectObjectOptional<string>("title.runs[0].navigationEndpoint.browseEndpoint.browseId")
+                ?? itemRenderer.SelectObjectOptional<string>("navigationEndpoint.browseEndpoint.browseId");
+            if (string.IsNullOrEmpty(id))
+                continue;
+
+            JToken[]? subtitleRuns = itemRenderer.SelectObjectOptional<JToken[]>("subtitle.runs");
+            string[] runs = subtitleRuns?
+                .Select(r => r.SelectToken("text")?.ToString() ?? "")
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToArray() ?? [];
+
+            bool isEp = runs.Any(r => string.Equals(r, "EP", StringComparison.OrdinalIgnoreCase));
+            bool isSingle = !isEp && runs.Any(r => string.Equals(r, "Single", StringComparison.OrdinalIgnoreCase));
+
+            int releaseYear = 0;
+            for (int i = runs.Length - 1; i >= 0; i--)
+            {
+                if (int.TryParse(runs[i].Trim(), out int parsedYear) && parsedYear > 0)
+                {
+                    releaseYear = parsedYear;
+                    break;
+                }
+            }
+
+            bool isExplicit = itemRenderer.SelectObjectOptional<JToken[]>("subtitleBadges")?
+                .Any(badge => badge.SelectToken("musicInlineBadgeRenderer.icon.iconType")?.ToString() == "MUSIC_EXPLICIT_BADGE") ?? false;
+
+            Thumbnail[] thumbnails = itemRenderer.SelectThumbnails("thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails");
+            if (thumbnails.Length == 0)
+                thumbnails = content.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails");
 
             result.Add(new(
-                name: content.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].text"),
-                id: content.SelectObject<string>("musicTwoRowItemRenderer.title.runs[0].navigationEndpoint.browseEndpoint.browseId"),
-                releaseYear: content.SelectObject<int>($"musicTwoRowItemRenderer.subtitle.runs[{(isAlbum || isEp ? "2" : "0")}].text"),
-                isSingle: !(isAlbum || isEp),
+                name: name!,
+                id: id!,
+                releaseYear: releaseYear,
+                isSingle: isSingle,
                 isEp: isEp,
-                isExplicit: content.SelectObjectOptional<JToken[]>("musicTwoRowItemRenderer.subtitleBadges")?.Any(badge => badge.SelectToken("musicInlineBadgeRenderer.icon.iconType")?.ToString() == "MUSIC_EXPLICIT_BADGE") ?? false,
-                thumbnails: content.SelectThumbnails("musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails")));
+                isExplicit: isExplicit,
+                thumbnails: thumbnails));
         }
 
         return [.. result];

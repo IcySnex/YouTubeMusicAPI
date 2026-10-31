@@ -485,7 +485,17 @@ public class YouTubeMusicClient
                             ArtistAlbum[] gridAlbums = InfoParser.GetArtistAlbumsGrid(discographyResponse);
                             if (gridAlbums.Length > 0)
                             {
-                                shelfAlbums = gridAlbums;
+                                ArtistAlbum[] previewAlbums = content.SelectArtistAlbums("musicCarouselShelfRenderer.contents");
+                                HashSet<string> seenIds = new(gridAlbums.Select(a => a.Id));
+                                List<ArtistAlbum> merged = [.. gridAlbums];
+                                foreach (ArtistAlbum preview in previewAlbums)
+                                {
+                                    if (seenIds.Add(preview.Id))
+                                    {
+                                        merged.Add(preview);
+                                    }
+                                }
+                                shelfAlbums = [.. merged];
                             }
                         }
                         catch (OperationCanceledException)

@@ -59,7 +59,7 @@ public class ArtistInfo(
     public ArtistSong[] Songs { get; } = songs;
 
     /// <summary>
-    /// The info of all albums of the artist
+    /// The preview carousel albums and singles/EPs displayed on the artist overview page (up to 10 releases each).
     /// </summary>
     public ArtistAlbum[] Albums { get; } = albums;
 

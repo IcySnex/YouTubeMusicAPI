@@ -422,11 +422,18 @@ public class YouTubeMusicClient
     }
 
     /// <summary>
-    /// Gets the information about a community playlist on YouTube Music
+    /// Gets the overview information about an artist on YouTube Music
     /// </summary>
-    /// <param name="browseId">The brwose id of the community playlist</param>
+    /// <param name="browseId">The browse id of the artist</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
-    /// <returns>The community playlist info</returns>
+    /// <returns>The artist info</returns>
+    /// <remarks>
+    /// The <see cref="ArtistInfo.Albums"/> property on the returned object only contains the preview carousel items
+    /// (up to 10 releases each for albums and singles/EPs) displayed on the main artist overview page.
+    /// To retrieve the complete discography of albums or singles/EPs, call
+    /// <see cref="GetArtistAlbumsAsync(ArtistInfo, CancellationToken)"/> or
+    /// <see cref="GetArtistSinglesAsync(ArtistInfo, CancellationToken)"/>, which follow the discography browse endpoints.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
     /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
     /// <exception cref="InvalidOperationException">May occurs when sending the web request fails</exception>

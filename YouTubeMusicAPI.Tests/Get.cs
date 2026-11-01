@@ -168,7 +168,7 @@ internal class Get
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            artist = await client.GetArtistInfoAsync("UCY2qt3dw2TQJxvBrDiYGHdQ");
+            artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
         });
         Assert.That(artist, Is.Not.Null);
         Assert.That(artist!.Albums, Is.Not.Empty);
@@ -177,7 +177,7 @@ internal class Get
         Assert.That(artist.SinglesEndpoint, Is.Not.Null, "Expected SinglesEndpoint to be populated from the More button");
         Assert.That(artist.SinglesEndpoint!.BrowseId, Is.Not.Null.And.Not.Empty);
 
-        logger.LogInformation("\nPink Floyd preview albums count: {count}", artist.Albums.Length);
+        logger.LogInformation("\nArtist preview albums count: {count}", artist.Albums.Length);
         logger.LogInformation("AlbumsEndpoint: browseId={browseId}, params={params}", artist.AlbumsEndpoint.BrowseId, artist.AlbumsEndpoint.Params);
     }
 
@@ -192,15 +192,15 @@ internal class Get
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            artist = await client.GetArtistInfoAsync("UCY2qt3dw2TQJxvBrDiYGHdQ");
+            artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
             albums = await client.GetArtistAlbumsAsync(artist!);
         });
 
         Assert.That(albums, Is.Not.Null);
-        Assert.That(albums!.Length, Is.GreaterThan(10));
-        Assert.That(albums.Any(album => album.Name.Contains("The Dark Side of the Moon")), Is.True, "Expected discography to include The Dark Side of the Moon");
+        Assert.That(albums!.Length, Is.GreaterThan(TestData.ExpectedMinDiscographyCount));
+        Assert.That(albums.Any(album => album.Name.Contains(TestData.ExpectedAlbumName)), Is.True, $"Expected discography to include '{TestData.ExpectedAlbumName}'");
 
-        logger.LogInformation("\nPink Floyd full albums count: {count}", albums.Length);
+        logger.LogInformation("\nArtist full albums count: {count}", albums.Length);
     }
 
     /// <summary>
@@ -214,13 +214,13 @@ internal class Get
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            artist = await client.GetArtistInfoAsync("UCY2qt3dw2TQJxvBrDiYGHdQ");
+            artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
             singles = await client.GetArtistSinglesAsync(artist!);
         });
 
         Assert.That(singles, Is.Not.Null);
-        Assert.That(singles!.Length, Is.GreaterThan(10));
+        Assert.That(singles!.Length, Is.GreaterThan(TestData.ExpectedMinDiscographyCount));
 
-        logger.LogInformation("\nPink Floyd full singles count: {count}", singles.Length);
+        logger.LogInformation("\nArtist full singles count: {count}", singles.Length);
     }
 }

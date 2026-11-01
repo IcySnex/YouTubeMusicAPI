@@ -256,6 +256,7 @@ internal static class InfoParser
         string? allSongsPlaylistId = null;
         ArtistSong[] songs = [];
         List<ArtistAlbum> albums = [];
+        List<ArtistAlbum> singlesAndEps = [];
         ArtistVideo[] videos = [];
         ArtistFeaturedOn[] featuredOns = [];
         ArtistsRelated[] related = [];
@@ -287,7 +288,7 @@ internal static class InfoParser
                 case "Singles":
                 case "Singles & EPs":
                 case "Singles and EPs":
-                    albums.AddRange(content.SelectArtistAlbums("musicCarouselShelfRenderer.contents"));
+                    singlesAndEps.AddRange(content.SelectArtistAlbums("musicCarouselShelfRenderer.contents"));
                     singlesEndpoint = content.SelectBrowseEndpoint("musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint");
                     break;
                 case "Videos":
@@ -316,6 +317,7 @@ internal static class InfoParser
             featuredOns: featuredOns,
             related: related,
             albumsEndpoint: albumsEndpoint,
-            singlesEndpoint: singlesEndpoint);
+            singlesEndpoint: singlesEndpoint,
+            singlesAndEps: [.. singlesAndEps]);
     }
 }

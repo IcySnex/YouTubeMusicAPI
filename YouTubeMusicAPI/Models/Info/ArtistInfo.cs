@@ -17,6 +17,7 @@ namespace YouTubeMusicAPI.Models.Info;
 /// <param name="related">The info of all related artists of the artist</param>
 /// <param name="albumsEndpoint">The endpoint to browse the full albums discography</param>
 /// <param name="singlesEndpoint">The endpoint to browse the full singles and EPs discography</param>
+/// <param name="singlesAndEps">The preview carousel singles and EPs displayed on the artist overview page</param>
 public class ArtistInfo(
     string name,
     string id,
@@ -31,7 +32,8 @@ public class ArtistInfo(
     ArtistFeaturedOn[] featuredOns,
     ArtistsRelated[] related,
     BrowseEndpoint? albumsEndpoint = null,
-    BrowseEndpoint? singlesEndpoint = null) : EntityInfo(name, id, thumbnails)
+    BrowseEndpoint? singlesEndpoint = null,
+    ArtistAlbum[]? singlesAndEps = null) : EntityInfo(name, id, thumbnails)
 {
     /// <summary>
     /// The description of the artist
@@ -59,9 +61,14 @@ public class ArtistInfo(
     public ArtistSong[] Songs { get; } = songs;
 
     /// <summary>
-    /// The preview carousel albums and singles/EPs displayed on the artist overview page (up to 10 releases each).
+    /// The preview carousel albums displayed on the artist overview page (up to 10 releases).
     /// </summary>
     public ArtistAlbum[] Albums { get; } = albums;
+
+    /// <summary>
+    /// The preview carousel singles and EPs displayed on the artist overview page (up to 10 releases).
+    /// </summary>
+    public ArtistAlbum[] SinglesAndEps { get; } = singlesAndEps ?? [];
 
     /// <summary>
     /// The info of all videos of the artist
@@ -86,6 +93,11 @@ public class ArtistInfo(
     /// <summary>
     /// The endpoint to browse the full singles and EPs discography
     /// </summary>
-    public BrowseEndpoint? SinglesEndpoint { get; } = singlesEndpoint;
+    public BrowseEndpoint? SinglesEndpoint => SinglesAndEpsEndpoint;
+
+    /// <summary>
+    /// The endpoint to browse the full singles and EPs discography
+    /// </summary>
+    public BrowseEndpoint? SinglesAndEpsEndpoint { get; } = singlesEndpoint;
 
 }

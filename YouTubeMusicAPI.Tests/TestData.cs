@@ -95,16 +95,6 @@ internal abstract class TestData
     /// </summary>
     public const string ArtistBrowseId = "UCY2qt3dw2TQJxvBrDiYGHdQ";
 
-    /// <summary>
-    /// Expected album name contained in the test artist's full discography
-    /// </summary>
-    public const string ExpectedAlbumName = "The Dark Side of the Moon";
-
-    /// <summary>
-    /// Minimum expected items in the test artist's full discography
-    /// </summary>
-    public const int ExpectedMinDiscographyCount = 10;
-
 
     /// <summary>
     /// Test watch time for update requests

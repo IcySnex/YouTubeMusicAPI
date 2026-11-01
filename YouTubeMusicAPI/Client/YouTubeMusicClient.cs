@@ -518,7 +518,7 @@ public class YouTubeMusicClient
 
         if (artist.AlbumsEndpoint is null)
         {
-            return Task.FromResult(artist.Albums.Where(a => !a.IsSingle && !a.IsEp).ToArray());
+            return Task.FromResult(artist.Albums);
         }
 
         return GetArtistAlbumsAsync(artist.AlbumsEndpoint.BrowseId, artist.AlbumsEndpoint.Params, cancellationToken);
@@ -527,27 +527,42 @@ public class YouTubeMusicClient
     /// <summary>
     /// Gets all singles and EPs of an artist from the artist information
     /// </summary>
+    /// <param name="artist">The artist information containing the singles and EPs endpoint</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>An array of artist singles and EPs</returns>
+    /// <exception cref="ArgumentNullException">Occurs when artist parameter is null</exception>
+    public Task<ArtistAlbum[]> GetArtistSinglesAndEpsAsync(
+        ArtistInfo artist,
+        CancellationToken cancellationToken = default)
+    {
+        if (artist is null)
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetArtistSinglesAndEpsAsync] Getting singles and EPs failed. Artist parameter is null.");
+            throw new ArgumentNullException(nameof(artist), "Getting singles and EPs failed. Artist parameter is null.");
+        }
+
+        if (artist.SinglesAndEpsEndpoint is null)
+        {
+            return Task.FromResult(artist.SinglesAndEps);
+        }
+
+        return GetArtistAlbumsAsync(artist.SinglesAndEpsEndpoint.BrowseId, artist.SinglesAndEpsEndpoint.Params, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets all singles and EPs of an artist from the artist information
+    /// </summary>
+    /// <remarks>
+    /// Alias for <see cref="GetArtistSinglesAndEpsAsync(ArtistInfo, CancellationToken)"/>.
+    /// </remarks>
     /// <param name="artist">The artist information containing the singles endpoint</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>An array of artist singles and EPs</returns>
     /// <exception cref="ArgumentNullException">Occurs when artist parameter is null</exception>
     public Task<ArtistAlbum[]> GetArtistSinglesAsync(
         ArtistInfo artist,
-        CancellationToken cancellationToken = default)
-    {
-        if (artist is null)
-        {
-            logger?.LogError($"[YouTubeMusicClient-GetArtistSinglesAsync] Getting singles failed. Artist parameter is null.");
-            throw new ArgumentNullException(nameof(artist), "Getting singles failed. Artist parameter is null.");
-        }
-
-        if (artist.SinglesEndpoint is null)
-        {
-            return Task.FromResult(artist.Albums.Where(a => a.IsSingle || a.IsEp).ToArray());
-        }
-
-        return GetArtistAlbumsAsync(artist.SinglesEndpoint.BrowseId, artist.SinglesEndpoint.Params, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) =>
+        GetArtistSinglesAndEpsAsync(artist, cancellationToken);
 
 
     /// <summary>

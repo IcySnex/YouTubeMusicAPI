@@ -1,4 +1,4 @@
-﻿namespace YouTubeMusicAPI.Models.Info;
+namespace YouTubeMusicAPI.Models.Info;
 
 /// <summary>
 /// Contains information about a YouTube Music artist
@@ -15,6 +15,8 @@
 /// <param name="videos">The info of all videos in artist</param>
 /// <param name="featuredOns">The info of all artist featured on playlists</param>
 /// <param name="related">The info of all related artists of the artist</param>
+/// <param name="albumsEndpoint">The endpoint to browse the full albums discography</param>
+/// <param name="singlesEndpoint">The endpoint to browse the full singles and EPs discography</param>
 public class ArtistInfo(
     string name,
     string id,
@@ -27,7 +29,9 @@ public class ArtistInfo(
     ArtistAlbum[] albums,
     ArtistVideo[] videos,
     ArtistFeaturedOn[] featuredOns,
-    ArtistsRelated[] related) : EntityInfo(name, id, thumbnails)
+    ArtistsRelated[] related,
+    BrowseEndpoint? albumsEndpoint = null,
+    BrowseEndpoint? singlesEndpoint = null) : EntityInfo(name, id, thumbnails)
 {
     /// <summary>
     /// The description of the artist
@@ -73,5 +77,15 @@ public class ArtistInfo(
     /// The info of all related artists of the artist
     /// </summary>
     public ArtistsRelated[] Related { get; } = related;
+
+    /// <summary>
+    /// The endpoint to browse the full albums discography
+    /// </summary>
+    public BrowseEndpoint? AlbumsEndpoint { get; } = albumsEndpoint;
+
+    /// <summary>
+    /// The endpoint to browse the full singles and EPs discography
+    /// </summary>
+    public BrowseEndpoint? SinglesEndpoint { get; } = singlesEndpoint;
 
 }

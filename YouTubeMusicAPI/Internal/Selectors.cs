@@ -83,6 +83,28 @@ internal static class Selectors
         string idPath) =>
         value.SelectObjectOptional<string>(namePath) is string name ? new(name, value.SelectObjectOptional<string>(idPath)) : null;
 
+    /// <summary>
+    /// Selects and casts an optional browse endpoint from a json token
+    /// </summary>
+    /// <param name="value">The json token containing the endpoint data</param>
+    /// <param name="path">The json token path</param>
+    /// <returns>A new browse endpoint, or null if the browse ID was not found</returns>
+    public static BrowseEndpoint? SelectBrowseEndpoint(
+        this JToken value,
+        string path)
+    {
+        JToken? endpointToken = value.SelectToken(path);
+        if (endpointToken is null)
+            return null;
+
+        string? browseId = endpointToken.SelectToken("browseId")?.ToString();
+        if (string.IsNullOrEmpty(browseId))
+            return null;
+
+        string? @params = endpointToken.SelectToken("params")?.ToString();
+        return new(browseId!, @params);
+    }
+
 
     /// <summary>
     /// Selects and casts a radio from a json token

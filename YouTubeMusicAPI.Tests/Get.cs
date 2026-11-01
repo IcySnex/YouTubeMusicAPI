@@ -159,10 +159,10 @@ internal class Get
     }
 
     /// <summary>
-    /// Get artist information for an artist with more than 10 albums, verifying the "More" button is followed
+    /// Get artist information and verify discography endpoints are populated
     /// </summary>
     [Test]
-    public void Artist_MoreContentDiscography()
+    public void Artist_OverviewWithDiscographyEndpoints()
     {
         ArtistInfo? artist = null;
 
@@ -171,10 +171,56 @@ internal class Get
             artist = await client.GetArtistInfoAsync("UCY2qt3dw2TQJxvBrDiYGHdQ");
         });
         Assert.That(artist, Is.Not.Null);
-        Assert.That(artist!.Albums.Length, Is.GreaterThan(10));
-        Assert.That(artist.Albums.Any(album => album.Name.Contains("The Dark Side of the Moon")), Is.True, "Expected discography to include The Dark Side of the Moon");
+        Assert.That(artist!.Albums, Is.Not.Empty);
+        Assert.That(artist.AlbumsEndpoint, Is.Not.Null, "Expected AlbumsEndpoint to be populated from the More button");
+        Assert.That(artist.AlbumsEndpoint!.BrowseId, Is.Not.Null.And.Not.Empty);
+        Assert.That(artist.SinglesEndpoint, Is.Not.Null, "Expected SinglesEndpoint to be populated from the More button");
+        Assert.That(artist.SinglesEndpoint!.BrowseId, Is.Not.Null.And.Not.Empty);
 
-        // Output
-        logger.LogInformation("\nPink Floyd Albums Count: {count}", artist.Albums.Length);
+        logger.LogInformation("\nPink Floyd preview albums count: {count}", artist.Albums.Length);
+        logger.LogInformation("AlbumsEndpoint: browseId={browseId}, params={params}", artist.AlbumsEndpoint.BrowseId, artist.AlbumsEndpoint.Params);
+    }
+
+    /// <summary>
+    /// Get full artist albums discography using GetArtistAlbumsAsync
+    /// </summary>
+    [Test]
+    public void Artist_GetArtistAlbumsAsync_ReturnsFullDiscography()
+    {
+        ArtistInfo? artist = null;
+        ArtistAlbum[]? albums = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            artist = await client.GetArtistInfoAsync("UCY2qt3dw2TQJxvBrDiYGHdQ");
+            albums = await client.GetArtistAlbumsAsync(artist!);
+        });
+
+        Assert.That(albums, Is.Not.Null);
+        Assert.That(albums!.Length, Is.GreaterThan(10));
+        Assert.That(albums.Any(album => album.Name.Contains("The Dark Side of the Moon")), Is.True, "Expected discography to include The Dark Side of the Moon");
+
+        logger.LogInformation("\nPink Floyd full albums count: {count}", albums.Length);
+    }
+
+    /// <summary>
+    /// Get full artist singles and EPs discography using GetArtistSinglesAsync
+    /// </summary>
+    [Test]
+    public void Artist_GetArtistSinglesAsync_ReturnsFullSingles()
+    {
+        ArtistInfo? artist = null;
+        ArtistAlbum[]? singles = null;
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            artist = await client.GetArtistInfoAsync("UCY2qt3dw2TQJxvBrDiYGHdQ");
+            singles = await client.GetArtistSinglesAsync(artist!);
+        });
+
+        Assert.That(singles, Is.Not.Null);
+        Assert.That(singles!.Length, Is.GreaterThan(10));
+
+        logger.LogInformation("\nPink Floyd full singles count: {count}", singles.Length);
     }
 }

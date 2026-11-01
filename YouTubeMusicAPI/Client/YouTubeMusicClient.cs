@@ -450,73 +450,96 @@ public class YouTubeMusicClient
             ]);
         JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
 
-        // Parse album and single sections, following "More" buttons when available
-        JToken[]? contents = requestResponse.SelectObjectOptional<JToken[]>(
-            "contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents");
+        // Parse request response
+        ArtistInfo info = InfoParser.GetArtist(requestResponse);
+        return info;
+    }
 
-        List<ArtistAlbum> albums = [];
-
-        if (contents is not null)
+    /// <summary>
+    /// Gets all albums (or singles) of an artist from the full discography browse endpoint
+    /// </summary>
+    /// <param name="browseId">The browse id of the artist discography</param>
+    /// <param name="params">The optional browse params of the artist discography</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>An array of artist albums</returns>
+    /// <exception cref="ArgumentNullException">Occurs when browse id parameter is null or whitespace</exception>
+    /// <exception cref="NotSupportedException">May occur when the json serialization fails</exception>
+    /// <exception cref="InvalidOperationException">May occur when sending the web request fails</exception>
+    /// <exception cref="HttpRequestException">May occur when sending the web request fails</exception>
+    /// <exception cref="TaskCanceledException">Occurs when the task was cancelled</exception>
+    public async Task<ArtistAlbum[]> GetArtistAlbumsAsync(
+        string browseId,
+        string? @params = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Prepare request
+        if (string.IsNullOrWhiteSpace(browseId))
         {
-            foreach (JToken content in contents)
-            {
-                string? shelfTitle = content.SelectObjectOptional<string>(
-                    "musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.title.runs[0].text");
-
-                if (shelfTitle is "Albums" or "Singles" or "Singles & EPs" or "Singles and EPs")
-                {
-                    string? moreBrowseId = content.SelectObjectOptional<string>(
-                        "musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint.browseId");
-                    string? moreParams = content.SelectObjectOptional<string>(
-                        "musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint.params");
-
-                    ArtistAlbum[]? shelfAlbums = null;
-
-                    if (!string.IsNullOrEmpty(moreBrowseId))
-                    {
-                        try
-                        {
-                            Dictionary<string, object> morePayload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
-                                [
-                                    ("browseId", moreBrowseId),
-                                    ("params", moreParams)
-                                ]);
-                            JObject discographyResponse = await baseClient.SendRequestAsync(Endpoints.Browse, morePayload, cancellationToken);
-                            ArtistAlbum[] gridAlbums = InfoParser.GetArtistAlbumsGrid(discographyResponse);
-                            if (gridAlbums.Length > 0)
-                            {
-                                ArtistAlbum[] previewAlbums = content.SelectArtistAlbums("musicCarouselShelfRenderer.contents");
-                                HashSet<string> seenIds = new(gridAlbums.Select(a => a.Id));
-                                List<ArtistAlbum> merged = [.. gridAlbums];
-                                foreach (ArtistAlbum preview in previewAlbums)
-                                {
-                                    if (seenIds.Add(preview.Id))
-                                    {
-                                        merged.Add(preview);
-                                    }
-                                }
-                                shelfAlbums = [.. merged];
-                            }
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception ex)
-                        {
-                            logger?.LogWarning(ex, "[YouTubeMusicClient-GetArtistInfoAsync] Failed to fetch full discography for shelf '{shelfTitle}'. Falling back to preview items.", shelfTitle);
-                        }
-                    }
-
-                    shelfAlbums ??= content.SelectArtistAlbums("musicCarouselShelfRenderer.contents");
-                    albums.AddRange(shelfAlbums);
-                }
-            }
+            logger?.LogError($"[YouTubeMusicClient-GetArtistAlbumsAsync] Getting albums failed. Browse id parameter is null or whitespace.");
+            throw new ArgumentNullException(nameof(browseId), "Getting albums failed. Browse id parameter is null or whitespace.");
         }
 
+        // Send request
+        Dictionary<string, object> payload = Payload.WebRemix(GeographicalLocation, VisitorData, PoToken, null,
+            [
+                ("browseId", browseId),
+                ("params", @params)
+            ]);
+        JObject requestResponse = await baseClient.SendRequestAsync(Endpoints.Browse, payload, cancellationToken);
+
         // Parse request response
-        ArtistInfo info = InfoParser.GetArtist(requestResponse, [.. albums]);
-        return info;
+        ArtistAlbum[] albums = InfoParser.GetArtistAlbumsGrid(requestResponse);
+        return albums;
+    }
+
+    /// <summary>
+    /// Gets all albums of an artist from the artist information
+    /// </summary>
+    /// <param name="artist">The artist information containing the albums endpoint</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>An array of artist albums</returns>
+    /// <exception cref="ArgumentNullException">Occurs when artist parameter is null</exception>
+    public Task<ArtistAlbum[]> GetArtistAlbumsAsync(
+        ArtistInfo artist,
+        CancellationToken cancellationToken = default)
+    {
+        if (artist is null)
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetArtistAlbumsAsync] Getting albums failed. Artist parameter is null.");
+            throw new ArgumentNullException(nameof(artist), "Getting albums failed. Artist parameter is null.");
+        }
+
+        if (artist.AlbumsEndpoint is null)
+        {
+            return Task.FromResult(artist.Albums.Where(a => !a.IsSingle && !a.IsEp).ToArray());
+        }
+
+        return GetArtistAlbumsAsync(artist.AlbumsEndpoint.BrowseId, artist.AlbumsEndpoint.Params, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets all singles and EPs of an artist from the artist information
+    /// </summary>
+    /// <param name="artist">The artist information containing the singles endpoint</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
+    /// <returns>An array of artist singles and EPs</returns>
+    /// <exception cref="ArgumentNullException">Occurs when artist parameter is null</exception>
+    public Task<ArtistAlbum[]> GetArtistSinglesAsync(
+        ArtistInfo artist,
+        CancellationToken cancellationToken = default)
+    {
+        if (artist is null)
+        {
+            logger?.LogError($"[YouTubeMusicClient-GetArtistSinglesAsync] Getting singles failed. Artist parameter is null.");
+            throw new ArgumentNullException(nameof(artist), "Getting singles failed. Artist parameter is null.");
+        }
+
+        if (artist.SinglesEndpoint is null)
+        {
+            return Task.FromResult(artist.Albums.Where(a => a.IsSingle || a.IsEp).ToArray());
+        }
+
+        return GetArtistAlbumsAsync(artist.SinglesEndpoint.BrowseId, artist.SinglesEndpoint.Params, cancellationToken);
     }
 
 

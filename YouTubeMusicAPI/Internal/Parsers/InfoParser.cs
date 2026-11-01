@@ -242,12 +242,10 @@ internal static class InfoParser
     /// Parses artist info data from the json token
     /// </summary>
     /// <param name="jsonToken">The json token containing the item data</param>
-    /// <param name="albums">Optional pre-parsed artist albums</param>
     /// <returns>The artist info</returns>
     /// <exception cref="ArgumentNullException">Occurs when some parsed info is null</exception>
     public static ArtistInfo GetArtist(
-        JObject jsonToken,
-        ArtistAlbum[]? albums = null)
+        JObject jsonToken)
     {
         JToken? innerJsonToken = jsonToken.SelectToken("header.musicImmersiveHeaderRenderer");
         bool isRich = innerJsonToken is not null;
@@ -257,10 +255,12 @@ internal static class InfoParser
 
         string? allSongsPlaylistId = null;
         ArtistSong[] songs = [];
-        List<ArtistAlbum> parsedAlbums = [];
+        List<ArtistAlbum> albums = [];
         ArtistVideo[] videos = [];
         ArtistFeaturedOn[] featuredOns = [];
         ArtistsRelated[] related = [];
+        BrowseEndpoint? albumsEndpoint = null;
+        BrowseEndpoint? singlesEndpoint = null;
 
         string? viewsInfo = null;
 
@@ -281,13 +281,14 @@ internal static class InfoParser
             switch (content.SelectObjectOptional<string>("musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.title.runs[0].text"))
             {
                 case "Albums":
+                    albums.AddRange(content.SelectArtistAlbums("musicCarouselShelfRenderer.contents"));
+                    albumsEndpoint = content.SelectBrowseEndpoint("musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint");
+                    break;
                 case "Singles":
                 case "Singles & EPs":
                 case "Singles and EPs":
-                    if (albums is null)
-                    {
-                        parsedAlbums.AddRange(content.SelectArtistAlbums("musicCarouselShelfRenderer.contents"));
-                    }
+                    albums.AddRange(content.SelectArtistAlbums("musicCarouselShelfRenderer.contents"));
+                    singlesEndpoint = content.SelectBrowseEndpoint("musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint");
                     break;
                 case "Videos":
                     videos = content.SelectArtistVideos("musicCarouselShelfRenderer.contents");
@@ -310,9 +311,11 @@ internal static class InfoParser
             thumbnails: innerJsonToken.SelectThumbnails(isRich ? "thumbnail.musicThumbnailRenderer.thumbnail.thumbnails" : "foregroundThumbnail.musicThumbnailRenderer.thumbnail.thumbnails"),
             allSongsPlaylistId: allSongsPlaylistId is null ? null : allSongsPlaylistId.StartsWith("VL") ? allSongsPlaylistId.Substring(2) : allSongsPlaylistId,
             songs: songs,
-            albums: albums ?? [.. parsedAlbums],
+            albums: [.. albums],
             videos: videos,
             featuredOns: featuredOns,
-            related: related);
+            related: related,
+            albumsEndpoint: albumsEndpoint,
+            singlesEndpoint: singlesEndpoint);
     }
 }

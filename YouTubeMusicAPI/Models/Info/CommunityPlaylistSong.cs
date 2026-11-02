@@ -22,7 +22,7 @@ public class CommunityPlaylistSong(
     /// <summary>
     /// The id of this entity
     /// </summary>
-    public override string Id { get; } = id;
+    public override string? Id { get; } = id;
 
 
     /// <summary>

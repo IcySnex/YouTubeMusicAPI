@@ -43,7 +43,7 @@ internal class Get
         // Output
         logger.LogInformation("\nAlbum Browse Id: {browseId} ", browseId);
     }
-    
+
     /// <summary>
     /// Get browse id from a playlist
     /// </summary>
@@ -118,6 +118,7 @@ internal class Get
         string readableResults = JsonConvert.SerializeObject(communityPlaylist, Formatting.Indented);
         logger.LogInformation("\nPlaylist Info:\n{readableResults}", readableResults);
     }
+
     /// <summary>
     /// Get community playlist information
     /// </summary>
@@ -159,70 +160,48 @@ internal class Get
     }
 
     /// <summary>
-    /// Get artist information and verify discography endpoints are populated
+    /// Get artist albums
     /// </summary>
     [Test]
-    public void Artist_OverviewWithDiscographyEndpoints()
+    public async Task ArtistAlbums()
     {
-        ArtistInfo? artist = null;
+        ArtistInfo artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
+        Assert.That(artist.AlbumsEndpoint, Is.Not.Null, "Expected AlbumsEndpoint to be populated, use different test data");
 
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
-        });
-        Assert.That(artist, Is.Not.Null);
-        Assert.That(artist!.Albums, Is.Not.Empty);
-        Assert.That(artist.SinglesAndEps, Is.Not.Empty);
-        Assert.That(artist.AlbumsEndpoint, Is.Not.Null, "Expected AlbumsEndpoint to be populated from the More button");
-        Assert.That(artist.AlbumsEndpoint!.BrowseId, Is.Not.Null.And.Not.Empty);
-        Assert.That(artist.SinglesAndEpsEndpoint, Is.Not.Null, "Expected SinglesAndEpsEndpoint to be populated from the More button");
-        Assert.That(artist.SinglesAndEpsEndpoint!.BrowseId, Is.Not.Null.And.Not.Empty);
-
-        logger.LogInformation("\nArtist preview albums count: {count}", artist.Albums.Length);
-        logger.LogInformation("Artist preview singles/EPs count: {count}", artist.SinglesAndEps.Length);
-        logger.LogInformation("AlbumsEndpoint: browseId={browseId}, params={params}", artist.AlbumsEndpoint.BrowseId, artist.AlbumsEndpoint.Params);
-        logger.LogInformation("SinglesAndEpsEndpoint: browseId={browseId}, params={params}", artist.SinglesAndEpsEndpoint.BrowseId, artist.SinglesAndEpsEndpoint.Params);
-    }
-
-    /// <summary>
-    /// Get full artist albums discography using GetArtistAlbumsAsync
-    /// </summary>
-    [Test]
-    public void Artist_GetArtistAlbumsAsync_ReturnsFullDiscography()
-    {
-        ArtistInfo? artist = null;
         ArtistAlbum[]? albums = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
-            albums = await client.GetArtistAlbumsAsync(artist!);
+            albums = await client.GetArtistAlbumsAsync(artist.AlbumsEndpoint.BrowseId, artist.AlbumsEndpoint.Params);
         });
 
-        Assert.That(albums, Is.Not.Null);
-        Assert.That(albums!, Is.Not.Empty);
+        Assert.That(albums, Is.Not.Null.And.Not.Empty);
 
-        logger.LogInformation("\nArtist full albums count: {count}", albums!.Length);
+        // Output
+        string readableResults = JsonConvert.SerializeObject(albums, Formatting.Indented);
+        logger.LogInformation("\nArtist Albums ({count}):\n{readableResults}", albums.Length, readableResults);
     }
 
     /// <summary>
-    /// Get full artist singles and EPs discography using GetArtistSinglesAndEpsAsync
+    /// Get artist albums
     /// </summary>
     [Test]
-    public void Artist_GetArtistSinglesAndEpsAsync_ReturnsFullSingles()
+    public async Task ArtistSinglesAndEps()
     {
-        ArtistInfo? artist = null;
-        ArtistAlbum[]? singles = null;
+        ArtistInfo artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
+        Assert.That(artist.SinglesAndEpsEndpoint, Is.Not.Null, "Expected AlbumsEndpoint to be populated, use different test data");
+
+        ArtistAlbum[]? albums = null;
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            artist = await client.GetArtistInfoAsync(TestData.ArtistBrowseId);
-            singles = await client.GetArtistSinglesAndEpsAsync(artist!);
+            albums = await client.GetArtistAlbumsAsync(artist.SinglesAndEpsEndpoint.BrowseId, artist.SinglesAndEpsEndpoint.Params);
         });
 
-        Assert.That(singles, Is.Not.Null);
-        Assert.That(singles!, Is.Not.Empty);
+        Assert.That(albums, Is.Not.Null.And.Not.Empty);
 
-        logger.LogInformation("\nArtist full singles count: {count}", singles!.Length);
+        // Output
+        string readableResults = JsonConvert.SerializeObject(albums, Formatting.Indented);
+        logger.LogInformation("\nArtist Singles and EPs ({count}):\n{readableResults}", albums.Length, readableResults);
     }
 }

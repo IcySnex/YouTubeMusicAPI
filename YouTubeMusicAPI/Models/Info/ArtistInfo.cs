@@ -12,12 +12,12 @@ namespace YouTubeMusicAPI.Models.Info;
 /// <param name="allSongsPlaylistId">The id of the playlist containing all songs of the artist</param>
 /// <param name="songs">The info of all songs in artist</param>
 /// <param name="albums">The info of all albums in artist</param>
+/// <param name="singlesAndEps">The info of preview singles and EPs of the artist</param>
 /// <param name="videos">The info of all videos in artist</param>
 /// <param name="featuredOns">The info of all artist featured on playlists</param>
 /// <param name="related">The info of all related artists of the artist</param>
-/// <param name="albumsEndpoint">The endpoint to browse the full albums discography, or <see langword="null"/> if the artist has 10 or fewer albums and no "More" button was present (meaning <paramref name="albums"/> is already complete)</param>
-/// <param name="singlesAndEpsEndpoint">The endpoint to browse the full singles and EPs discography, or <see langword="null"/> if the artist has 10 or fewer singles/EPs and no "More" button was present (meaning <paramref name="singlesAndEps"/> is already complete)</param>
-/// <param name="singlesAndEps">The preview carousel singles and EPs displayed on the artist overview page</param>
+/// <param name="albumsEndpoint">The endpoint to browse the full list of albums, or <see langword="null"/> if the artist has 10 or fewer albums</param>
+/// <param name="singlesAndEpsEndpoint">The endpoint to browse the full list of singles and EPs, or <see langword="null"/> if the artist has 10 or fewer singles/EPs</param>
 public class ArtistInfo(
     string name,
     string id,
@@ -28,12 +28,12 @@ public class ArtistInfo(
     string? allSongsPlaylistId,
     ArtistSong[] songs,
     ArtistAlbum[] albums,
+    ArtistAlbum[] singlesAndEps,
     ArtistVideo[] videos,
     ArtistFeaturedOn[] featuredOns,
     ArtistsRelated[] related,
     BrowseEndpoint? albumsEndpoint = null,
-    BrowseEndpoint? singlesAndEpsEndpoint = null,
-    ArtistAlbum[]? singlesAndEps = null) : EntityInfo(name, id, thumbnails)
+    BrowseEndpoint? singlesAndEpsEndpoint = null) : EntityInfo(name, id, thumbnails)
 {
     /// <summary>
     /// The description of the artist
@@ -61,24 +61,14 @@ public class ArtistInfo(
     public ArtistSong[] Songs { get; } = songs;
 
     /// <summary>
-    /// The preview carousel albums displayed on the artist overview page (up to 10 releases).
+    /// The info of preview albums of the artist
     /// </summary>
-    /// <remarks>
-    /// If <see cref="AlbumsEndpoint"/> is <see langword="null"/>, no "More" button was present on YouTube Music
-    /// (e.g. the artist has 10 or fewer albums), meaning this collection already contains all albums by the artist.
-    /// Otherwise, call <c>YouTubeMusicClient.GetArtistAlbumsAsync(artist)</c> to fetch the complete albums discography.
-    /// </remarks>
     public ArtistAlbum[] Albums { get; } = albums;
 
     /// <summary>
-    /// The preview carousel singles and EPs displayed on the artist overview page (up to 10 releases).
+    /// The info of preview singles and EPs of the artist
     /// </summary>
-    /// <remarks>
-    /// If <see cref="SinglesAndEpsEndpoint"/> is <see langword="null"/>, no "More" button was present on YouTube Music
-    /// (e.g. the artist has 10 or fewer singles/EPs), meaning this collection already contains all singles and EPs by the artist.
-    /// Otherwise, call <c>YouTubeMusicClient.GetArtistSinglesAndEpsAsync(artist)</c> to fetch the complete singles and EPs discography.
-    /// </remarks>
-    public ArtistAlbum[] SinglesAndEps { get; } = singlesAndEps ?? [];
+    public ArtistAlbum[] SinglesAndEps { get; } = singlesAndEps;
 
     /// <summary>
     /// The info of all videos of the artist
@@ -96,23 +86,18 @@ public class ArtistInfo(
     public ArtistsRelated[] Related { get; } = related;
 
     /// <summary>
-    /// The endpoint to browse the full albums discography
+    /// The endpoint to browse the full list of albums
     /// </summary>
     /// <remarks>
-    /// Populated from the "More" button on the artist overview page's albums carousel.
-    /// If <see langword="null"/>, no "More" button was present on YouTube Music (typically when an artist has 10 or fewer albums),
-    /// indicating that <see cref="Albums"/> is already exhaustive and complete without requiring a secondary network call.
+    /// If <see langword="null"/>, the artist has 10 or fewer albums, indicating that <see cref="Albums"/> is already completed.
     /// </remarks>
     public BrowseEndpoint? AlbumsEndpoint { get; } = albumsEndpoint;
 
     /// <summary>
-    /// The endpoint to browse the full singles and EPs discography
+    /// The endpoint to browse the full list of singles and EPs
     /// </summary>
     /// <remarks>
-    /// Populated from the "More" button on the artist overview page's singles and EPs carousel.
-    /// If <see langword="null"/>, no "More" button was present on YouTube Music (typically when an artist has 10 or fewer singles/EPs),
-    /// indicating that <see cref="SinglesAndEps"/> is already exhaustive and complete without requiring a secondary network call.
+    /// If <see langword="null"/>, the artist has 10 or fewer singles/EPs, indicating that <see cref="SinglesAndEps"/> is already completed.
     /// </remarks>
     public BrowseEndpoint? SinglesAndEpsEndpoint { get; } = singlesAndEpsEndpoint;
-
 }

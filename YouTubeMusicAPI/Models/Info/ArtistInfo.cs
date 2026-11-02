@@ -15,8 +15,8 @@ namespace YouTubeMusicAPI.Models.Info;
 /// <param name="videos">The info of all videos in artist</param>
 /// <param name="featuredOns">The info of all artist featured on playlists</param>
 /// <param name="related">The info of all related artists of the artist</param>
-/// <param name="albumsEndpoint">The endpoint to browse the full albums discography</param>
-/// <param name="singlesAndEpsEndpoint">The endpoint to browse the full singles and EPs discography</param>
+/// <param name="albumsEndpoint">The endpoint to browse the full albums discography, or <see langword="null"/> if the artist has 10 or fewer albums and no "More" button was present (meaning <paramref name="albums"/> is already complete)</param>
+/// <param name="singlesAndEpsEndpoint">The endpoint to browse the full singles and EPs discography, or <see langword="null"/> if the artist has 10 or fewer singles/EPs and no "More" button was present (meaning <paramref name="singlesAndEps"/> is already complete)</param>
 /// <param name="singlesAndEps">The preview carousel singles and EPs displayed on the artist overview page</param>
 public class ArtistInfo(
     string name,
@@ -63,11 +63,21 @@ public class ArtistInfo(
     /// <summary>
     /// The preview carousel albums displayed on the artist overview page (up to 10 releases).
     /// </summary>
+    /// <remarks>
+    /// If <see cref="AlbumsEndpoint"/> is <see langword="null"/>, no "More" button was present on YouTube Music
+    /// (e.g. the artist has 10 or fewer albums), meaning this collection already contains all albums by the artist.
+    /// Otherwise, call <c>YouTubeMusicClient.GetArtistAlbumsAsync(artist)</c> to fetch the complete albums discography.
+    /// </remarks>
     public ArtistAlbum[] Albums { get; } = albums;
 
     /// <summary>
     /// The preview carousel singles and EPs displayed on the artist overview page (up to 10 releases).
     /// </summary>
+    /// <remarks>
+    /// If <see cref="SinglesAndEpsEndpoint"/> is <see langword="null"/>, no "More" button was present on YouTube Music
+    /// (e.g. the artist has 10 or fewer singles/EPs), meaning this collection already contains all singles and EPs by the artist.
+    /// Otherwise, call <c>YouTubeMusicClient.GetArtistSinglesAndEpsAsync(artist)</c> to fetch the complete singles and EPs discography.
+    /// </remarks>
     public ArtistAlbum[] SinglesAndEps { get; } = singlesAndEps ?? [];
 
     /// <summary>
@@ -88,11 +98,21 @@ public class ArtistInfo(
     /// <summary>
     /// The endpoint to browse the full albums discography
     /// </summary>
+    /// <remarks>
+    /// Populated from the "More" button on the artist overview page's albums carousel.
+    /// If <see langword="null"/>, no "More" button was present on YouTube Music (typically when an artist has 10 or fewer albums),
+    /// indicating that <see cref="Albums"/> is already exhaustive and complete without requiring a secondary network call.
+    /// </remarks>
     public BrowseEndpoint? AlbumsEndpoint { get; } = albumsEndpoint;
 
     /// <summary>
     /// The endpoint to browse the full singles and EPs discography
     /// </summary>
+    /// <remarks>
+    /// Populated from the "More" button on the artist overview page's singles and EPs carousel.
+    /// If <see langword="null"/>, no "More" button was present on YouTube Music (typically when an artist has 10 or fewer singles/EPs),
+    /// indicating that <see cref="SinglesAndEps"/> is already exhaustive and complete without requiring a secondary network call.
+    /// </remarks>
     public BrowseEndpoint? SinglesAndEpsEndpoint { get; } = singlesAndEpsEndpoint;
 
 }

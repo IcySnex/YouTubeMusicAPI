@@ -502,6 +502,10 @@ public class YouTubeMusicClient
     /// <summary>
     /// Gets all albums of an artist from the artist information
     /// </summary>
+    /// <remarks>
+    /// If <see cref="ArtistInfo.AlbumsEndpoint"/> is <see langword="null"/> (e.g. the artist has 10 or fewer albums and no "More" button was present),
+    /// <see cref="ArtistInfo.Albums"/> already contains all albums and is returned directly without making a secondary network request.
+    /// </remarks>
     /// <param name="artist">The artist information containing the albums endpoint</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>An array of artist albums</returns>
@@ -527,6 +531,10 @@ public class YouTubeMusicClient
     /// <summary>
     /// Gets all singles and EPs of an artist from the artist information
     /// </summary>
+    /// <remarks>
+    /// If <see cref="ArtistInfo.SinglesAndEpsEndpoint"/> is <see langword="null"/> (e.g. the artist has 10 or fewer singles/EPs and no "More" button was present),
+    /// <see cref="ArtistInfo.SinglesAndEps"/> already contains all singles and EPs and is returned directly without making a secondary network request.
+    /// </remarks>
     /// <param name="artist">The artist information containing the singles and EPs endpoint</param>
     /// <param name="cancellationToken">The cancellation token to cancel the action</param>
     /// <returns>An array of artist singles and EPs</returns>

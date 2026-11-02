@@ -261,7 +261,7 @@ internal static class InfoParser
         ArtistFeaturedOn[] featuredOns = [];
         ArtistsRelated[] related = [];
         BrowseEndpoint? albumsEndpoint = null;
-        BrowseEndpoint? singlesEndpoint = null;
+        BrowseEndpoint? singlesAndEpsEndpoint = null;
 
         string? viewsInfo = null;
 
@@ -289,7 +289,7 @@ internal static class InfoParser
                 case "Singles & EPs":
                 case "Singles and EPs":
                     singlesAndEps.AddRange(content.SelectArtistAlbums("musicCarouselShelfRenderer.contents"));
-                    singlesEndpoint = content.SelectBrowseEndpoint("musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint");
+                    singlesAndEpsEndpoint = content.SelectBrowseEndpoint("musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton.buttonRenderer.navigationEndpoint.browseEndpoint");
                     break;
                 case "Videos":
                     videos = content.SelectArtistVideos("musicCarouselShelfRenderer.contents");
@@ -317,7 +317,7 @@ internal static class InfoParser
             featuredOns: featuredOns,
             related: related,
             albumsEndpoint: albumsEndpoint,
-            singlesEndpoint: singlesEndpoint,
+            singlesAndEpsEndpoint: singlesAndEpsEndpoint,
             singlesAndEps: [.. singlesAndEps]);
     }
 }

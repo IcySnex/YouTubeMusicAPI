@@ -432,7 +432,7 @@ public class YouTubeMusicClient
     /// (up to 10 releases each for albums and singles/EPs) displayed on the main artist overview page.
     /// To retrieve the complete discography of albums or singles/EPs, call
     /// <see cref="GetArtistAlbumsAsync(ArtistInfo, CancellationToken)"/> or
-    /// <see cref="GetArtistSinglesAsync(ArtistInfo, CancellationToken)"/>, which follow the discography browse endpoints.
+    /// <see cref="GetArtistSinglesAndEpsAsync(ArtistInfo, CancellationToken)"/>, which follow the discography browse endpoints.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Occurs when request response does not contain any shelves or some parsed item info is null</exception>
     /// <exception cref="NotSupportedException">May occurs when the json serialization fails</exception>
@@ -548,21 +548,6 @@ public class YouTubeMusicClient
 
         return GetArtistAlbumsAsync(artist.SinglesAndEpsEndpoint.BrowseId, artist.SinglesAndEpsEndpoint.Params, cancellationToken);
     }
-
-    /// <summary>
-    /// Gets all singles and EPs of an artist from the artist information
-    /// </summary>
-    /// <remarks>
-    /// Alias for <see cref="GetArtistSinglesAndEpsAsync(ArtistInfo, CancellationToken)"/>.
-    /// </remarks>
-    /// <param name="artist">The artist information containing the singles endpoint</param>
-    /// <param name="cancellationToken">The cancellation token to cancel the action</param>
-    /// <returns>An array of artist singles and EPs</returns>
-    /// <exception cref="ArgumentNullException">Occurs when artist parameter is null</exception>
-    public Task<ArtistAlbum[]> GetArtistSinglesAsync(
-        ArtistInfo artist,
-        CancellationToken cancellationToken = default) =>
-        GetArtistSinglesAndEpsAsync(artist, cancellationToken);
 
 
     /// <summary>

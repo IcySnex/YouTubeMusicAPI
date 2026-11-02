@@ -91,7 +91,7 @@ internal abstract class TestData
     public const string PlaylistBrowseId = "RDAMVMnP4Q-iszqb0";
 
     /// <summary>
-    /// Test artist browse id (Pink Floyd)
+    /// Test artist browse id
     /// </summary>
     public const string ArtistBrowseId = "UCY2qt3dw2TQJxvBrDiYGHdQ";
 
